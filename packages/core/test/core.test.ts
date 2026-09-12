@@ -37,7 +37,11 @@ function sourceFiles(dir: string): string[] {
 
 function moduleSpecifiers(source: string): string[] {
   const specifiers: string[] = []
-  for (const pattern of [/from\s*['"]([^'"]+)['"]/g, /import\s*['"]([^'"]+)['"]/g]) {
+  for (const pattern of [
+    /from\s*['"]([^'"]+)['"]/g,
+    /import\s*['"]([^'"]+)['"]/g,
+    /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+  ]) {
     for (const match of source.matchAll(pattern)) {
       if (match[1]) specifiers.push(match[1])
     }
