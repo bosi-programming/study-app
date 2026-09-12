@@ -1,6 +1,6 @@
 # Plano de Testes — App de Estudo Espaçado
 
-Versão: 2 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
+Versão: 3 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
 
 ## Estratégia
 
@@ -40,16 +40,50 @@ Versão: 2 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
 | --- | --- | --- |
 | T-01 | Vencimento inicial por dificuldade (1–5) | RN-01, RN-02 |
 | T-02 | Progressão ×2 até o teto de 365d | RN-03, RN-07 |
-| T-03 | Check-in atrasado não penaliza | RN-04, RN-05 |
+| T-03 | Check-in atrasado não penaliza | RF-08, RN-04, RN-05 |
 | T-04 | Reavaliação recalcula com a nova base | RN-06 |
-| T-05 | Sugestão após 3 no prazo e reset com atraso | RN-08, RF-12, RF-13 |
-| T-06 | Arquivar tira da fila; check-in rejeitado | RF-09, RF-14, RF-15 |
-| T-07 | Migração para arquivo morto em 180d com export | RF-16, RF-20 |
+| T-05 | Reavaliação pedida a cada check-in e reset do contador com atraso | RN-08, RF-12, RF-13 |
+| T-06 | Arquivar tira da fila; check-in rejeitado | RF-09, RF-14, RF-15, RN-09 |
+| T-07 | Migração para arquivo morto em 180d com export | RF-16, RF-20, RN-10 |
 | T-08 | Restore preserva n e dificuldade | RF-17, RN-11 |
 | T-09 | Export/import round-trip sem perda | RF-18, RF-19 |
 | T-10 | Import duplicado não duplica item | RF-19, CA-11 |
 | T-11 | Ordenação da fila: atrasados primeiro | RF-05, CA-12 |
 | T-12 | Normalização de matéria (caixa e acentos) | RN-12 |
+| T-13 | `study edit` altera campos e recalcula quando a dificuldade muda | RF-03, RN-06 |
+| T-14 | `study remove` exige `--yes` e não passa pelo arquivo morto | RF-04 |
+| T-15 | `study due` mostra o recorte por matéria | RF-07 |
+| T-16 | `study show --history` lista os check-ins e o próximo vencimento | RF-06, RF-10 |
+| T-17 | `study find` acha por substring sem caixa e sem acento | RF-24 |
+| T-18 | Ref por título exato; título duplicado recusa com candidatos | RN-15, CA-18 |
+| T-19 | `study review` pergunta a dificuldade; manter não muda e mudar recalcula | RF-12, CA-13, CA-14 |
+| T-20 | Check-in antecipado e dois check-ins no mesmo dia | RN-13, CA-15 |
+| T-21 | Streak de fila zerada acumula e zera | RF-21, RF-22, RF-23, RN-14, CA-16 |
+| T-22 | `study config set cold_archive_after_days` muda a janela de migração | RF-25, RN-10, CA-19 |
+| T-23 | Sem terminal, `add` sem `-d` encerra com exit 1 | CLI.md — prompts |
+| T-24 | `init --reset --yes` faz backup e recria; backup falho aborta sem apagar | CLI.md — fluxos com prompt |
+| T-25 | Envelope `--json` estável por comando, com `schema_version` | RNF-08 |
+| T-26 | Benchmark: 5.000 itens e `study due --json` abaixo de 200ms (manual) | RNF-03 |
+| T-27 | `study list` filtra por matéria e status e ordena por vencimento | RF-02 |
+
+## Rastreabilidade
+
+Requisitos que não tinham caso em T-01..T-12:
+
+| RF | Caso |
+| --- | --- |
+| RF-02 (listar com filtro) | T-27 |
+| RF-03 (editar) | T-13 |
+| RF-04 (remover) | T-14 |
+| RF-06 (próximo vencimento) | T-16 |
+| RF-07 (resumo por matéria) | T-15 |
+| RF-10 (histórico) | T-16 |
+| RF-11 (reavaliação manual) | T-04 |
+| RF-21 (streak) | T-21 |
+| RF-22 (contagens) | T-21 |
+| RF-23 (check-ins do dia) | T-21 |
+| RF-24 (busca por título) | T-17 |
+| RF-25 (janela configurável) | T-22 |
 
 ## Testes de dados
 
@@ -60,7 +94,7 @@ Versão: 2 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
 
 ## Testes de plataforma
 
-- CLI: snapshot de `--json` por comando; exit codes da tabela de erros.
+- CLI: snapshot de `--json` por comando; exit codes da tabela de erros; refs por UUID, prefixo e título; prompts desligados em `--json` e stdin não-TTY.
 - Web: fluxo adicionar → fila → check-in → arquivar em um teste de integração.
 - Mobile: Jest + RNTL consome `fixtures/golden` pelo core; UI mínima fora da fase 4.
 - Desktop: roda os fluxos do web dentro do Electron + smoke de empacotamento.
@@ -69,6 +103,7 @@ Versão: 2 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
 
 - `pnpm test` roda core + CLI + web; mobile e desktop entram nas fases 4 e 5.
 - `pnpm test:golden` valida apenas fixtures.
+- `pnpm bench` gera 5.000 itens e mede `study due --json` (RNF-03); é verificação manual da fase 1, não gate de CI.
 - CI: GitHub Actions opcional na fase 1; até lá, rodar local antes de commit.
 
 ## Fora do plano V1

@@ -5,13 +5,13 @@ Projeto: app de estudo com repetição espaçada. Ritmo: menos de 10h/semana.
 | Documento | Conteúdo | Status |
 | --- | --- | --- |
 | `FEASIBILITY.md` | Estudo de viabilidade e decisões-raiz | Aprovado |
-| `docs/PRD.md` | Produto, público, escopo, métricas | Rascunho v1 |
-| `docs/REQUISITOS.md` | Requisitos funcionais, regras e critérios de aceite | Rascunho v1 |
+| `docs/PRD.md` | Produto, público, escopo, métricas | Rascunho v3 |
+| `docs/REQUISITOS.md` | Requisitos funcionais, regras e critérios de aceite | Rascunho v2 |
 | `docs/MODELO-DE-DADOS.md` | Entidades, schema e contrato JSON | Rascunho v1 |
-| `docs/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v1 |
-| `docs/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v1 |
-| `docs/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v1 |
-| `docs/DECISOES.md` | ADRs numerados com contexto e consequências | Rascunho v1 |
+| `docs/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v2 |
+| `docs/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v3 |
+| `docs/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v2 |
+| `docs/DECISOES.md` | ADRs numerados com contexto e consequências | Rascunho, até ADR-012 |
 
 ## Ordem de leitura
 

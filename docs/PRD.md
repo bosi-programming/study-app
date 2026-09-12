@@ -1,6 +1,6 @@
 # PRD — App de Estudo Espaçado
 
-Versão: 2 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
+Versão: 3 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
 
 ## Problema
 
@@ -36,7 +36,7 @@ Versão: 2 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
 | Fila | due do dia com atrasados primeiro, sem limite |
 | Check-in | "estudei agora", sem pergunta de recall |
 | Agendamento | tabela base, progressão ×2, teto 365d |
-| Reavaliação | manual + sugestão após 3 check-ins no prazo |
+| Reavaliação | manual + pedido de reavaliação a cada check-in, com a atual como padrão |
 | Ciclo de vida | ativo, arquivado, arquivo morto em 180d |
 | Dados | local-first, export/import JSON versionado |
 | Stats | streak, ativos/arquivados, due/atrasados, revisões do dia, por matéria |
@@ -62,8 +62,8 @@ Versão: 2 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
 
 1. Usuário abre a fila do dia.
 2. Atrasados aparecem primeiro, ordenados por vencimento.
-3. Cada item recebe check-in "estudei agora".
-4. Sistema multiplica o intervalo por 2 (teto 365d) e recalcula o vencimento.
+3. Cada item recebe check-in "estudei agora" e o sistema pede a dificuldade, com a atual como padrão.
+4. Se a dificuldade mudar, o sistema recalcula com a nova base; senão, multiplica o intervalo por 2 (teto 365d) e recalcula o vencimento.
 
 ### Graduar e arquivar
 
@@ -86,6 +86,6 @@ Versão: 2 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
 | Risco | Mitigação |
 | --- | --- |
 | Churn alto após a novidade | Fila curta, streak, arquivamento fácil |
-| Dificuldade auto-declarada imprecisa | Sugestão de reavaliação após 3 check-ins no prazo |
+| Dificuldade auto-declarada imprecisa | Reavaliação pedida a cada check-in, com a atual como padrão |
 | Fila virar dívida | Arquivamento + arquivo morto |
 | Mercado saturado | Diferencial: simplicidade e "o que revisar hoje" |

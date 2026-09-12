@@ -2,6 +2,8 @@
 
 Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `docs/REQUISITOS.md`
 
+O `schema_version` continua em 1: nenhum dado foi publicado, então as colunas novas entram no lugar, sem migração.
+
 ## Entidades
 
 ### Item
@@ -10,6 +12,7 @@ Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `docs/R
 | --- | --- | --- | --- |
 | id | UUID v4 | sim | chave estável entre plataformas |
 | title | string | sim | 1–200 caracteres, sem espaços nas pontas |
+| title_key | string | sim | derivado de `title`: trim, sem caixa e sem acentos; usado na resolução por `<ref>` e em `study find` |
 | subject | string | sim | 1–60 caracteres, comparação normalizada |
 | difficulty | int 1–5 | sim | escala com rótulos no PRD |
 | note | string | não | até 2.000 caracteres |
@@ -17,7 +20,7 @@ Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `docs/R
 | interval_days | int | sim | intervalo atual em dias; inicia no base |
 | due_date | date YYYY-MM-DD | sim | vencimento local |
 | review_count | int | sim | n de check-ins; nunca decresce |
-| on_time_streak | int | sim | check-ins consecutivos no prazo |
+| on_time_streak | int | sim | check-ins consecutivos no prazo; zera com atraso; histórico, não dispara sugestão |
 | status | enum | sim | active, archived, cold |
 | last_reviewed_at | timestamp UTC | não | nulo antes do primeiro check-in |
 | archived_at | timestamp UTC | não | nulo se nunca arquivado |
@@ -45,6 +48,8 @@ Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `docs/R
 | cold_archive_after_days | int | padrão 180, configurável |
 | last_cold_archive_export_at | timestamp UTC | controle do export automático |
 | locale | string | padrão pt-BR |
+| streak_current | int | dias locais consecutivos com fila zerada ao fim do dia |
+| streak_last_day | date YYYY-MM-DD | último dia local considerado no cálculo do streak |
 
 ## Transições de estado
 
@@ -54,8 +59,8 @@ active --archive--> archived --180 dias--> cold
   +----unarchive------+-----restore----------+
 ```
 
-- `active` participa de fila, stats de ativos e sugestões.
-- `archived` sai da fila e das sugestões; permanece no banco principal.
+- `active` participa de fila e das contagens de ativos.
+- `archived` sai da fila e das contagens de ativos; permanece no banco principal.
 - `cold` vive em store separado, sai de todas as consultas por padrão.
 - `purge` e remoção definitiva só por comando manual; remove Item e seus ReviewLog.
 
@@ -67,6 +72,7 @@ Mesmo schema no CLI (`node:sqlite`/`better-sqlite3`) e no mobile (`expo-sqlite`)
 CREATE TABLE items (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
+  title_key TEXT NOT NULL,
   subject TEXT NOT NULL,
   subject_key TEXT NOT NULL,
   difficulty INTEGER NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
@@ -86,6 +92,7 @@ CREATE TABLE items (
 
 CREATE INDEX idx_items_due ON items (status, due_date);
 CREATE INDEX idx_items_subject ON items (subject_key, status);
+CREATE INDEX idx_items_title ON items (title_key);
 
 CREATE TABLE review_logs (
   id TEXT PRIMARY KEY,
@@ -123,7 +130,12 @@ CREATE TABLE cold_archive (
 {
   "schema_version": 1,
   "exported_at": "2026-09-09T18:30:00Z",
-  "meta": { "cold_archive_after_days": 180, "locale": "pt-BR" },
+  "meta": {
+    "cold_archive_after_days": 180,
+    "locale": "pt-BR",
+    "streak_current": 4,
+    "streak_last_day": "2026-09-12"
+  },
   "items": [
     {
       "id": "2f1c9c1e-6a1a-4a2e-9f4e-1b2c3d4e5f60",
@@ -160,6 +172,7 @@ CREATE TABLE cold_archive (
 ## Migração e compatibilidade
 
 - `schema_version` no topo do JSON e na tabela `meta`.
+- `title_key` e `subject_key` são derivados e ficam fora do contrato JSON; são recalculados na importação.
 - Import aceita apenas versão igual ou menor, aplicando migrações em ordem.
 - Import idempotente por UUID; conflito resolvido por `updated_at` mais recente.
 - Export sempre inclui o arquivo morto; purge é a única operação destrutiva.

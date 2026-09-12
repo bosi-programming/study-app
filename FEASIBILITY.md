@@ -38,7 +38,7 @@ Documentos de engenharia: `docs/README.md`.
 - Cada revisão feita no prazo multiplica o intervalo por 2.
 - Teto de 365 dias por item.
 - Reavaliação manual de dificuldade a qualquer momento muda a base na hora.
-- Sugestão de reavaliação após 3 revisões consecutivas no prazo (nunca automática).
+- Reavaliação de dificuldade pedida a cada check-in, com a atual como padrão.
 - Atrasados acumulam na fila, aparecem primeiro, sem penalidade.
 - Fila do dia completa, sem limite diário.
 
@@ -53,7 +53,7 @@ Documentos de engenharia: `docs/README.md`.
 - Arquivamento manual quando o conteúdo é dominado (graduar).
 - Migração para arquivo morto: 180 dias arquivado sem restauração, configurável.
 - Aviso antes da migração.
-- Restauração via `archive list` / `archive restore`.
+- Restauração via `study cold list` / `study cold restore`.
 - Purga somente manual, com confirmação.
 - Export JSON automático a cada migração para o arquivo morto.
 

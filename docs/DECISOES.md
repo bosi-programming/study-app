@@ -29,7 +29,7 @@ Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `FEASIBILITY.md` e sessão de 
 - Contexto: check-in "estudei agora" sem pergunta de lembrete.
 - Decisão: intervalo = min(365, base(dificuldade) × 2^n), com n = check-ins.
 - Atraso não penaliza; reavaliação manual muda a base com o mesmo n.
-- Sugestão de reavaliação após 3 check-ins no prazo.
+- Sugestão de reavaliação após 3 check-ins no prazo. Superado pelo ADR-011: a reavaliação passou a ser pedida a cada check-in.
 - Consequência: menos dados de aprendizado real; FSRS fica para quando houver histórico.
 
 ## ADR-005 — Arquivo morto em 180 dias
@@ -66,3 +66,25 @@ Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `FEASIBILITY.md` e sessão de 
 - Decisão: `apps/desktop` encapsula o renderer de `apps/web` em Electron, com a mesma persistência IndexedDB.
 - Consequência: desktop quase de graça, com UI única em relação ao web; Electron é Node/TS puro.
 - Alternativas rejeitadas: Tauri (reintroduz Rust, já rejeitado no ADR-001); React Native macOS/Windows (não cobre Linux e criaria uma segunda UI).
+
+## ADR-010 — Referência de item por UUID, prefixo ou título
+
+- Contexto: digitar o UUID inteiro é atrito, e títulos podem duplicar.
+- Decisão: todo comando aceita `<ref>` = UUID exato, prefixo único de 4+ caracteres ou título exato normalizado (`title_key`).
+- Ambiguidade é erro de estado (exit 3) com a lista de candidatos; o CLI nunca escolhe sozinho.
+- Consequência: coluna `title_key` e índice novos; `study find` cobre busca parcial, que não serve como referência.
+
+## ADR-011 — Reavaliação de dificuldade a cada check-in
+
+- Contexto: a sugestão após 3 check-ins no prazo era fácil de ignorar e a dificuldade declarada envelhecia.
+- Decisão: todo `study review` pergunta a dificuldade, com a atual como padrão; Enter mantém e `--difficulty` pula o prompt.
+- O check-in é gravado antes do prompt; abortar mantém o check-in e não altera a dificuldade.
+- Prompts só existem com terminal interativo: `--json`, stdin não-TTY ou `--no-input` exigem o valor por flag.
+- Consequência: `on_time_streak` deixa de alimentar sugestão e vira histórico de pontualidade. Supera parte do ADR-004.
+
+## ADR-012 — Init destrutivo com backup e confirmação reforçada
+
+- Contexto: recriar o banco apaga itens, histórico e arquivo morto.
+- Decisão: `study init` com banco existente pergunta; confirmar exige `--reset --yes`, e um export JSON de backup vai para `<data-dir>/backups/pre-reset-<timestamp>.json` antes da recriação.
+- Se o backup falhar, o banco não é alterado.
+- Consequência: a recriação é sempre precedida de backup; a purga segue como a outra operação destrutiva.
