@@ -1,0 +1,18 @@
+{
+  "name": "@study/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "study": "./src/main.ts"
+  },
+  "exports": {
+    ".": "./src/main.ts"
+  },
+  "dependencies": {
+    "@study/core": "workspace:*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

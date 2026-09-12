@@ -1,0 +1,21 @@
+{
+  "name": "study-app",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:golden": "vitest run --project golden",
+    "typecheck": "pnpm -r typecheck && tsc --noEmit -p tsconfig.json",
+    "bench": "node scripts/bench.ts"
+  },
+  "devDependencies": {
+    "@study/cli": "workspace:*",
+    "@types/node": "24.13.4",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}
