@@ -1,14 +1,14 @@
 # Registro de Decisões (ADRs)
 
-Data: 2026-09-09 | Base: `FEASIBILITY.md` e sessão de grill
+Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `FEASIBILITY.md` e sessão de grill
 
-## ADR-001 — Core TS compartilhado com iOS nativo Swift
+## ADR-001 — Core TS compartilhado por CLI, web, mobile e desktop
 
-- Contexto: CLI e web serão TypeScript; o iOS será Swift nativo.
-- Decisão: `packages/core` em TS puro para CLI e web; regra reimplementada em Swift.
-- Conformidade: golden fixtures em `fixtures/golden` consumidos pelos dois lados.
-- Consequência: duas implementações da regra; divergência detectável em build.
-- Alternativas rejeitadas: Expo (compartilharia TS, mas contraria a escolha nativa); FFI/Rust (custo alto para função pequena).
+- Contexto: CLI e web já são TypeScript; mobile (iOS + Android) e desktop precisam reusar o mesmo domínio.
+- Decisão: `packages/core` em TS puro, consumido por CLI, web, React Native (Expo) e desktop (Electron); sem reimplementação em outra linguagem.
+- Conformidade: golden fixtures em `fixtures/golden` como vetores de regressão de todos os apps; `packages/core` sem APIs de Node ou browser.
+- Consequência: uma implementação da regra; divergência vira bug de integração, não de paridade de algoritmo.
+- Supersede: a versão anterior deste ADR previa iOS nativo em Swift. Swift nativo agora é alternativa rejeitada (duas implementações da regra e apenas uma das lojas).
 
 ## ADR-002 — Local-first com backend adiado
 
@@ -20,7 +20,7 @@ Data: 2026-09-09 | Base: `FEASIBILITY.md` e sessão de grill
 ## ADR-003 — Engine de dados por plataforma
 
 - Contexto: cada plataforma tem um armazenamento local natural.
-- Decisão: SQLite no CLI e no iOS; IndexedDB no web.
+- Decisão: SQLite no CLI; `expo-sqlite` no mobile; IndexedDB no web e no desktop.
 - Consequência: três implementações de persistência; schema canônico único e testes de contrato.
 - Alternativa rejeitada: localStorage no web (limites e perda de dados).
 
@@ -48,6 +48,21 @@ Data: 2026-09-09 | Base: `FEASIBILITY.md` e sessão de grill
 ## ADR-007 — Ordem de construção com gates
 
 - Contexto: paridade entre plataformas é o alvo, mas o ritmo é limitado.
-- Decisão: CLI → web (gate de consistência pessoal) → piloto (gate de retenção) → iOS.
-- iOS exige Xcode (pendente), conta Apple e spike de 1 semana.
-- Alternativa rejeitada: construir as três em paralelo (risco de UI sem produto validado).
+- Decisão: CLI → web (gate de consistência pessoal) → piloto (gate de retenção) → mobile React Native (iOS + Android) → desktop.
+- Mobile exige conta Apple (US$ 99/ano) e Google Play (US$ 25 único); EAS Build dispensa Xcode local.
+- Desktop reaproveita o renderer do web e pode entrar logo após a fase 2, sem esperar o mobile.
+- Alternativa rejeitada: construir as quatro em paralelo (risco de UI sem produto validado).
+
+## ADR-008 — Mobile com React Native (Expo)
+
+- Contexto: iOS e Android precisam do mesmo produto, com <10h/semana e o core já em TS.
+- Decisão: React Native com Expo para iOS e Android, consumindo `packages/core` e persistindo em `expo-sqlite`.
+- Consequência: uma base de UI para as duas lojas e nenhuma reimplementação da regra; build iOS via EAS sem Xcode local.
+- Alternativas rejeitadas: Swift nativo + Kotlin (duas bases e duas regras); Flutter (Dart fora do stack TS).
+
+## ADR-009 — Desktop com Electron reaproveitando o web
+
+- Contexto: o desktop precisa ser barato e o web já entrega os fluxos completos em React.
+- Decisão: `apps/desktop` encapsula o renderer de `apps/web` em Electron, com a mesma persistência IndexedDB.
+- Consequência: desktop quase de graça, com UI única em relação ao web; Electron é Node/TS puro.
+- Alternativas rejeitadas: Tauri (reintroduz Rust, já rejeitado no ADR-001); React Native macOS/Windows (não cobre Linux e criaria uma segunda UI).

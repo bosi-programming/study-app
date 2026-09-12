@@ -1,6 +1,6 @@
 # Modelo de Dados — App de Estudo Espaçado
 
-Versão do schema: 1 | Data: 2026-09-09 | Base: `docs/REQUISITOS.md`
+Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `docs/REQUISITOS.md`
 
 ## Entidades
 
@@ -59,7 +59,9 @@ active --archive--> archived --180 dias--> cold
 - `cold` vive em store separado, sai de todas as consultas por padrão.
 - `purge` e remoção definitiva só por comando manual; remove Item e seus ReviewLog.
 
-## Schema SQLite (CLI e iOS)
+## Schema SQLite (CLI e mobile)
+
+Mesmo schema no CLI (`node:sqlite`/`better-sqlite3`) e no mobile (`expo-sqlite`).
 
 ```sql
 CREATE TABLE items (
@@ -106,7 +108,7 @@ CREATE TABLE cold_archive (
 );
 ```
 
-## IndexedDB (web)
+## IndexedDB (web e desktop)
 
 | Store | Chave | Índices | Conteúdo |
 | --- | --- | --- | --- |

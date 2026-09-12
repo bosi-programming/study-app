@@ -1,6 +1,6 @@
 # PRD — App de Estudo Espaçado
 
-Versão: 1 | Data: 2026-09-09 | Base: `FEASIBILITY.md`
+Versão: 2 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
 
 ## Problema
 
@@ -17,7 +17,7 @@ Versão: 1 | Data: 2026-09-09 | Base: `FEASIBILITY.md`
 
 ## Público
 
-- Primário: o autor, uso diário, CLI e web.
+- Primário: o autor, uso diário, CLI, web, mobile e desktop (fases 1–5).
 - Secundário: 3–5 estudantes reais no piloto web, por 2+ semanas.
 - Fora do alvo na V1: times, salas de aula, conteúdo compartilhado.
 
@@ -40,6 +40,7 @@ Versão: 1 | Data: 2026-09-09 | Base: `FEASIBILITY.md`
 | Ciclo de vida | ativo, arquivado, arquivo morto em 180d |
 | Dados | local-first, export/import JSON versionado |
 | Stats | streak, ativos/arquivados, due/atrasados, revisões do dia, por matéria |
+| Plataformas | CLI e web na V1; mobile React Native (iOS + Android) e desktop Electron nas fases 4–5 |
 
 ## Anti-escopo V1
 
@@ -47,7 +48,7 @@ Versão: 1 | Data: 2026-09-09 | Base: `FEASIBILITY.md`
 - Conta, login, sync, backend/Postgres.
 - FSRS ou adaptatividade além da regra fixa.
 - Tags, hierarquia de matérias, metas diárias, gráficos.
-- App iOS (fase 4, após gate), Android, i18n, monetização.
+- Apps mobile (React Native: iOS + Android) e desktop, fases 4 e 5 após gate; i18n, monetização.
 
 ## Jornadas
 

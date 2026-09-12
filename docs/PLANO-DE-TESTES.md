@@ -1,11 +1,11 @@
 # Plano de Testes — App de Estudo Espaçado
 
-Versão: 1 | Data: 2026-09-09 | Base: `docs/REQUISITOS.md`
+Versão: 2 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
 
 ## Estratégia
 
 - A regra de agendamento é o ativo crítico; ela concentra os testes.
-- Golden fixtures são a fonte única de verdade entre TS e Swift.
+- Golden fixtures são a fonte única de verdade da regra para todos os apps TS.
 - UI testada por comportamento essencial, sem perseguir cobertura.
 
 | Camada | Ferramenta | Meta |
@@ -13,14 +13,15 @@ Versão: 1 | Data: 2026-09-09 | Base: `docs/REQUISITOS.md`
 | `packages/core` | Vitest | >= 90% de linhas |
 | CLI | Vitest + execução do binário com `--json` | fluxos dos RF-01..RF-20 |
 | Web | Vitest + Testing Library | adicionar, fila, check-in, arquivar |
-| iOS | XCTest lendo os mesmos fixtures | paridade com o core TS |
+| Mobile | Jest + React Native Testing Library | mesmos fluxos, lendo `fixtures/golden` via core |
+| Desktop | Playwright sobre Electron + testes do web | abertura e fluxos principais |
 
 ## Golden fixtures
 
 - Local: `fixtures/golden/*.json`.
 - Cada caso: estado inicial, ação, parâmetros e resultado esperado.
-- Consumidos pelos testes TS e Swift; divergência quebra o build.
-- Versionados junto do código; alteração exige revisão dos dois lados.
+- Consumidos pelos testes do core, CLI, web, mobile e desktop; divergência quebra o build.
+- Versionados junto do código; alteração exige revisão de todos os consumidores.
 
 ```json
 {
@@ -61,11 +62,12 @@ Versão: 1 | Data: 2026-09-09 | Base: `docs/REQUISITOS.md`
 
 - CLI: snapshot de `--json` por comando; exit codes da tabela de erros.
 - Web: fluxo adicionar → fila → check-in → arquivar em um teste de integração.
-- iOS: XCTest consome `fixtures/golden` e valida a regra; UI mínima fora da fase 1.
+- Mobile: Jest + RNTL consome `fixtures/golden` pelo core; UI mínima fora da fase 4.
+- Desktop: roda os fluxos do web dentro do Electron + smoke de empacotamento.
 
 ## Execução
 
-- `pnpm test` roda core + CLI + web.
+- `pnpm test` roda core + CLI + web; mobile e desktop entram nas fases 4 e 5.
 - `pnpm test:golden` valida apenas fixtures.
 - CI: GitHub Actions opcional na fase 1; até lá, rodar local antes de commit.
 

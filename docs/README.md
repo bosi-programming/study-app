@@ -26,6 +26,6 @@ Projeto: app de estudo com repetição espaçada. Ritmo: menos de 10h/semana.
 
 ## Deferido
 
-- UX do iOS: telas, notificações, ícones, App Store.
+- UX de mobile (React Native, iOS + Android) e desktop: telas, notificações, ícones, publicação nas lojas.
 - Monetização, nome do app, branding, i18n.
 - Backend/Postgres: só no gatilho definido no PRD.

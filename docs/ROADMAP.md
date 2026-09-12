@@ -1,6 +1,6 @@
 # Roadmap — App de Estudo Espaçado
 
-Versão: 1 | Data: 2026-09-09 | Ritmo: menos de 10h/semana
+Versão: 2 | Data: 2026-09-12 | Ritmo: menos de 10h/semana
 
 ## Fases e gates
 
@@ -10,7 +10,8 @@ Versão: 1 | Data: 2026-09-09 | Ritmo: menos de 10h/semana
 | 1 | CLI completo + core + testes | uso próprio por 1 semana | 5–7 semanas |
 | 2 | Web + deploy | 2–4 semanas com >= 70% dos dias com fila zerada | 6–8 semanas |
 | 3 | Piloto web | 3–5 estudantes por 2+ semanas | 2–4 semanas |
-| 4 | iOS nativo Swift | spike de 1 semana aprovado | 6–12 meses |
+| 4 | Mobile React Native (iOS + Android) | spike de 1 semana aprovado | 6–10 semanas |
+| 5 | Desktop (Electron) | app abre e passa nos fluxos do web | 1–2 semanas |
 
 ## Fase 1 — CLI
 
@@ -41,19 +42,31 @@ Definition of done: uso diário pessoal no web por 2–4 semanas com a métrica 
 - [ ] Roteiro de entrevista semanal.
 - [ ] Meta: 3–5 estudantes por 2+ semanas, >= 50% na 2ª semana.
 
-## Fase 4 — iOS
+## Fase 4 — Mobile (React Native)
 
-- [ ] Instalar Xcode e conta Apple (US$ 99/ano).
-- [ ] Spike de 1 semana: Swift + SQLite + tela mínima no simulador.
-- [ ] Implementar paridade funcional com os golden fixtures.
-- [ ] Notificações locais e telas (UX definida nesta fase).
-- [ ] TestFlight antes da App Store.
+- [ ] Expo + TypeScript, consumindo `packages/core` direto (sem reimplementar a regra).
+- [ ] Spike de 1 semana: Expo + `expo-sqlite` + tela de fila no emulador e no device.
+- [ ] Persistência `expo-sqlite` com o schema canônico de `docs/MODELO-DE-DADOS.md`.
+- [ ] Telas: adicionar, fila, check-in, arquivar, stats.
+- [ ] Notificações locais de revisão com `expo-notifications`.
+- [ ] EAS Build, TestFlight e faixa interna do Google Play antes das lojas.
+
+Definition of done: fila zerada pelo app em iOS e Android por 1 semana.
+
+## Fase 5 — Desktop
+
+- [ ] Empacotar o renderer de `apps/web` em Electron (`apps/desktop`).
+- [ ] Mesmo core TS e mesma persistência IndexedDB do web.
+- [ ] Instaladores assinados: dmg (macOS), nsis (Windows) e AppImage (Linux).
+- [ ] Smoke test de abertura e dos fluxos principais.
+
+Definition of done: app instalado e usado no desktop sem abrir o navegador.
 
 ## Backlog pós-V1
 
 - Sync com Postgres quando CLI + web forem diários na mesma semana.
 - FSRS no lugar da regra fixa, quando houver histórico.
-- Tags, metas diárias, gráficos, i18n, Android.
+- Tags, metas diárias, gráficos, i18n.
 
 ## Riscos por fase
 
@@ -62,4 +75,5 @@ Definition of done: uso diário pessoal no web por 2–4 semanas com a métrica 
 | 1 | Regra mudar várias vezes | mais de 2 mudanças de parâmetro em 1 semana |
 | 2 | Web virar reescrita do core | regra duplicada em `apps/web` |
 | 3 | Pilotos abandonarem | menos de 50% ativos na 2ª semana |
-| 4 | Curva do Swift estourar | spike passar de 2 semanas |
+| 4 | Curva do React Native ou das duas lojas estourar | spike passar de 2 semanas |
+| 5 | Desktop divergir do web | UI duplicada em `apps/desktop` |

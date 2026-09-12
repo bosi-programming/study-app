@@ -1,6 +1,6 @@
 # Estudo de Viabilidade — App de Estudo Espaçado
 
-Data: 2026-09-09
+Data: 2026-09-09 | Atualizado: 2026-09-12
 Status: decisões aprovadas; nenhum código escrito
 
 Documentos de engenharia: `docs/README.md`.
@@ -9,11 +9,11 @@ Documentos de engenharia: `docs/README.md`.
 
 - Produto: app pessoal de repetição espaçada que diz o que revisar hoje.
 - Estratégia: local-first, multiplataforma, sem quiz.
-- Ordem: CLI → web (valida pilotos) → iOS nativo Swift (após gate).
-- Arquitetura: core TS compartilhado por CLI e web; Swift nativo com golden tests.
-- Custo mínimo: US$ 99/ano (Apple Developer); web e piloto em free tier.
-- Ritmo: <10h/semana — CLI ~5–7 semanas, web +6–8 semanas, iOS +6–12 meses.
-- Maior risco: prazo do iOS nativo com Swift iniciante, não a viabilidade técnica.
+- Ordem: CLI → web (valida pilotos) → mobile React Native (iOS + Android) → desktop (após gate).
+- Arquitetura: core TS compartilhado por CLI, web, mobile e desktop; Electron reaproveita o renderer do web.
+- Custo mínimo: 0 até publicar; US$ 25 único (Google Play) + US$ 99/ano (Apple) só na fase de lojas.
+- Ritmo: <10h/semana — CLI ~5–7 semanas, web +6–8 semanas, mobile +6–10 semanas, desktop +1–2 semanas.
+- Maior risco: escopo de quatro plataformas com <10h/semana, não a viabilidade técnica.
 
 ## Produto
 
@@ -60,7 +60,7 @@ Documentos de engenharia: `docs/README.md`.
 ## Dados
 
 - Local-first em todas as plataformas; sem conta na V1.
-- Engines: SQLite (CLI), IndexedDB (web), SQLite (iOS).
+- Engines: SQLite (CLI), expo-sqlite (mobile), IndexedDB (web e desktop).
 - Contrato de dados: JSON versionado, IDs UUID, timestamps ISO 8601.
 - Schema canônico único, preparado para a futura migração Postgres.
 - Item: id, título, matéria, dificuldade, nota/link, intervalo atual, vencimento, última revisão, contagem de revisões, status, timestamps.
@@ -73,13 +73,17 @@ Documentos de engenharia: `docs/README.md`.
 packages/core      regra + domínio + testes + golden fixtures (TS puro)
 apps/cli           TypeScript + commander + SQLite
 apps/web           React + Vite + IndexedDB
-apps/ios           projeto Xcode, Swift nativo + SQLite
-fixtures/golden    vetores entrada/saída compartilhados TS ↔ Swift
+apps/mobile        React Native + Expo + expo-sqlite (iOS + Android)
+apps/desktop       Electron reaproveitando o renderer de apps/web
+fixtures/golden    vetores entrada/saída compartilhados por todos os apps TS
 ```
 
 - Monorepo com pnpm workspaces.
-- CLI e web consomem o mesmo core TS.
-- iOS reimplementa a regra em Swift; igualdade garantida por golden tests.
+- CLI, web, mobile e desktop consomem o mesmo core TS.
+- `packages/core` é TS puro, sem API de Node ou browser (relógio e IDs injetáveis), para rodar igual em todos os runtimes.
+- Mobile: React Native com Expo (iOS + Android); persistência em `expo-sqlite` com o schema canônico.
+- Desktop: Electron encapsula o renderer do web; mesma persistência IndexedDB.
+- Sem reimplementação da regra em outra linguagem; golden fixtures seguem como vetores de regressão.
 - Sem FFI/Rust: a regra é uma função pura pequena.
 
 ## Plataformas e ordem
@@ -89,10 +93,11 @@ fixtures/golden    vetores entrada/saída compartilhados TS ↔ Swift
 | 1 | CLI completo | uso próprio consistente |
 | 2 | Web + deploy | 2–4 semanas com >= 70% dos dias com fila zerada |
 | 3 | Piloto web | 3–5 estudantes por 2+ semanas |
-| 4 | iOS nativo Swift | só após retenção no piloto |
+| 4 | Mobile React Native (iOS + Android) | só após retenção no piloto |
+| 5 | Desktop (Electron) | pode entrar junto do web, que ele reaproveita |
 
-- iOS exige Xcode (hoje só há Command Line Tools) e conta Apple de US$ 99/ano.
-- Antes da fase 4: spike de 1 semana (Swift + SQLite + tela mínima no simulador).
+- Mobile exige conta Apple (US$ 99/ano) para a App Store e Google Play (US$ 25 único); EAS Build dispensa Xcode local.
+- Antes da fase 4: spike de 1 semana (Expo + expo-sqlite + tela mínima no emulador e no device).
 
 ## Validação e observabilidade
 
@@ -112,10 +117,11 @@ Ritmo: menos de 10h/semana.
 | 1. CLI | 6–9 dias de trabalho | 5–7 semanas | 0 |
 | 2. Web | 6–10 dias | 6–8 semanas | 0 (free tier) |
 | 3. Piloto | 2–4 dias | 2–4 semanas | 0 |
-| 4. iOS | 20–40+ dias | 6–12 meses | US$ 99/ano (Apple) |
+| 4. Mobile (React Native) | 8–14 dias | 6–10 semanas | US$ 99/ano (Apple) + US$ 25 (Google Play) |
+| 5. Desktop (Electron) | 2–4 dias | 1–2 semanas | 0 |
 
-- Android, se vier: US$ 25 pagamento único + ajustes.
-- Ambiente atual: Node v24 ✓, Swift 6.3 ✓, Xcode ✗.
+- Custos de loja só entram na fase 4; até lá, tudo em free tier.
+- Ambiente atual: Node v24 ✓; Xcode ✗ não é necessário (EAS Build compila iOS na nuvem).
 
 ## Fora de escopo V1
 
@@ -123,14 +129,16 @@ Ritmo: menos de 10h/semana.
 - Conta, login, sync, backend/Postgres.
 - FSRS e adaptatividade além dos parâmetros acima.
 - Tags, hierarquia de matérias, metas diárias, gráficos.
-- UX do iOS (notificações, telas, ícones), App Store, i18n, monetização.
+- UX de mobile e desktop (notificações, telas, ícones), publicação nas lojas, i18n, monetização.
 
 ## Riscos
 
 | Risco | Severidade | Mitigação |
 | --- | --- | --- |
-| Prazo do iOS nativo (Swift iniciante, <10h/semana) | Alta | Gate pós-piloto; spike de 1 semana; alternativa Expo |
-| Divergência TS ↔ Swift | Média | Golden fixtures compartilhados |
+| Escopo de quatro plataformas com <10h/semana | Alta | Gates por fase; desktop reaproveita o web; mobile só depois do piloto |
+| Curva do React Native / Expo | Média | Spike de 1 semana; core TS puro reusado sem rewrite |
+| Divergência entre implementações | Média | Golden fixtures compartilhados por todos os apps TS |
+| Rejeição nas lojas (Apple/Google) | Média | EAS Build/Submit, TestFlight e faixa interna antes da publicação |
 | Churn / engajamento baixo | Alta | Fila do dia + streak + arquivo morto |
 | Mercado competitivo (Anki, Quizlet, RemNote) | Alta | Diferencial: simplicidade + "o que revisar hoje" |
 | Perda de dados locais no piloto | Média | Export/import JSON + Sentry |
@@ -142,4 +150,4 @@ Ritmo: menos de 10h/semana.
 - [ ] Implementar a regra de agendamento + testes e golden fixtures.
 - [ ] Definir schema SQLite e comandos do CLI.
 - [ ] Avaliar `node:sqlite` (built-in) vs `better-sqlite3` na fase 1.
-- [ ] Só depois: web, piloto e iOS.
+- [ ] Só depois: web, piloto, mobile (React Native) e desktop.
