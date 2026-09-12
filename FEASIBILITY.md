@@ -146,7 +146,7 @@ Ritmo: menos de 10h/semana.
 
 ## Próximos passos
 
-- [ ] Scaffold do monorepo pnpm com `packages/core` e `apps/cli`.
+- [x] Scaffold do monorepo pnpm com `packages/core` e `apps/cli`.
 - [ ] Implementar a regra de agendamento + testes e golden fixtures.
 - [ ] Definir schema SQLite e comandos do CLI.
 - [ ] Avaliar `node:sqlite` (built-in) vs `better-sqlite3` na fase 1.

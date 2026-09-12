@@ -11,7 +11,7 @@ Projeto: app de estudo com repetição espaçada. Ritmo: menos de 10h/semana.
 | `docs/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v2 |
 | `docs/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v3 |
 | `docs/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v2 |
-| `docs/DECISOES.md` | ADRs numerados com contexto e consequências | Rascunho, até ADR-012 |
+| `docs/DECISOES.md` | ADRs numerados com contexto e consequências | Rascunho, até ADR-013 |
 
 ## Ordem de leitura
 
@@ -23,6 +23,20 @@ Projeto: app de estudo com repetição espaçada. Ritmo: menos de 10h/semana.
 6. `docs/PLANO-DE-TESTES.md` — como provar que funciona.
 7. `docs/ROADMAP.md` — em que ordem construir.
 8. `docs/DECISOES.md` — por que as escolhas técnicas foram feitas.
+
+## Como rodar
+
+Pré-requisitos: Node >= 24 e pnpm 12.4.1 (o `packageManager` do `package.json`; o corepack troca a versão sozinho).
+
+```bash
+pnpm install
+pnpm test          # 4 projetos: core, golden, cli, scaffold
+pnpm test:golden   # só o projeto golden
+pnpm typecheck     # tsc --noEmit nos 3 pacotes + tsconfig da raiz
+pnpm bench         # stub: declara o bloqueio da ENG-3, ainda não mede
+```
+
+Membros do workspace: `packages/core` (`@study/core`), `apps/cli` (`@study/cli`) e `fixtures/golden` (`@study/golden`).
 
 ## Deferido
 
