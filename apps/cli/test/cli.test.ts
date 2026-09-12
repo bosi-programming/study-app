@@ -10,7 +10,7 @@ function runStudy(cwd: string) {
   return spawnSync(binPath, [], { cwd, encoding: 'utf8' })
 }
 
-describe('T-06 cli bin runs', () => {
+describe('S-06 cli bin runs', () => {
   it('links the study bin into the repo', () => {
     expect(existsSync(binPath)).toBe(true)
   })
@@ -22,7 +22,7 @@ describe('T-06 cli bin runs', () => {
   })
 })
 
-describe('T-07 cli bin outside the repo', () => {
+describe('S-07 cli bin outside the repo', () => {
   it('still runs from an unrelated cwd', () => {
     const result = runStudy('/tmp')
     expect(result.status).toBe(0)

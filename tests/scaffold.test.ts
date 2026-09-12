@@ -12,7 +12,7 @@ function readJson<T = Record<string, unknown>>(relativePath: string): T {
 type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string> }
 type TsConfig = { extends?: string; compilerOptions?: { strict?: boolean; types?: string[] } }
 
-describe('T-08 workspace members', () => {
+describe('S-08 workspace members', () => {
   it('declares the three workspace globs', () => {
     const workspace = readFileSync(resolve(root, 'pnpm-workspace.yaml'), 'utf8')
     for (const glob of ['packages/*', 'apps/*', 'fixtures/*']) {
@@ -29,7 +29,7 @@ describe('T-08 workspace members', () => {
   })
 })
 
-describe('T-09 shared strict tsconfig', () => {
+describe('S-09 shared strict tsconfig', () => {
   it('enables strict mode in the shared base', () => {
     expect(readJson<TsConfig>('tsconfig.base.json').compilerOptions?.strict).toBe(true)
   })
@@ -45,7 +45,7 @@ describe('T-09 shared strict tsconfig', () => {
   })
 })
 
-describe('T-10 no runtime dependencies', () => {
+describe('S-10 no runtime dependencies', () => {
   it.each([
     'package.json',
     'packages/core/package.json',
@@ -63,7 +63,7 @@ describe('T-10 no runtime dependencies', () => {
   })
 })
 
-describe('T-11 root scripts', () => {
+describe('S-11 root scripts', () => {
   it('declares test, test:golden, bench and typecheck', () => {
     const scripts = Object.keys(readJson<PackageJson>('package.json').scripts ?? {})
     expect(scripts).toEqual(
@@ -72,7 +72,7 @@ describe('T-11 root scripts', () => {
   })
 })
 
-describe('T-12 bench stub', () => {
+describe('S-12 bench stub', () => {
   it('exits 0 and names the blocker instead of pretending to measure', () => {
     const result = spawnSync(process.execPath, ['scripts/bench.ts'], {
       cwd: root,

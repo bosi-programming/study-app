@@ -6,6 +6,7 @@
     "moduleResolution": "nodenext",
     "strict": true,
     "noEmit": true,
+    "noUncheckedSideEffectImports": true,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,

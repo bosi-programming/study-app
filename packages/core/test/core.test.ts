@@ -45,7 +45,7 @@ function moduleSpecifiers(source: string): string[] {
   return specifiers
 }
 
-describe('T-01 core purity', () => {
+describe('S-01 core purity', () => {
   it('has at least one source file to scan', () => {
     expect(sourceFiles(srcDir).length).toBeGreaterThan(0)
   })
@@ -66,7 +66,7 @@ describe('T-01 core purity', () => {
   })
 })
 
-describe('T-02 core resolution canary', () => {
+describe('S-02 core resolution canary', () => {
   it('resolves the workspace package and exposes its version', () => {
     expect(CORE_VERSION).toBe('0.0.0')
   })

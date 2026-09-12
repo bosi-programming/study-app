@@ -35,7 +35,7 @@ function readFixtures(): GoldenCase[] {
   )
 }
 
-describe('T-03 golden shape', () => {
+describe('S-03 golden shape', () => {
   it('ships at least one fixture case', () => {
     expect(fixtureNames().length).toBeGreaterThan(0)
   })
@@ -59,14 +59,14 @@ describe('T-03 golden shape', () => {
   })
 })
 
-describe('T-04 golden unique case names', () => {
+describe('S-04 golden unique case names', () => {
   it('does not repeat a case name', () => {
     const names = readFixtures().map((fixture) => fixture.case)
     expect(new Set(names).size).toBe(names.length)
   })
 })
 
-describe('T-05 golden progressao-ate-teto', () => {
+describe('S-05 golden progressao-ate-teto', () => {
   it('has one interval per check-in and ends at the cap', () => {
     const fixture = readFixtures().find((candidate) => candidate.case === 'progressao-ate-teto')
     expect(fixture, 'progressao-ate-teto fixture is missing').toBeDefined()
