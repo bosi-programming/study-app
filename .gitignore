@@ -25,3 +25,9 @@ pnpm-debug.log*
 
 # recipe cards (local scratch)
 recipes/
+
+# test output
+coverage/
+
+# typecheck output
+*.tsbuildinfo
