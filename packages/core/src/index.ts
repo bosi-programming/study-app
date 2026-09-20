@@ -43,3 +43,6 @@ export {
   reevaluateDifficulty,
 } from './schedule.ts'
 export type { ReviewLog, ReviewResult } from './schedule.ts'
+
+export { advanceQueueStreak, hasDueItems } from './streak.ts'
+export type { QueueStreak } from './streak.ts'
