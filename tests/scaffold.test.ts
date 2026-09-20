@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { SCHEMA_SQL } from '../scripts/sqlite-probe.ts'
@@ -132,6 +132,28 @@ describe('S-15 no native sqlite dependency', () => {
       ]
       expect(declared).not.toContain('better-sqlite3')
       expect(declared).not.toContain('@types/better-sqlite3')
+    }
+  })
+})
+
+describe('S-16 ADR index', () => {
+  const adrDir = resolve(root, 'docs/adr')
+
+  it('links every ADR file from the index and resolves every link', () => {
+    const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
+    expect(files.length).toBeGreaterThan(0)
+
+    const links = [
+      ...readFileSync(resolve(adrDir, 'README.md'), 'utf8').matchAll(/\]\(([^)]+)\)/g),
+    ]
+      .map((match) => match[1] ?? '')
+      .filter((link) => !/^[a-z]+:/i.test(link))
+
+    for (const file of files) {
+      expect(links).toContain(file)
+    }
+    for (const link of links) {
+      expect(existsSync(resolve(adrDir, link))).toBe(true)
     }
   })
 })
