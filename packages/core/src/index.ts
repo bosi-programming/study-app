@@ -33,7 +33,13 @@ export {
   BASE_INTERVAL_DAYS,
   DIFFICULTY_LABELS,
   MAX_INTERVAL_DAYS,
+  daysLate,
   initialDueDate,
   intervalFor,
+  isDue,
+  isLate,
   nextDueDate,
+  recordReview,
+  reevaluateDifficulty,
 } from './schedule.ts'
+export type { ReviewLog, ReviewResult } from './schedule.ts'
