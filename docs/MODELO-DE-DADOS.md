@@ -1,6 +1,6 @@
 # Modelo de Dados — App de Estudo Espaçado
 
-Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-12 | Base: `docs/REQUISITOS.md`
+Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-20 | Base: `docs/REQUISITOS.md`
 
 O `schema_version` continua em 1: nenhum dado foi publicado, então as colunas novas entram no lugar, sem migração.
 
@@ -15,7 +15,7 @@ O `schema_version` continua em 1: nenhum dado foi publicado, então as colunas n
 | title_key | string | sim | derivado de `title`: trim, sem caixa e sem acentos; usado na resolução por `<ref>` e em `study find` |
 | subject | string | sim | 1–60 caracteres, comparação normalizada |
 | difficulty | int 1–5 | sim | escala com rótulos no PRD |
-| note | string | não | até 2.000 caracteres |
+| note | string | não | até 10.000 caracteres |
 | link | string URL | não | opcional, sem validação estrita na V1 |
 | interval_days | int | sim | intervalo atual em dias; inicia no base |
 | due_date | date YYYY-MM-DD | sim | vencimento local |
