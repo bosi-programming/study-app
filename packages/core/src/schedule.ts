@@ -15,9 +15,9 @@ export const BASE_INTERVAL_DAYS: Record<Difficulty, number> = {
 export const MAX_INTERVAL_DAYS = 365
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  1: 'muito fácil',
+  1: 'trivial',
   2: 'fácil',
-  3: 'média',
+  3: 'médio',
   4: 'difícil',
   5: 'muito difícil',
 }
