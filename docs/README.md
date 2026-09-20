@@ -11,7 +11,7 @@ Projeto: app de estudo com repetição espaçada. Ritmo: menos de 10h/semana.
 | `docs/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v2 |
 | `docs/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v3 |
 | `docs/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v2 |
-| `docs/DECISOES.md` | ADRs numerados com contexto e consequências | Rascunho, até ADR-013 |
+| `docs/DECISOES.md` | ADRs numerados com contexto e consequências | Rascunho, até ADR-014 |
 
 ## Ordem de leitura
 
@@ -34,6 +34,7 @@ pnpm test          # 4 projetos: core, golden, cli, scaffold
 pnpm test:golden   # só o projeto golden
 pnpm typecheck     # tsc --noEmit nos 3 pacotes + tsconfig da raiz
 pnpm bench         # stub: declara o bloqueio da ENG-3, ainda não mede
+pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)
 ```
 
 Membros do workspace: `packages/core` (`@study/core`), `apps/cli` (`@study/cli`) e `fixtures/golden` (`@study/golden`).
