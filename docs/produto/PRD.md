@@ -1,6 +1,6 @@
 # PRD — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
+Versão: 3 | Data: 2026-09-12 | Base: `docs/produto/FEASIBILITY.md`
 
 ## Problema
 

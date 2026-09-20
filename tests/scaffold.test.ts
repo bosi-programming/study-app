@@ -107,7 +107,7 @@ describe('S-13 sqlite probe', () => {
 
 describe('S-14 canonical DDL', () => {
   it('keeps SCHEMA_SQL in sync with the SQL block of the data model doc', () => {
-    const doc = readFileSync(resolve(root, 'docs/MODELO-DE-DADOS.md'), 'utf8')
+    const doc = readFileSync(resolve(root, 'docs/especificacao/MODELO-DE-DADOS.md'), 'utf8')
     const block = doc.match(/```sql\n([\s\S]*?)```/)?.[1]
     expect(block).toBeDefined()
     expect(normalizeSql(SCHEMA_SQL)).toBe(normalizeSql(block ?? ''))

@@ -1,6 +1,6 @@
 # Core — Domínio e Regra de Agendamento
 
-Versão: 1 | Data: 2026-09-20 | Base: `docs/REQUISITOS.md`
+Versão: 1 | Data: 2026-09-20 | Base: `docs/especificacao/REQUISITOS.md`
 
 `packages/core` (`@study/core`) é o domínio da fase 1: TypeScript puro, uma
 responsabilidade por módulo atrás de um barrel `index.ts`, sem dependências de
@@ -56,7 +56,7 @@ const deps: Deps = {
 
 ## `Item`
 
-`Item` espelha a entidade canônica de `docs/MODELO-DE-DADOS.md` campo a campo,
+`Item` espelha a entidade canônica de `docs/especificacao/MODELO-DE-DADOS.md` campo a campo,
 **sem chaves derivadas**: `titleKey` e `subjectKey` são helpers puros que quem
 chama aplica (a persistência da ENG-5 guarda os valores para os índices).
 
@@ -170,7 +170,7 @@ Regras de borda:
 
 Tudo que o core recusa é lançado como subclasse de `CoreError`, com `kind`
 discriminante, `context` estruturado e mensagem em pt-BR. O CLI (ENG-6) imprime
-`error.message` e mapeia `kind` para o exit code da tabela de `docs/CLI.md`.
+`error.message` e mapeia `kind` para o exit code da tabela de `docs/especificacao/CLI.md`.
 
 | `kind` | Quando | Mensagem | Exit |
 | --- | --- | --- | --- |
@@ -229,7 +229,7 @@ const streak = advanceQueueStreak({ streak_current: 3, streak_last_day: '2026-09
 - `core.test.ts` é o scanner de pureza: recusa import de Node/browser em
   qualquer arquivo de `src` e recusa `Date.now`, `new Date()` sem argumento,
   `Math.random`, `crypto` e `performance.now`. Quem adicionar código ao core
-  passa por ele (S-01..S-16).
-- Suíte completa: `pnpm test` (191 testes em 13 arquivos, incluindo CLI e scaffold).
+  passa por ele (S-01..S-17).
+- Suíte completa: `pnpm test` (192 testes em 13 arquivos, incluindo CLI e scaffold).
 - A progressão de intervalo é provada pelo golden fixture, a fonte única de
   verdade da regra para todos os apps TS.

@@ -1,6 +1,6 @@
 # Plano de Testes — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
+Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Estratégia
 
@@ -120,7 +120,7 @@ Hoje (BOS-28, ENG-3 — domínio do core e regra de agendamento):
 - `pnpm test:golden` roda só o projeto golden.
 - `pnpm typecheck` roda `tsc --noEmit` nos três pacotes mais o tsconfig da raiz; é o único gate que prova a pureza do core (CA-3) e o `strict` compartilhado (CA-5), porque o Vitest não checa tipos.
 - `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-5 (persistência) e da ENG-6 (`study due --json`); a ENG-3 já entregou a regra.
-- `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014): aplica o DDL de `docs/MODELO-DE-DADOS.md` verbatim e roda `CHECK`, FK on/off, `CASCADE`, round-trip, `backup()` e a medição da fila. É a prova executável do `S-13`.
+- `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014): aplica o DDL de `docs/especificacao/MODELO-DE-DADOS.md` verbatim e roda `CHECK`, FK on/off, `CASCADE`, round-trip, `backup()` e a medição da fila. É a prova executável do `S-13`.
 - Ainda não há CI: a verificação é local (`pnpm test` + `pnpm typecheck`). A meta de >= 90% de linhas em `packages/core` não tem cobertura configurada — não há provider instalado no workspace.
 
 Alvo da fase 1:

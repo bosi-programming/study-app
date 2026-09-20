@@ -1,6 +1,6 @@
 # Modelo de Dados — App de Estudo Espaçado
 
-Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-20 | Base: `docs/REQUISITOS.md`
+Versão do schema: 1 | Data: 2026-09-09 | Atualizado: 2026-09-20 | Base: `docs/especificacao/REQUISITOS.md`
 
 O `schema_version` continua em 1: nenhum dado foi publicado, então as colunas novas entram no lugar, sem migração.
 

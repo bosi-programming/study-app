@@ -18,7 +18,7 @@ Versão: 2 | Data: 2026-09-12 | Ritmo: menos de 10h/semana
 - [x] Scaffold do monorepo pnpm com `packages/core` e `apps/cli`.
 - [ ] Implementar RN-01..RN-12 no core com golden fixtures.
 - [ ] Schema SQLite e camada de persistência.
-- [ ] Comandos de `docs/CLI.md`.
+- [ ] Comandos de `docs/especificacao/CLI.md`.
 - [ ] Export/import JSON v1 idempotente.
 - [ ] Stats e arquivo morto.
 - [ ] Testes T-01..T-12 verdes.
@@ -46,7 +46,7 @@ Definition of done: uso diário pessoal no web por 2–4 semanas com a métrica 
 
 - [ ] Expo + TypeScript, consumindo `packages/core` direto (sem reimplementar a regra).
 - [ ] Spike de 1 semana: Expo + `expo-sqlite` + tela de fila no emulador e no device.
-- [ ] Persistência `expo-sqlite` com o schema canônico de `docs/MODELO-DE-DADOS.md`.
+- [ ] Persistência `expo-sqlite` com o schema canônico de `docs/especificacao/MODELO-DE-DADOS.md`.
 - [ ] Telas: adicionar, fila, check-in, arquivar, stats.
 - [ ] Notificações locais de revisão com `expo-notifications`.
 - [ ] EAS Build, TestFlight e faixa interna do Google Play antes das lojas.
