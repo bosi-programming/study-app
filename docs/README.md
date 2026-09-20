@@ -6,7 +6,7 @@ Projeto: app de estudo com repetição espaçada. Ritmo: menos de 10h/semana.
 | --- | --- | --- |
 | `FEASIBILITY.md` | Estudo de viabilidade e decisões-raiz | Aprovado |
 | `docs/PRD.md` | Produto, público, escopo, métricas | Rascunho v3 |
-| `docs/REQUISITOS.md` | Requisitos funcionais, regras e critérios de aceite | Rascunho v2 |
+| `docs/REQUISITOS.md` | Requisitos funcionais, regras e critérios de aceite | Rascunho v3 |
 | `docs/MODELO-DE-DADOS.md` | Entidades, schema e contrato JSON | Rascunho v1 |
 | `docs/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v2 |
 | `docs/CORE.md` | API do domínio: portas, item, regra de agendamento, erros | Rascunho v1 |
