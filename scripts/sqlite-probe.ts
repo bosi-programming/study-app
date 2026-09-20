@@ -157,7 +157,7 @@ async function probe(): Promise<CheckResult[]> {
     const version = String(db.prepare('SELECT sqlite_version() AS version').get()?.version)
     console.log(`sqlite-probe — node:sqlite · SQLite ${version} · Node ${process.version}\n`)
 
-    await check(results, 'DDL canônico (4 tabelas + 3 índices)', () => {
+    await check(results, 'DDL canônico (4 tabelas + 4 índices)', () => {
       db.exec(SCHEMA_SQL)
       const found = db
         .prepare(
@@ -257,7 +257,7 @@ async function probe(): Promise<CheckResult[]> {
       const meta = db.prepare('SELECT value FROM meta WHERE key = ?').get('schema_version')
       assert(meta?.value === '1', `meta.schema_version = ${String(meta?.value)}`)
 
-      return 'Item, ReviewLog e meta voltam com os campos do contrato JSON'
+      return 'Item, ReviewLog e meta voltam com os campos do contrato JSON; late é gravado como 0, que o contrato publica como false'
     })
 
     await check(results, 'backup() gera arquivo que abre e devolve as linhas', async () => {
@@ -340,6 +340,11 @@ async function probe(): Promise<CheckResult[]> {
         `SELECT id, title, subject, difficulty, interval_days, due_date, review_count, status
            FROM items WHERE status = 'active' AND due_date <= ? ORDER BY due_date, id`,
       )
+      const activeBefore = Number(
+        db
+          .prepare("SELECT count(*) AS total FROM items WHERE status = 'active' AND due_date <= ?")
+          .get(TODAY)?.total,
+      )
       db.exec('BEGIN')
       try {
         for (let index = 0; index < QUEUE_SIZE; index += 1) {
@@ -354,7 +359,10 @@ async function probe(): Promise<CheckResult[]> {
       const rows = queue.all(TODAY)
       const payload = JSON.stringify(rows)
       const elapsed = performance.now() - started
-      assert(rows.length === QUEUE_SIZE, `a fila devolveu ${rows.length} itens`)
+      assert(
+        rows.length === activeBefore + QUEUE_SIZE,
+        `a fila devolveu ${rows.length} itens, esperado ${activeBefore + QUEUE_SIZE}`,
+      )
       assert(
         elapsed < QUEUE_BUDGET_MS,
         `${elapsed.toFixed(2)}ms estourou o teto de ${QUEUE_BUDGET_MS}ms`,
