@@ -60,7 +60,7 @@ Documentos de engenharia: `docs/README.md`.
 ## Dados
 
 - Local-first em todas as plataformas; sem conta na V1.
-- Engines: SQLite (CLI), expo-sqlite (mobile), IndexedDB (web e desktop).
+- Engines: `node:sqlite` (CLI, ADR-014), expo-sqlite (mobile), IndexedDB (web e desktop).
 - Contrato de dados: JSON versionado, IDs UUID, timestamps ISO 8601.
 - Schema canônico único, preparado para a futura migração Postgres.
 - Item: id, título, matéria, dificuldade, nota/link, intervalo atual, vencimento, última revisão, contagem de revisões, status, timestamps.
@@ -149,5 +149,5 @@ Ritmo: menos de 10h/semana.
 - [x] Scaffold do monorepo pnpm com `packages/core` e `apps/cli`.
 - [ ] Implementar a regra de agendamento + testes e golden fixtures.
 - [ ] Definir schema SQLite e comandos do CLI.
-- [ ] Avaliar `node:sqlite` (built-in) vs `better-sqlite3` na fase 1.
+- [x] Avaliar `node:sqlite` (built-in) vs `better-sqlite3` na fase 1 — decidido: `node:sqlite` (ADR-014).
 - [ ] Só depois: web, piloto, mobile (React Native) e desktop.
