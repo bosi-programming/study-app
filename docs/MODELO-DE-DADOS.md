@@ -66,7 +66,7 @@ active --archive--> archived --180 dias--> cold
 
 ## Schema SQLite (CLI e mobile)
 
-Mesmo schema no CLI (`node:sqlite`/`better-sqlite3`) e no mobile (`expo-sqlite`).
+Mesmo schema no CLI (`node:sqlite`, ADR-014) e no mobile (`expo-sqlite`).
 
 ```sql
 CREATE TABLE items (

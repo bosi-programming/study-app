@@ -171,7 +171,7 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 
 ## Notas de implementação
 
-- Avaliar `node:sqlite` (built-in no Node 24) vs `better-sqlite3` na fase 1.
+- Engine: `node:sqlite` (built-in no Node 24) — ADR-014. `foreign_keys = ON`, `journal_mode = WAL` e `busy_timeout = 5000`; o schema canônico aplica verbatim (`pnpm sqlite:probe`).
 - Formatação de tabela com largura fixa na V1; sem cores obrigatórias.
 - `--json` é o contrato usado pelos testes de snapshot do CLI.
 - A resolução por título usa `title_key` (normalizado) e o índice `idx_items_title`.
