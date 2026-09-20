@@ -50,23 +50,25 @@ function toEpochDay(value: string): number {
   return Date.UTC(parsed.year, parsed.month - 1, parsed.day) / MS_PER_DAY
 }
 
-/** Returns the local date `days` after `date`; negative values go backwards. */
+function assertLocalDate(value: string): void {
+  if (!isValidLocalDate(value)) throw new InvalidFieldError('date', INVALID_DATE_MESSAGE)
+}
+
 export function addDays(date: string, days: number): string {
   return formatEpochDay(toEpochDay(date) + days)
 }
 
-/** Lexicographic order is chronological order for `YYYY-MM-DD`. */
 export function compareDates(left: string, right: string): DateOrder {
+  assertLocalDate(left)
+  assertLocalDate(right)
   if (left === right) return 0
   return left < right ? -1 : 1
 }
 
-/** Signed whole days from `from` to `to`; swapping the arguments flips the sign. */
 export function daysBetween(from: string, to: string): number {
   return toEpochDay(to) - toEpochDay(from)
 }
 
-/** The local date `days` before `date`, as the streak and lateness rules need it. */
 export function previousDay(date: string, days = 1): string {
   return addDays(date, -days)
 }

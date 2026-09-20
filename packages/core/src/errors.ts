@@ -10,11 +10,6 @@ export type CoreErrorKind =
 
 export type CoreErrorContext = Readonly<Record<string, unknown>>
 
-/**
- * Base class for every domain failure. `kind` is the discriminant the CLI maps
- * to an exit code, `context` carries the structured data behind the failure and
- * `message` is the pt-BR copy the CLI prints.
- */
 export class CoreError extends Error {
   readonly kind: CoreErrorKind
   readonly context: CoreErrorContext

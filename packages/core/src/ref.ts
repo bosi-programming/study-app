@@ -2,16 +2,8 @@ import { AmbiguousRefError, InvalidRefError, NotFoundError } from './errors.ts'
 import type { Item } from './item.ts'
 import { normalizeText, titleKey } from './normalize.ts'
 
-/** ADR-010 — a prefix shorter than this is only accepted as an exact id or title. */
 const MIN_PREFIX_LENGTH = 4
 
-/**
- * RN-15 / ADR-010 — resolves `<ref>` in the documented order: exact id, then a
- * unique id prefix of 4+ characters, then an exact normalized title. The first
- * step to match wins outright, so there is no ambiguity across steps; ambiguity
- * inside a step is an error carrying the candidates. The pool is the caller's
- * choice — resolution never filters by status.
- */
 export function resolveRef(ref: string, items: readonly Item[]): Item {
   const raw = ref.trim()
   const needle = normalizeText(ref)

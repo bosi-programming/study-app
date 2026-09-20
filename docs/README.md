@@ -33,7 +33,7 @@ pnpm install
 pnpm test          # 4 projetos: core, golden, cli, scaffold
 pnpm test:golden   # só o projeto golden
 pnpm typecheck     # tsc --noEmit nos 3 pacotes + tsconfig da raiz
-pnpm bench         # stub: declara o bloqueio da ENG-3, ainda não mede
+pnpm bench         # stub: declara o bloqueio da RNF-03 (ENG-5 + ENG-6), ainda não mede
 pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)
 ```
 

@@ -134,6 +134,33 @@ describe('C-14 link is free-form', () => {
   })
 })
 
+describe('C-57 note and link keep the text the user typed', () => {
+  it('stores a non-blank note and link unchanged, inner and outer spacing included', () => {
+    const item = createItem(
+      {
+        title: 't',
+        subject: 's',
+        difficulty: 1,
+        note: '  cap. 3 do Stewart\nreler  ',
+        link: '  https://exemplo.test/cap-3  ',
+      },
+      { clock: CLOCK, ids: seqIds() },
+    )
+
+    expect(item.note).toBe('  cap. 3 do Stewart\nreler  ')
+    expect(item.link).toBe('  https://exemplo.test/cap-3  ')
+  })
+
+  it('still rejects a note that is over the ceiling once stored as typed', () => {
+    expect(() =>
+      createItem(
+        { title: 't', subject: 's', difficulty: 1, note: `${'x'.repeat(10_000)}   ` },
+        { clock: CLOCK, ids: seqIds() },
+      ),
+    ).toThrow('nota deve ter no máximo 10000 caracteres')
+  })
+})
+
 describe('C-15 duplicate titles', () => {
   it('allows two items to share a title', () => {
     const deps = { clock: CLOCK, ids: seqIds() }

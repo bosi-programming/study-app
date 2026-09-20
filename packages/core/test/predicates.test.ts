@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { daysLate, isDue, isLate } from '@study/core'
+import { compareDates, daysLate, isDue, isLate } from '@study/core'
 import { makeItem } from './helpers.ts'
 
 describe('C-49 isDue', () => {
@@ -47,5 +47,23 @@ describe('C-51 daysLate across boundaries', () => {
     ['2028-02-27', '2028-03-02', 4],
   ])('%s to %s is %i days late', (dueDate, today, expected) => {
     expect(daysLate(makeItem({ due_date: dueDate }), today)).toBe(expected)
+  })
+})
+
+describe('C-56 malformed dates fail the same way everywhere', () => {
+  const malformed = 'not-a-date'
+  const today = '2026-09-20'
+
+  it.each([
+    ['compareDates', () => compareDates(malformed, today)],
+    ['compareDates with the bad value on the right', () => compareDates(today, malformed)],
+    ['isLate', () => isLate(makeItem({ due_date: malformed }), today)],
+    ['daysLate', () => daysLate(makeItem({ due_date: malformed }), today)],
+    ['isDue', () => isDue(makeItem({ due_date: malformed }), today)],
+  ])('%s rejects it instead of guessing', (_label, run) => {
+    expect(run).toThrow('data inválida: use YYYY-MM-DD')
+    expect(run).toThrow(
+      expect.objectContaining({ kind: 'invalid-field', context: { field: 'date' } }),
+    )
   })
 })
