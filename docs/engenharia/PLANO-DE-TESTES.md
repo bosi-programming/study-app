@@ -66,12 +66,13 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 | T-26 | Benchmark: 5.000 itens e `study due --json` abaixo de 200ms (manual) | RNF-03 |
 | T-27 | `study list` filtra por matéria e status e ordena por vencimento | RF-02 |
 
-### Suíte de scaffold (S-01..S-16)
+### Suíte de scaffold (S-01..S-17)
 
-- IDs `S-nn` cobrem a fiação do repo, não a regra: pureza e resolução do core (`S-01`, `S-02`, `S-16`), forma e unicidade da fixture (`S-03`..`S-05`), bin do CLI (`S-06`, `S-07`), membros, tsconfig, dependências e scripts do workspace (`S-08`..`S-12`) e o engine SQLite (`S-13`..`S-15`: probe executável, DDL acoplado ao doc e recusa de dependência nativa).
+- IDs `S-nn` cobrem a fiação do repo, não a regra: pureza e resolução do core (`S-01`, `S-02`, `S-16`), forma e unicidade da fixture (`S-03`..`S-05`), bin do CLI (`S-06`, `S-07`), membros, tsconfig, dependências e scripts do workspace (`S-08`..`S-12`), o engine SQLite (`S-13`..`S-15`: probe executável, DDL acoplado ao doc e recusa de dependência nativa) e a organização dos docs (`S-17`: índice de ADRs).
 - `S-16` fecha o outro lado do `S-01`: além dos imports proibidos, nenhum arquivo de `packages/core/src` pode ler relógio ou aleatoriedade do ambiente (`Date.now`, `new Date()` sem argumentos, `Math.random`, `crypto`, `performance.now`) — tempo e ids vêm só de `deps`. Nasceu do Tasting do BOS-28; era `S-13` no ramo e ficou com o id livre depois que o probe do BOS-27 tomou `S-13`..`S-15`.
+- `S-17` é o caso novo deste PR: todo arquivo de `docs/adr/` é linkado pelo índice e todo link do índice resolve.
 - Reservados para não colidir com `T-01`..`T-27` (domínio) nem com `C-01`..`C-57` (a regra, no nível de unidade).
-- Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts` e `tests/scaffold.test.ts` — 45 testes no total.
+- Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts` e `tests/scaffold.test.ts` — 46 testes no total.
 
 ### Suíte de regra no core (C-01..C-57)
 
@@ -116,7 +117,7 @@ Requisitos que não tinham caso em T-01..T-12:
 
 Hoje (BOS-28, ENG-3 — domínio do core e regra de agendamento):
 
-- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold — 191 testes em 13 arquivos.
+- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold — 192 testes em 13 arquivos.
 - `pnpm test:golden` roda só o projeto golden.
 - `pnpm typecheck` roda `tsc --noEmit` nos três pacotes mais o tsconfig da raiz; é o único gate que prova a pureza do core (CA-3) e o `strict` compartilhado (CA-5), porque o Vitest não checa tipos.
 - `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-5 (persistência) e da ENG-6 (`study due --json`); a ENG-3 já entregou a regra.

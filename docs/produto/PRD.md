@@ -50,6 +50,12 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/produto/FEASIBILITY.md`
 - Tags, hierarquia de matérias, metas diárias, gráficos.
 - Apps mobile (React Native: iOS + Android) e desktop, fases 4 e 5 após gate; i18n, monetização.
 
+### Deferido
+
+- UX de mobile (React Native, iOS + Android) e desktop: telas, notificações, ícones, publicação nas lojas.
+- Monetização, nome do app, branding, i18n.
+- Backend/Postgres: só no gatilho definido no ADR-002.
+
 ## Jornadas
 
 ### Adicionar e agendar

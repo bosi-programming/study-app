@@ -136,7 +136,7 @@ describe('S-15 no native sqlite dependency', () => {
   })
 })
 
-describe('S-16 ADR index', () => {
+describe('S-17 ADR index', () => {
   const adrDir = resolve(root, 'docs/adr')
 
   it('links every ADR file from the index and resolves every link', () => {
