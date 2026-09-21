@@ -1,4 +1,4 @@
-import type { Item, ItemStatus } from './item.ts'
+import { type Item, type ItemStatus } from './entity.ts'
 
 export type CoreErrorKind =
   | 'invalid-field'

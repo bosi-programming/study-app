@@ -1,4 +1,4 @@
-import type { Clock, IdGenerator, Item } from '@study/core'
+import { type Clock, type IdGenerator, type Item } from '@study/core'
 
 export function fixedClock(nowUtc: string, todayLocalDate: string): Clock {
   return { nowUtc: () => nowUtc, todayLocalDate: () => todayLocalDate }
@@ -13,6 +13,15 @@ export function seqIds(): IdGenerator {
 }
 
 export const SAMPLE_ID = '2f1c9c1e-6a1a-4a2e-9f4e-1b2c3d4e5f60'
+
+export function captureError(run: () => unknown): unknown {
+  try {
+    run()
+    return null
+  } catch (thrown) {
+    return thrown
+  }
+}
 
 export function makeItem(overrides: Partial<Item> = {}): Item {
   return {

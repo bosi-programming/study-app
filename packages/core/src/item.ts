@@ -1,50 +1,39 @@
-import type { Deps } from './clock.ts'
-import { InvalidDifficultyError, InvalidFieldError } from './errors.ts'
+import { type Deps } from './clock.ts'
+import { toDifficulty } from './difficulty.ts'
+import { type Item, type ItemInput } from './entity.ts'
+import { InvalidFieldError } from './errors.ts'
 import { BASE_INTERVAL_DAYS, initialDueDate } from './schedule.ts'
-
-export type Difficulty = 1 | 2 | 3 | 4 | 5
-
-export type ItemStatus = 'active' | 'archived' | 'cold'
-
-export type Item = {
-  readonly id: string
-  readonly title: string
-  readonly subject: string
-  readonly difficulty: Difficulty
-  readonly note: string | null
-  readonly link: string | null
-  readonly interval_days: number
-  readonly due_date: string
-  readonly review_count: number
-  readonly on_time_streak: number
-  readonly status: ItemStatus
-  readonly last_reviewed_at: string | null
-  readonly archived_at: string | null
-  readonly cold_archived_at: string | null
-  readonly created_at: string
-  readonly updated_at: string
-}
-
-export type ItemInput = {
-  readonly title: string
-  readonly subject: string
-  readonly difficulty: number
-  readonly note?: string | null
-  readonly link?: string | null
-}
 
 const TITLE_MAX_LENGTH = 200
 const SUBJECT_MAX_LENGTH = 60
 const NOTE_MAX_LENGTH = 10_000
 
-const MIN_DIFFICULTY = 1
-const MAX_DIFFICULTY = 5
+type TextRule = {
+  readonly field: string
+  readonly label: string
+  readonly maxLength: number
+}
 
-export function toDifficulty(value: number): Difficulty {
-  if (!Number.isInteger(value) || value < MIN_DIFFICULTY || value > MAX_DIFFICULTY) {
-    throw new InvalidDifficultyError(value)
-  }
-  return value as Difficulty
+type RequiredTextRule = TextRule & { readonly emptyMessage: string }
+
+const TITLE_RULE: RequiredTextRule = {
+  field: 'title',
+  label: 'título',
+  maxLength: TITLE_MAX_LENGTH,
+  emptyMessage: 'título é obrigatório',
+}
+
+const SUBJECT_RULE: RequiredTextRule = {
+  field: 'subject',
+  label: 'matéria',
+  maxLength: SUBJECT_MAX_LENGTH,
+  emptyMessage: 'matéria é obrigatória',
+}
+
+const NOTE_RULE: TextRule = {
+  field: 'note',
+  label: 'nota',
+  maxLength: NOTE_MAX_LENGTH,
 }
 
 function blankToNull(value: string | null | undefined): string | null {
@@ -52,38 +41,33 @@ function blankToNull(value: string | null | undefined): string | null {
   return value.trim().length === 0 ? null : value
 }
 
-export function validateTitle(value: string): string {
-  const trimmed = value.trim()
-  if (trimmed.length === 0) throw new InvalidFieldError('title', 'título é obrigatório')
-  if (trimmed.length > TITLE_MAX_LENGTH) {
+function assertWithinMaxLength(value: string, rule: TextRule): void {
+  if (value.length > rule.maxLength) {
     throw new InvalidFieldError(
-      'title',
-      `título deve ter no máximo ${TITLE_MAX_LENGTH} caracteres`,
+      rule.field,
+      `${rule.label} deve ter no máximo ${rule.maxLength} caracteres`,
     )
   }
+}
+
+function validateRequiredText(value: string, rule: RequiredTextRule): string {
+  const trimmed = value.trim()
+  if (trimmed.length === 0) throw new InvalidFieldError(rule.field, rule.emptyMessage)
+  assertWithinMaxLength(trimmed, rule)
   return trimmed
 }
 
+export function validateTitle(value: string): string {
+  return validateRequiredText(value, TITLE_RULE)
+}
+
 export function validateSubject(value: string): string {
-  const trimmed = value.trim()
-  if (trimmed.length === 0) throw new InvalidFieldError('subject', 'matéria é obrigatória')
-  if (trimmed.length > SUBJECT_MAX_LENGTH) {
-    throw new InvalidFieldError(
-      'subject',
-      `matéria deve ter no máximo ${SUBJECT_MAX_LENGTH} caracteres`,
-    )
-  }
-  return trimmed
+  return validateRequiredText(value, SUBJECT_RULE)
 }
 
 export function validateNote(value: string | null | undefined): string | null {
   const note = blankToNull(value)
-  if (note !== null && note.length > NOTE_MAX_LENGTH) {
-    throw new InvalidFieldError(
-      'note',
-      `nota deve ter no máximo ${NOTE_MAX_LENGTH} caracteres`,
-    )
-  }
+  if (note !== null) assertWithinMaxLength(note, NOTE_RULE)
   return note
 }
 

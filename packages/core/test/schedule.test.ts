@@ -1,16 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { intervalFor, isDue, recordReview, reevaluateDifficulty, toDifficulty } from '@study/core'
-import type { Difficulty, Item } from '@study/core'
-import { fixedClock, makeItem, seqIds } from './helpers.ts'
+import {
+  type Difficulty,
+  type Item,
+  intervalFor,
+  isDue,
+  recordReview,
+  reevaluateDifficulty,
+  toDifficulty,
+} from '@study/core'
+import { captureError, fixedClock, makeItem, seqIds } from './helpers.ts'
 
 const TODAY = '2026-09-20'
 const NOW = '2026-09-20T22:10:00Z'
 
-function reviewDeps() {
-  return { clock: fixedClock(NOW, TODAY), ids: seqIds() }
-}
-
-function reevalDeps() {
+function deps() {
   return { clock: fixedClock(NOW, TODAY), ids: seqIds() }
 }
 
@@ -40,7 +43,7 @@ describe('C-17 intervalFor', () => {
 describe('C-18 check-in at the cap', () => {
   it('records the check-in while the interval stays at 365', () => {
     const item = makeItem({ difficulty: 3, review_count: 8, interval_days: 320, due_date: TODAY })
-    const { item: next, log } = recordReview(item, reviewDeps())
+    const { item: next, log } = recordReview(item, deps())
 
     expect(next.review_count).toBe(9)
     expect(next.interval_days).toBe(365)
@@ -52,7 +55,7 @@ describe('C-18 check-in at the cap', () => {
 describe('C-19 late check-in', () => {
   it('doubles the interval and penalizes nothing', () => {
     const item = makeItem({ difficulty: 3, review_count: 1, interval_days: 10, due_date: '2026-09-10' })
-    const { item: next, log } = recordReview(item, reviewDeps())
+    const { item: next, log } = recordReview(item, deps())
 
     expect(next.review_count).toBe(2)
     expect(next.interval_days).toBe(20)
@@ -62,7 +65,7 @@ describe('C-19 late check-in', () => {
 
   it('counts a check-in on the due day as on time', () => {
     const item = makeItem({ difficulty: 3, review_count: 1, interval_days: 10, due_date: TODAY })
-    const { log } = recordReview(item, reviewDeps())
+    const { log } = recordReview(item, deps())
 
     expect(log.late).toBe(false)
   })
@@ -71,10 +74,10 @@ describe('C-19 late check-in', () => {
 describe('C-20 streak restart', () => {
   it('starts at 1 on the first on-time check-in after a reset', () => {
     const late = makeItem({ due_date: '2026-09-01', on_time_streak: 2 })
-    const afterLate = recordReview(late, reviewDeps()).item
+    const afterLate = recordReview(late, deps()).item
     expect(afterLate.on_time_streak).toBe(0)
 
-    const onTime = recordReview({ ...afterLate, due_date: TODAY }, reviewDeps()).item
+    const onTime = recordReview({ ...afterLate, due_date: TODAY }, deps()).item
     expect(onTime.on_time_streak).toBe(1)
   })
 })
@@ -82,7 +85,7 @@ describe('C-20 streak restart', () => {
 describe('C-21 reevaluateDifficulty with a new value', () => {
   it('recomputes from the new base at the same n and re-bases the due date on today', () => {
     const item = makeItem({ difficulty: 5, review_count: 2, interval_days: 8, due_date: '2026-09-24' })
-    const next = reevaluateDifficulty(item, 2, reevalDeps())
+    const next = reevaluateDifficulty(item, 2, deps())
 
     expect(item.interval_days).toBe(8)
     expect(next.interval_days).toBe(28)
@@ -95,7 +98,7 @@ describe('C-21 reevaluateDifficulty with a new value', () => {
 describe('C-22 reevaluateDifficulty with the current value', () => {
   it('is a no-op', () => {
     const item = makeItem({ difficulty: 5, review_count: 2, interval_days: 8, due_date: '2026-09-24' })
-    const next = reevaluateDifficulty(item, 5, reevalDeps())
+    const next = reevaluateDifficulty(item, 5, deps())
 
     expect(next).toEqual(item)
     expect(next.due_date).toBe(item.due_date)
@@ -106,7 +109,7 @@ describe('C-22 reevaluateDifficulty with the current value', () => {
 describe('C-23 early check-in', () => {
   it('counts as on time and discards the future due date', () => {
     const item = makeItem({ difficulty: 3, review_count: 0, due_date: '2026-12-01' })
-    const { item: next, log } = recordReview(item, reviewDeps())
+    const { item: next, log } = recordReview(item, deps())
 
     expect(log.late).toBe(false)
     expect(next.review_count).toBe(1)
@@ -118,8 +121,8 @@ describe('C-23 early check-in', () => {
 describe('C-24 two check-ins on the same local day', () => {
   it('increments n twice and doubles the interval twice', () => {
     const item = makeItem({ difficulty: 3, review_count: 0, interval_days: 5, due_date: TODAY })
-    const first = recordReview(item, reviewDeps())
-    const second = recordReview(first.item, reviewDeps())
+    const first = recordReview(item, deps())
+    const second = recordReview(first.item, deps())
 
     expect(first.item.review_count).toBe(1)
     expect(first.item.interval_days).toBe(10)
@@ -139,7 +142,7 @@ describe('C-25 review log', () => {
       interval_days: 10,
       due_date: '2026-09-10',
     })
-    const { log } = recordReview(item, reviewDeps())
+    const { log } = recordReview(item, deps())
 
     expect(log).toEqual({
       id: '00000000-0000-4000-8000-000000000001',
@@ -156,7 +159,7 @@ describe('C-25 review log', () => {
 describe('C-26 recordReview is pure', () => {
   it('returns a new item and leaves the input untouched', () => {
     const item = Object.freeze(makeItem({ due_date: TODAY }))
-    const { item: next, log } = recordReview(item, reviewDeps())
+    const { item: next, log } = recordReview(item, deps())
 
     expect(next).not.toBe(item)
     expect(log).not.toBe(item)
@@ -169,8 +172,8 @@ describe('C-26 recordReview is pure', () => {
 describe('C-27 streak never feeds the interval', () => {
   it('yields identical intervals for items differing only in streak progress', () => {
     const base = makeItem({ difficulty: 3, review_count: 1, interval_days: 10, due_date: TODAY })
-    const fresh = recordReview({ ...base, on_time_streak: 0 }, reviewDeps()).item
-    const seasoned = recordReview({ ...base, on_time_streak: 7 }, reviewDeps()).item
+    const fresh = recordReview({ ...base, on_time_streak: 0 }, deps()).item
+    const seasoned = recordReview({ ...base, on_time_streak: 7 }, deps()).item
 
     expect(fresh.interval_days).toBe(seasoned.interval_days)
   })
@@ -179,7 +182,7 @@ describe('C-27 streak never feeds the interval', () => {
 describe('C-28 on-time check-in', () => {
   it('takes the streak from 2 to 3 without touching difficulty', () => {
     const item = makeItem({ difficulty: 4, on_time_streak: 2, due_date: TODAY })
-    const { item: next } = recordReview(item, reviewDeps())
+    const { item: next } = recordReview(item, deps())
 
     expect(next.on_time_streak).toBe(3)
     expect(next.difficulty).toBe(4)
@@ -189,7 +192,7 @@ describe('C-28 on-time check-in', () => {
 describe('C-29 late check-in resets the streak', () => {
   it('zeroes on_time_streak after the due date', () => {
     const item = makeItem({ on_time_streak: 2, due_date: '2026-09-19' })
-    const { item: next } = recordReview(item, reviewDeps())
+    const { item: next } = recordReview(item, deps())
 
     expect(next.on_time_streak).toBe(0)
   })
@@ -197,7 +200,7 @@ describe('C-29 late check-in resets the streak', () => {
 
 describe('C-30 updated_at comes from the clock', () => {
   it('stamps a check-in', () => {
-    const { item: next, log } = recordReview(makeItem({ due_date: TODAY }), reviewDeps())
+    const { item: next, log } = recordReview(makeItem({ due_date: TODAY }), deps())
 
     expect(next.updated_at).toBe(NOW)
     expect(next.last_reviewed_at).toBe(NOW)
@@ -206,7 +209,7 @@ describe('C-30 updated_at comes from the clock', () => {
 
   it('stamps a re-evaluation', () => {
     const item = makeItem({ difficulty: 4, due_date: '2026-09-23' })
-    const next = reevaluateDifficulty(item, 2, reevalDeps())
+    const next = reevaluateDifficulty(item, 2, deps())
 
     expect(next.updated_at).toBe(NOW)
   })
@@ -217,12 +220,12 @@ describe('C-55 determinism under injected ports', () => {
     const build = (difficulty: Difficulty, reviewCount: number): Item =>
       makeItem({ difficulty, review_count: reviewCount, due_date: '2026-09-10' })
 
-    const first = recordReview(build(3, 2), reviewDeps())
-    const second = recordReview(build(3, 2), reviewDeps())
+    const first = recordReview(build(3, 2), deps())
+    const second = recordReview(build(3, 2), deps())
     expect(first).toEqual(second)
 
-    const reevaluatedFirst = reevaluateDifficulty(build(4, 2), 2, reevalDeps())
-    const reevaluatedSecond = reevaluateDifficulty(build(4, 2), 2, reevalDeps())
+    const reevaluatedFirst = reevaluateDifficulty(build(4, 2), 2, deps())
+    const reevaluatedSecond = reevaluateDifficulty(build(4, 2), 2, deps())
     expect(reevaluatedFirst).toEqual(reevaluatedSecond)
   })
 })
@@ -230,12 +233,7 @@ describe('C-55 determinism under injected ports', () => {
 describe('C-54 recordReview on a non-active item', () => {
   it('refuses an archived item with the unarchive instruction', () => {
     const item = makeItem({ status: 'archived' })
-    let error: unknown
-    try {
-      recordReview(item, reviewDeps())
-    } catch (thrown) {
-      error = thrown
-    }
+    const error = captureError(() => recordReview(item, deps()))
 
     expect(error).toMatchObject({
       kind: 'item-not-active',
@@ -246,12 +244,7 @@ describe('C-54 recordReview on a non-active item', () => {
 
   it('refuses a cold item with the same kind', () => {
     const item = makeItem({ status: 'cold' })
-    let error: unknown
-    try {
-      recordReview(item, reviewDeps())
-    } catch (thrown) {
-      error = thrown
-    }
+    const error = captureError(() => recordReview(item, deps()))
 
     expect(error).toMatchObject({
       kind: 'item-not-active',

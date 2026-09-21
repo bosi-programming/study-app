@@ -1,17 +1,9 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { type GoldenCase } from '@study/golden'
 
 const packageRoot = resolve(import.meta.dirname, '..')
-
-type GoldenCase = {
-  case: string
-  difficulty: number
-  base_interval_days: number
-  cap_days: number
-  checkins: number
-  expected_intervals: number[]
-}
 
 const REQUIRED_KEYS = [
   'case',

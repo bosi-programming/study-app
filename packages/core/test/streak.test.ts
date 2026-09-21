@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { advanceQueueStreak, hasDueItems } from '@study/core'
-import type { QueueStreak } from '@study/core'
+import { type QueueStreak, advanceQueueStreak, hasDueItems } from '@study/core'
 import { makeItem } from './helpers.ts'
 
 const TODAY = '2026-09-20'

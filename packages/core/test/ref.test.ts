@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { resolveRef } from '@study/core'
-import type { Item } from '@study/core'
-import { makeItem, SAMPLE_ID } from './helpers.ts'
+import { type Item, resolveRef } from '@study/core'
+import { captureError, makeItem, SAMPLE_ID } from './helpers.ts'
 
 const DOCUMENTED_ID = SAMPLE_ID
 
@@ -11,15 +10,6 @@ function pool(): Item[] {
     makeItem({ id: 'b0000000-0000-4000-8000-000000000001', title: 'Integrais por partes', subject: 'Cálculo' }),
     makeItem({ id: 'c0000000-0000-4000-8000-000000000002', title: 'Phrasal verbs', subject: 'Inglês' }),
   ]
-}
-
-function throws(fn: () => unknown): unknown {
-  try {
-    fn()
-    return null
-  } catch (thrown) {
-    return thrown
-  }
 }
 
 describe('C-38 an exact id wins', () => {
@@ -59,7 +49,7 @@ describe('C-40 ambiguous prefix', () => {
       makeItem({ id: '2f1c9c1e-6a1a-4a2e-9f4e-1b2c3d4e5f60', title: 'A' }),
       makeItem({ id: '2f1c8b2d-0000-4000-8000-000000000002', title: 'B' }),
     ]
-    const error = throws(() => resolveRef('2f1c', items))
+    const error = captureError(() => resolveRef('2f1c', items))
 
     expect(error).toMatchObject({ kind: 'ambiguous-ref', message: 'referência ambígua: 2f1c' })
     expect((error as { context: { candidates: Item[] } }).context.candidates).toEqual(items)
@@ -68,8 +58,8 @@ describe('C-40 ambiguous prefix', () => {
 
 describe('C-41 short reference that matches nothing', () => {
   it('throws invalid-ref', () => {
-    expect(throws(() => resolveRef('2f1', pool()))).toMatchObject({ kind: 'invalid-ref' })
-    expect(throws(() => resolveRef('ab', pool()))).toMatchObject({ kind: 'invalid-ref' })
+    expect(captureError(() => resolveRef('2f1', pool()))).toMatchObject({ kind: 'invalid-ref' })
+    expect(captureError(() => resolveRef('ab', pool()))).toMatchObject({ kind: 'invalid-ref' })
   })
 })
 
@@ -99,7 +89,7 @@ describe('C-44 duplicate titles', () => {
       makeItem({ id: 'a0000000-0000-4000-8000-000000000001', title: 'Derivadas parciais' }),
       makeItem({ id: 'a0000000-0000-4000-8000-000000000002', title: 'derivadas parciais' }),
     ]
-    const error = throws(() => resolveRef('Derivadas Parciais', items))
+    const error = captureError(() => resolveRef('Derivadas Parciais', items))
 
     expect(error).toMatchObject({
       kind: 'ambiguous-ref',
@@ -111,7 +101,7 @@ describe('C-44 duplicate titles', () => {
 
 describe('C-45 no match at all', () => {
   it('throws not-found with the documented message', () => {
-    const error = throws(() => resolveRef('nada disso', pool()))
+    const error = captureError(() => resolveRef('nada disso', pool()))
 
     expect(error).toMatchObject({
       kind: 'not-found',
@@ -121,7 +111,7 @@ describe('C-45 no match at all', () => {
   })
 
   it('reports the trimmed reference', () => {
-    expect(throws(() => resolveRef('  nada disso  ', pool()))).toMatchObject({
+    expect(captureError(() => resolveRef('  nada disso  ', pool()))).toMatchObject({
       message: 'item não encontrado: nada disso',
     })
   })
@@ -156,7 +146,7 @@ describe('C-47 first match wins across steps', () => {
 
 describe('C-48 blank references and status', () => {
   it.each(['', '   '])('rejects %j as invalid-ref', (ref) => {
-    expect(throws(() => resolveRef(ref, pool()))).toMatchObject({ kind: 'invalid-ref' })
+    expect(captureError(() => resolveRef(ref, pool()))).toMatchObject({ kind: 'invalid-ref' })
   })
 
   it('resolves an archived item, because the pool is the caller’s choice', () => {
@@ -166,6 +156,6 @@ describe('C-48 blank references and status', () => {
   })
 
   it('resolves nothing from an empty pool', () => {
-    expect(throws(() => resolveRef('2f1c', []))).toMatchObject({ kind: 'not-found' })
+    expect(captureError(() => resolveRef('2f1c', []))).toMatchObject({ kind: 'not-found' })
   })
 })

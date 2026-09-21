@@ -1,4 +1,4 @@
-import type { Item } from './item.ts'
+import { type Item } from './entity.ts'
 
 const COMBINING_MARKS = /[\u0300-\u036f]/g
 

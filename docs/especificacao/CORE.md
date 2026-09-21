@@ -230,6 +230,5 @@ const streak = advanceQueueStreak({ streak_current: 3, streak_last_day: '2026-09
   qualquer arquivo de `src` e recusa `Date.now`, `new Date()` sem argumento,
   `Math.random`, `crypto` e `performance.now`. Quem adicionar código ao core
   passa por ele (S-01..S-17).
-- Suíte completa: `pnpm test` (192 testes em 13 arquivos, incluindo CLI e scaffold).
 - A progressão de intervalo é provada pelo golden fixture, a fonte única de
   verdade da regra para todos os apps TS.

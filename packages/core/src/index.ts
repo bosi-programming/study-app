@@ -21,13 +21,14 @@ export { normalizeText, subjectKey, titleKey } from './normalize.ts'
 
 export {
   createItem,
-  toDifficulty,
   validateLink,
   validateNote,
   validateSubject,
   validateTitle,
 } from './item.ts'
-export type { Difficulty, Item, ItemInput, ItemStatus } from './item.ts'
+
+export { toDifficulty } from './difficulty.ts'
+export type { Difficulty, Item, ItemInput, ItemStatus } from './entity.ts'
 
 export {
   BASE_INTERVAL_DAYS,

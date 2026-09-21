@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { InvalidDifficultyError, InvalidFieldError, createItem } from '@study/core'
-import { fixedClock, seqIds } from './helpers.ts'
+import { captureError, fixedClock, seqIds } from './helpers.ts'
 
 const CLOCK = fixedClock('2026-09-12T09:00:00Z', '2026-09-12')
 
@@ -90,14 +90,7 @@ describe('C-12 field rejections', () => {
 
   it.each(cases)('rejects a bad %s with invalid-field', (field, message, overrides) => {
     const input = { title: 't', subject: 's', difficulty: 1, ...overrides }
-    const error = (() => {
-      try {
-        createItem(input, { clock: CLOCK, ids: seqIds() })
-        return null
-      } catch (thrown) {
-        return thrown
-      }
-    })()
+    const error = captureError(() => createItem(input, { clock: CLOCK, ids: seqIds() }))
 
     expect(error).toBeInstanceOf(InvalidFieldError)
     expect((error as InvalidFieldError).context).toEqual({ field })

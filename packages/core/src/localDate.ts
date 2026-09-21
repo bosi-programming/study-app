@@ -28,6 +28,12 @@ function parseLocalDate(value: string): ParsedDate | null {
   return roundTrips ? { year, month, day } : null
 }
 
+function requireParsedLocalDate(value: string): ParsedDate {
+  const parsed = parseLocalDate(value)
+  if (!parsed) throw new InvalidFieldError('date', INVALID_DATE_MESSAGE)
+  return parsed
+}
+
 export function isValidLocalDate(value: string): boolean {
   return parseLocalDate(value) !== null
 }
@@ -45,13 +51,12 @@ function formatEpochDay(epochDay: number): string {
 }
 
 function toEpochDay(value: string): number {
-  const parsed = parseLocalDate(value)
-  if (!parsed) throw new InvalidFieldError('date', INVALID_DATE_MESSAGE)
+  const parsed = requireParsedLocalDate(value)
   return Date.UTC(parsed.year, parsed.month - 1, parsed.day) / MS_PER_DAY
 }
 
 function assertLocalDate(value: string): void {
-  if (!isValidLocalDate(value)) throw new InvalidFieldError('date', INVALID_DATE_MESSAGE)
+  requireParsedLocalDate(value)
 }
 
 export function addDays(date: string, days: number): string {

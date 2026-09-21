@@ -117,7 +117,7 @@ Requisitos que não tinham caso em T-01..T-12:
 
 Hoje (BOS-28, ENG-3 — domínio do core e regra de agendamento):
 
-- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold — 192 testes em 13 arquivos.
+- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold.
 - `pnpm test:golden` roda só o projeto golden.
 - `pnpm typecheck` roda `tsc --noEmit` nos três pacotes mais o tsconfig da raiz; é o único gate que prova a pureza do core (CA-3) e o `strict` compartilhado (CA-5), porque o Vitest não checa tipos.
 - `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-5 (persistência) e da ENG-6 (`study due --json`); a ENG-3 já entregou a regra.

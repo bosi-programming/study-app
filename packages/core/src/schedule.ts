@@ -1,7 +1,7 @@
-import type { Deps } from './clock.ts'
+import { type Deps } from './clock.ts'
+import { toDifficulty } from './difficulty.ts'
+import { type Difficulty, type Item } from './entity.ts'
 import { ItemNotActiveError } from './errors.ts'
-import type { Difficulty, Item } from './item.ts'
-import { toDifficulty } from './item.ts'
 import { addDays, compareDates, daysBetween } from './localDate.ts'
 
 export const BASE_INTERVAL_DAYS: Record<Difficulty, number> = {
@@ -14,6 +14,8 @@ export const BASE_INTERVAL_DAYS: Record<Difficulty, number> = {
 
 export const MAX_INTERVAL_DAYS = 365
 
+const INTERVAL_GROWTH_FACTOR = 2
+
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   1: 'trivial',
   2: 'fácil',
@@ -23,7 +25,8 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 }
 
 export function intervalFor(difficulty: Difficulty, n: number): number {
-  return Math.min(MAX_INTERVAL_DAYS, BASE_INTERVAL_DAYS[difficulty] * 2 ** n)
+  const interval = BASE_INTERVAL_DAYS[difficulty] * INTERVAL_GROWTH_FACTOR ** n
+  return Math.min(MAX_INTERVAL_DAYS, interval)
 }
 
 export function initialDueDate(difficulty: Difficulty, from: string): string {

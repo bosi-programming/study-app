@@ -1,4 +1,4 @@
-import type { Item } from './item.ts'
+import { type Item } from './entity.ts'
 import { previousDay } from './localDate.ts'
 import { isDue } from './schedule.ts'
 
