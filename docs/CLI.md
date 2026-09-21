@@ -1,6 +1,6 @@
 # CLI — App de Estudo Espaçado
 
-Versão: 2 | Data: 2026-09-12 | Base: `docs/REQUISITOS.md`
+Versão: 3 | Data: 2026-09-20 | Base: `docs/REQUISITOS.md`
 
 ## Convenções
 
@@ -161,7 +161,10 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 | Item não encontrado | 3 | `item não encontrado: <ref>` |
 | Referência ambígua | 3 | `referência ambígua: <ref>`, seguida da lista de candidatos |
 | Dificuldade fora de 1–5 | 2 | `dificuldade inválida: use 1 a 5` |
+| Data fora de `YYYY-MM-DD` | 2 | `data inválida: use YYYY-MM-DD` |
+| Referência curta demais e sem correspondência | 2 | `referência inválida: use um UUID, um prefixo de 4 ou mais caracteres ou o título exato` |
 | Check-in em arquivado | 3 | `item arquivado; use study unarchive <ref>` |
+| Check-in em item do arquivo morto | 3 | `item no arquivo morto; use study cold restore <ref>` |
 | `--status` inválido | 2 | `status inválido: use active, archived ou cold` |
 | Flag de confirmação ausente | 1 | `remove exige --yes` |
 | Valor faltando sem terminal | 1 | `-d é obrigatório sem terminal interativo` |

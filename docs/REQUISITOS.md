@@ -1,6 +1,6 @@
 # Requisitos — App de Estudo Espaçado
 
-Versão: 2 | Data: 2026-09-12 | Base: `docs/PRD.md`
+Versão: 3 | Data: 2026-09-20 | Base: `docs/PRD.md`
 
 ## Convenções
 
@@ -63,14 +63,14 @@ Versão: 2 | Data: 2026-09-12 | Base: `docs/PRD.md`
 - RN-03 Após n check-ins, intervalo = min(365, base(dificuldade) × 2^n) dias.
 - RN-04 Cada check-in incrementa n, inclusive quando o item está atrasado.
 - RN-05 Atraso não reduz o intervalo nem muda a dificuldade.
-- RN-06 Reavaliação de dificuldade recalcula o intervalo com a nova base e o mesmo n.
+- RN-06 Reavaliação de dificuldade recalcula o intervalo com a nova base e o mesmo n. O vencimento passa a ser hoje + o novo intervalo.
 - RN-07 Teto de 365 dias; check-ins continuam registrados no teto.
 - RN-08 `on_time_streak` conta check-ins consecutivos no prazo; um check-in após o vencimento zera o contador, sem afetar o intervalo.
 - RN-09 Item arquivado não aparece em fila nem nas contagens de ativos.
 - RN-10 Migração para o arquivo morto ocorre 180 dias após o arquivamento, configurável.
 - RN-11 Item restaurado do arquivo morto volta a ativo com o mesmo n e dificuldade.
 - RN-12 Matéria é string livre, sem hierarquia; comparação sem diferenciar maiúsculas e acentos.
-- RN-13 Check-in antes do vencimento conta como no prazo; múltiplos check-ins no mesmo dia são permitidos e cada um incrementa n.
+- RN-13 Check-in antes do vencimento conta como no prazo; múltiplos check-ins no mesmo dia são permitidos e cada um incrementa n. O próximo vencimento conta do dia do check-in, mesmo que o vencimento anterior fosse futuro.
 - RN-14 Streak de fila zerada: dias locais consecutivos, terminando hoje, em que a fila estava vazia ao fim do dia; recalculado a cada execução.
 - RN-15 Referência de item aceita UUID, prefixo único de 4+ caracteres ou título exato normalizado; ambiguidade é erro e nunca é resolvida por escolha automática.
 

@@ -187,7 +187,11 @@ importers:
 
   fixtures/golden: {}
 
-  packages/core: {}
+  packages/core:
+    devDependencies:
+      '@study/golden':
+        specifier: workspace:*
+        version: link:../../fixtures/golden
 
 packages:
 

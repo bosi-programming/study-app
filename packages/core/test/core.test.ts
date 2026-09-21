@@ -27,6 +27,14 @@ const FORBIDDEN_MODULES = new Set([
 
 const FORBIDDEN_GLOBALS = /\b(document|window|localStorage)\b/
 
+const FORBIDDEN_SOURCE_PATTERNS: readonly (readonly [string, RegExp])[] = [
+  ['Date.now()', /\bDate\.now\s*\(/],
+  ['new Date() with no arguments', /\bnew Date\(\s*\)/],
+  ['Math.random()', /\bMath\.random\s*\(/],
+  ['crypto', /\bcrypto\b/],
+  ['performance.now()', /\bperformance\.now\s*\(/],
+]
+
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = join(dir, entry.name)
@@ -73,5 +81,17 @@ describe('S-01 core purity', () => {
 describe('S-02 core resolution canary', () => {
   it('resolves the workspace package and exposes its version', () => {
     expect(CORE_VERSION).toBe('0.0.0')
+  })
+})
+
+describe('S-16 core reads no ambient clock or randomness', () => {
+  it.each(sourceFiles(srcDir))('%s takes time and ids only from deps', (file) => {
+    const source = readFileSync(file, 'utf8')
+    const name = relative(srcDir, file)
+
+    for (const [label, pattern] of FORBIDDEN_SOURCE_PATTERNS) {
+      const found = source.match(pattern)?.[0] ?? null
+      expect(found, `${name} reaches for ${label}`).toBeNull()
+    }
   })
 })
