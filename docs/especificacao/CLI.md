@@ -1,6 +1,6 @@
 # CLI — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-20 | Base: `docs/REQUISITOS.md`
+Versão: 3 | Data: 2026-09-20 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -104,7 +104,7 @@ Qualquer ambiguidade é erro de estado (exit 3) e lista os candidatos com id, ma
 
 - Todo comando devolve um único objeto JSON no stdout, com `schema_version: 1` e a chave do comando como raiz.
 - Erros vão para o stderr como `{"error":{"code","message"}}`, com o exit code correspondente.
-- Chaves em inglês, iguais às do contrato JSON v1 de `docs/MODELO-DE-DADOS.md`.
+- Chaves em inglês, iguais às do contrato JSON v1 de `docs/especificacao/MODELO-DE-DADOS.md`.
 
 ```json
 {

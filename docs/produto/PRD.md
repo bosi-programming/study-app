@@ -1,6 +1,6 @@
 # PRD — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
+Versão: 3 | Data: 2026-09-12 | Base: `docs/produto/FEASIBILITY.md`
 
 ## Problema
 
@@ -49,6 +49,12 @@ Versão: 3 | Data: 2026-09-12 | Base: `FEASIBILITY.md`
 - FSRS ou adaptatividade além da regra fixa.
 - Tags, hierarquia de matérias, metas diárias, gráficos.
 - Apps mobile (React Native: iOS + Android) e desktop, fases 4 e 5 após gate; i18n, monetização.
+
+### Deferido
+
+- UX de mobile (React Native, iOS + Android) e desktop: telas, notificações, ícones, publicação nas lojas.
+- Monetização, nome do app, branding, i18n.
+- Backend/Postgres: só no gatilho definido no ADR-002.
 
 ## Jornadas
 

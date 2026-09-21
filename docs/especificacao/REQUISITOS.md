@@ -1,6 +1,6 @@
 # Requisitos — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-20 | Base: `docs/PRD.md`
+Versão: 3 | Data: 2026-09-20 | Base: `docs/produto/PRD.md`
 
 ## Convenções
 
