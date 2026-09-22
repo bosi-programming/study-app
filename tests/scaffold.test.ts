@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { SCHEMA_SQL } from '../scripts/sqlite-probe.ts'
+import vitestConfig from '../vitest.config.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -155,5 +156,42 @@ describe('S-17 ADR index', () => {
     for (const link of links) {
       expect(existsSync(resolve(adrDir, link))).toBe(true)
     }
+  })
+})
+
+function projectNamed(name: string) {
+  for (const project of vitestConfig.test?.projects ?? []) {
+    if (typeof project !== 'object' || project === null) continue
+    if (!('test' in project)) continue
+    if (project.test?.name === name) return project.test
+  }
+  return null
+}
+
+describe('S-19 coverage gate', () => {
+  it('declares test:coverage as the command that runs it', () => {
+    const scripts = readJson<PackageJson>('package.json').scripts ?? {}
+    expect(scripts['test:coverage']).toBe('vitest run --coverage')
+  })
+
+  it('gates the core source behind a 90% line threshold', () => {
+    const coverage = vitestConfig.test?.coverage
+
+    expect(coverage?.provider).toBe('v8')
+    expect(coverage?.include).toContain('packages/core/src/**/*.ts')
+
+    const thresholds = coverage?.thresholds
+    const lines = typeof thresholds === 'number' ? thresholds : thresholds?.lines
+    expect(lines).toBeGreaterThanOrEqual(90)
+  })
+})
+
+describe('S-20 golden project runs the fixture vectors', () => {
+  it('runs the core vector runner inside the golden project', () => {
+    expect(projectNamed('golden')?.include).toContain('packages/core/test/golden.test.ts')
+  })
+
+  it('leaves that runner out of the core project, so it runs once', () => {
+    expect(projectNamed('core')?.exclude).toContain('test/golden.test.ts')
   })
 })
