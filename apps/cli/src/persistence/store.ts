@@ -128,7 +128,7 @@ export function openStore(dbPath: string): Store {
   function findItems(term: string): Item[] {
     const pattern = `%${normalizeText(term).replace(/[\\%_]/g, (char) => `\\${char}`)}%`
     const rows = db
-      .prepare("SELECT * FROM items WHERE title_key LIKE ? ESCAPE '\\' ORDER BY due_date, id")
+      .prepare(`SELECT * FROM items WHERE title_key LIKE ? ESCAPE '\\' ${SELECT_ITEMS_ORDER}`)
       .all(pattern)
     return rows.map((row) => rowToItem(rowAsItemRow(row)))
   }
@@ -138,7 +138,7 @@ export function openStore(dbPath: string): Store {
       .prepare(
         `SELECT * FROM items
            WHERE status = 'active' AND due_date <= ?
-           ORDER BY due_date, id`,
+           ${SELECT_ITEMS_ORDER}`,
       )
       .all(today)
     return rows.map((row) => rowToItem(rowAsItemRow(row)))
