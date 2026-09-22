@@ -5,7 +5,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 ## Estratégia
 
 - A regra de agendamento é o ativo crítico; ela concentra os testes.
-- Golden fixtures são a fonte única de verdade da regra para todos os apps TS.
+- Golden fixtures são a fonte única de verdade da regra para todos os apps TS: CLI, web, mobile e desktop comparam contra elas, e o runner do core (`packages/core/test/golden.test.ts`) também. A suíte `C-nn` do core continua repetindo alguns desses vetores no nível de unidade — de propósito, e sem substituir os `T-nn`.
 - UI testada por comportamento essencial, sem perseguir cobertura.
 
 | Camada | Ferramenta | Meta |
