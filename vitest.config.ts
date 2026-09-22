@@ -2,6 +2,13 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    coverage: {
+      provider: 'v8',
+      include: ['packages/core/src/**/*.ts'],
+      reportsDirectory: 'coverage/core',
+      reporter: ['text-summary', 'html'],
+      thresholds: { lines: 90 },
+    },
     projects: [
       {
         test: {
@@ -9,14 +16,15 @@ export default defineConfig({
           root: './packages/core',
           environment: 'node',
           include: ['test/**/*.test.ts'],
+          exclude: ['**/node_modules/**', '**/dist/**', 'test/golden.test.ts'],
         },
       },
       {
         test: {
           name: 'golden',
-          root: './fixtures/golden',
+          root: '.',
           environment: 'node',
-          include: ['test/**/*.test.ts'],
+          include: ['fixtures/golden/test/**/*.test.ts', 'packages/core/test/golden.test.ts'],
         },
       },
       {

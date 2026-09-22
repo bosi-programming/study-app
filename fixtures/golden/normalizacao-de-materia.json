@@ -1,0 +1,31 @@
+{
+  "case": "normalizacao-de-materia",
+  "kind": "normalize",
+  "requirement": "T-12",
+  "pairs": [
+    {
+      "input": "Cálculo",
+      "expected_key": "calculo"
+    },
+    {
+      "input": "CALCULO",
+      "expected_key": "calculo"
+    },
+    {
+      "input": "  Cálculo  ",
+      "expected_key": "calculo"
+    },
+    {
+      "input": "Álgebra Linear",
+      "expected_key": "algebra linear"
+    },
+    {
+      "input": "álgebra linear",
+      "expected_key": "algebra linear"
+    },
+    {
+      "input": "Análise Real",
+      "expected_key": "analise real"
+    }
+  ]
+}

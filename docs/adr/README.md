@@ -1,6 +1,6 @@
 # Registro de Decisões (ADRs)
 
-Data: 2026-09-09 | Atualizado: 2026-09-20 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
+Data: 2026-09-09 | Atualizado: 2026-09-22 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
 
 Cada decisão vive em um arquivo próprio. Número, título, data e status vêm do frontmatter do arquivo correspondente.
 
@@ -20,6 +20,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-012](adr-012-init-destrutivo-com-backup-e-confirmacao-reforcada.md) | Init destrutivo com backup e confirmação reforçada | aceito |
 | [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) | Scaffold do monorepo pnpm sem build | aceito |
 | [ADR-014](adr-014-engine-sqlite-do-cli-node-sqlite.md) | Engine SQLite do CLI: `node:sqlite` | aceito |
+| [ADR-015](adr-015-golden-fixtures-formato-e-quem-valida.md) | Golden fixtures: formato do vetor e quem valida | aceito |
 
 ## Supersessão
 

@@ -1,0 +1,36 @@
+{
+  "case": "checkin-antecipado-e-dois-no-mesmo-dia",
+  "kind": "checkin",
+  "requirement": "T-20",
+  "state": {
+    "difficulty": 3,
+    "review_count": 0,
+    "interval_days": 5,
+    "due_date": "2026-12-01",
+    "on_time_streak": 0
+  },
+  "checkins": [
+    {
+      "today": "2026-09-20",
+      "expected": {
+        "difficulty": 3,
+        "review_count": 1,
+        "interval_days": 10,
+        "due_date": "2026-09-30",
+        "late": false,
+        "on_time_streak": 1
+      }
+    },
+    {
+      "today": "2026-09-20",
+      "expected": {
+        "difficulty": 3,
+        "review_count": 2,
+        "interval_days": 20,
+        "due_date": "2026-10-10",
+        "late": false,
+        "on_time_streak": 2
+      }
+    }
+  ]
+}

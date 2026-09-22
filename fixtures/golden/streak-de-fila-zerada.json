@@ -1,0 +1,83 @@
+{
+  "case": "streak-de-fila-zerada",
+  "kind": "queue-streak",
+  "requirement": "T-21",
+  "initial": {
+    "streak_current": 0,
+    "streak_last_day": null
+  },
+  "days": [
+    {
+      "day": "2026-09-18",
+      "queue_empty": false,
+      "expected": {
+        "streak_current": 0,
+        "streak_last_day": "2026-09-18"
+      }
+    },
+    {
+      "day": "2026-09-19",
+      "queue_empty": true,
+      "expected": {
+        "streak_current": 1,
+        "streak_last_day": "2026-09-19"
+      }
+    },
+    {
+      "day": "2026-09-20",
+      "queue_empty": true,
+      "expected": {
+        "streak_current": 2,
+        "streak_last_day": "2026-09-20"
+      }
+    },
+    {
+      "day": "2026-09-21",
+      "queue_empty": true,
+      "expected": {
+        "streak_current": 3,
+        "streak_last_day": "2026-09-21"
+      }
+    },
+    {
+      "day": "2026-09-21",
+      "queue_empty": true,
+      "expected": {
+        "streak_current": 3,
+        "streak_last_day": "2026-09-21"
+      }
+    },
+    {
+      "day": "2026-09-22",
+      "queue_empty": true,
+      "expected": {
+        "streak_current": 4,
+        "streak_last_day": "2026-09-22"
+      }
+    },
+    {
+      "day": "2026-09-24",
+      "queue_empty": true,
+      "expected": {
+        "streak_current": 1,
+        "streak_last_day": "2026-09-24"
+      }
+    },
+    {
+      "day": "2026-09-25",
+      "queue_empty": false,
+      "expected": {
+        "streak_current": 0,
+        "streak_last_day": "2026-09-25"
+      }
+    },
+    {
+      "day": "2026-09-26",
+      "queue_empty": true,
+      "expected": {
+        "streak_current": 1,
+        "streak_last_day": "2026-09-26"
+      }
+    }
+  ]
+}

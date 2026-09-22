@@ -5,7 +5,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 ## Estratégia
 
 - A regra de agendamento é o ativo crítico; ela concentra os testes.
-- Golden fixtures são a fonte única de verdade da regra para todos os apps TS.
+- Golden fixtures são a fonte única de verdade da regra para todos os apps TS: CLI, web, mobile e desktop comparam contra elas, e o runner do core (`packages/core/test/golden.test.ts`) também. A suíte `C-nn` do core continua repetindo alguns desses vetores no nível de unidade — de propósito, e sem substituir os `T-nn`.
 - UI testada por comportamento essencial, sem perseguir cobertura.
 
 | Camada | Ferramenta | Meta |
@@ -18,14 +18,28 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Golden fixtures
 
-- Local: `fixtures/golden/*.json`.
-- Cada caso: estado inicial, ação, parâmetros e resultado esperado.
-- Consumidos pelos testes do core, CLI, web, mobile e desktop; divergência quebra o build.
+- Local: `fixtures/golden/*.json`, um arquivo por caso.
+- Cada caso: estado inicial, ação, parâmetros e resultado esperado. O envelope diz `case`, `kind` e o `T-nn` que o caso cobre (`requirement`); o `kind` define o resto das chaves.
+
+| `kind` | Casos | Chaves além do envelope |
+| --- | --- | --- |
+| `initial-due` | T-01 | `new_item`, `created_on` e `cases[]` com `difficulty`, `expected_interval_days` e `expected_due_date` |
+| `progression` | T-02 | `difficulty`, `base_interval_days`, `cap_days`, `checkins` e `expected_intervals` |
+| `checkin` | T-03, T-05, T-20 | `state` (dificuldade, `review_count`, intervalo, vencimento e `on_time_streak`) e `checkins[]` com `today` e `expected` (com `late`) |
+| `reevaluate` | T-04 | `state`, `params` (`new_difficulty` e `today`) e `expected` |
+| `queue-order` | T-11 | `today`, `items[]` (`id`, `title` e `due_date`) e `expected_order` |
+| `normalize` | T-12 | `pairs[]` com `input` e `expected_key` |
+| `queue-streak` | T-21 | `initial` e `days[]` com `day`, `queue_empty` e `expected` |
+
+- Consumidos pelos testes do core hoje, e por CLI, web, mobile e desktop nas fases seguintes; divergência quebra o build.
 - Versionados junto do código; alteração exige revisão de todos os consumidores.
+- Quem compara: `packages/core/test/golden.test.ts` lê os vetores e compara com o que a regra produz. O arquivo executa no projeto `golden`, então `pnpm test:golden` valida a forma dos fixtures e os vetores de uma vez e falha quando um `expected` diverge (ADR-015).
 
 ```json
 {
   "case": "progressao-ate-teto",
+  "kind": "progression",
+  "requirement": "T-02",
   "difficulty": 3,
   "base_interval_days": 5,
   "cap_days": 365,
@@ -66,18 +80,21 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 | T-26 | Benchmark: 5.000 itens e `study due --json` abaixo de 200ms (manual) | RNF-03 |
 | T-27 | `study list` filtra por matéria e status e ordena por vencimento | RF-02 |
 
-### Suíte de scaffold (S-01..S-17)
+### Suíte de scaffold (S-01..S-20)
 
-- IDs `S-nn` cobrem a fiação do repo, não a regra: pureza e resolução do core (`S-01`, `S-02`, `S-16`), forma e unicidade da fixture (`S-03`..`S-05`), bin do CLI (`S-06`, `S-07`), membros, tsconfig, dependências e scripts do workspace (`S-08`..`S-12`), o engine SQLite (`S-13`..`S-15`: probe executável, DDL acoplado ao doc e recusa de dependência nativa) e a organização dos docs (`S-17`: índice de ADRs).
+- IDs `S-nn` cobrem a fiação do repo, não a regra: pureza e resolução do core (`S-01`, `S-02`, `S-16`), forma, unicidade e cobertura da fixture (`S-03`..`S-05`, `S-18`), bin do CLI (`S-06`, `S-07`), membros, tsconfig, dependências e scripts do workspace (`S-08`..`S-12`), o engine SQLite (`S-13`..`S-15`: probe executável, DDL acoplado ao doc e recusa de dependência nativa) e a organização dos docs (`S-17`: índice de ADRs).
 - `S-16` fecha o outro lado do `S-01`: além dos imports proibidos, nenhum arquivo de `packages/core/src` pode ler relógio ou aleatoriedade do ambiente (`Date.now`, `new Date()` sem argumentos, `Math.random`, `crypto`, `performance.now`) — tempo e ids vêm só de `deps`. Nasceu do Tasting do BOS-28; era `S-13` no ramo e ficou com o id livre depois que o probe do BOS-27 tomou `S-13`..`S-15`.
 - `S-17` é o caso novo deste PR: todo arquivo de `docs/adr/` é linkado pelo índice e todo link do índice resolve.
-- Reservados para não colidir com `T-01`..`T-27` (domínio) nem com `C-01`..`C-57` (a regra, no nível de unidade).
-- Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts` e `tests/scaffold.test.ts` — 46 testes no total.
+- `S-18`..`S-20` nasceram do BOS-29: o `S-18` exige um fixture para cada `T-nn` obrigatório do plano, e exige que todo `kind` do union tenha caso; o `S-19` pina o script `test:coverage`, o provider v8 e o threshold de linhas do core; o `S-20` pina o runner dos vetores no projeto `golden` e fora do projeto `core`, que é o que mantém `pnpm test:golden` como gate de divergência.
+- Reservados para não colidir com `T-01`..`T-27` (domínio) nem com `C-01`..`C-65` (a regra, no nível de unidade).
+- Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts` e `tests/scaffold.test.ts` — 240 testes no total (BOS-29).
 
-### Suíte de regra no core (C-01..C-57)
+### Suíte de regra no core (C-01..C-65)
 
 - IDs `C-nn` são os casos de `packages/core/test/*.test.ts`: um por comportamento da regra, cada um rastreando o `T-nn` do plano e o `RF`/`RN`/`CA` que o originou.
 - Detalham no nível de unidade os casos de domínio do plano (`T-01`..`T-05`, `T-12`, `T-16`, `T-18`, `T-20`, `T-21`) sem substituí-los: a CLI, o web, o mobile e o desktop continuam devendo seus próprios `T-nn`.
+- `C-16` e `C-58`..`C-65` (BOS-29) são os casos que **leem os golden fixtures** em vez de repetir o vetor no teste: `C-16` (`T-02`), `C-58` (`T-01`), `C-59` (`T-03`), `C-60` (`T-04`), `C-61` (`T-05`), `C-62` (`T-11`), `C-63` (`T-12`), `C-64` (`T-20`) e `C-65` (`T-21`). Os outros `C-nn` seguem com o vetor escrito no próprio teste.
+- `T-11` não tem casa no core: ordenar a fila é do CLI (`CORE.md`). O `C-62` prova que a ordem documentada em `CA-12` é a que as definições do core produzem, com um comparador local ao teste — atrasados primeiro (`isLate`), depois por vencimento, e o `id` como desempate.
 - `C-56` e `C-57` nasceram do Tasting do BOS-28: datas malformadas falham igual em `compareDates`/`isLate`/`daysLate`/`isDue`, e `note`/`link` guardam o texto digitado (só o vazio vira `null`).
 
 ## Rastreabilidade
@@ -115,14 +132,15 @@ Requisitos que não tinham caso em T-01..T-12:
 
 ## Execução
 
-Hoje (BOS-28, ENG-3 — domínio do core e regra de agendamento):
+Hoje (BOS-29, ENG-4 — golden fixtures e suíte Vitest do core):
 
 - `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold.
 - `pnpm test:golden` roda só o projeto golden.
 - `pnpm typecheck` roda `tsc --noEmit` nos três pacotes mais o tsconfig da raiz; é o único gate que prova a pureza do core (CA-3) e o `strict` compartilhado (CA-5), porque o Vitest não checa tipos.
 - `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-5 (persistência) e da ENG-6 (`study due --json`); a ENG-3 já entregou a regra.
 - `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014): aplica o DDL de `docs/especificacao/MODELO-DE-DADOS.md` verbatim e roda `CHECK`, FK on/off, `CASCADE`, round-trip, `backup()` e a medição da fila. É a prova executável do `S-13`.
-- Ainda não há CI: a verificação é local (`pnpm test` + `pnpm typecheck`). A meta de >= 90% de linhas em `packages/core` não tem cobertura configurada — não há provider instalado no workspace.
+- `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-22 reporta 100% (128/128).
+- Ainda não há CI: a verificação é local (`pnpm test`, `pnpm typecheck` e `pnpm test:coverage`).
 
 Alvo da fase 1:
 

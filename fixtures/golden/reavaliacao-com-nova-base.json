@@ -1,0 +1,21 @@
+{
+  "case": "reavaliacao-com-nova-base",
+  "kind": "reevaluate",
+  "requirement": "T-04",
+  "state": {
+    "difficulty": 5,
+    "review_count": 2,
+    "interval_days": 8,
+    "due_date": "2026-09-24"
+  },
+  "params": {
+    "new_difficulty": 2,
+    "today": "2026-09-20"
+  },
+  "expected": {
+    "difficulty": 2,
+    "review_count": 2,
+    "interval_days": 28,
+    "due_date": "2026-10-18"
+  }
+}

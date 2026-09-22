@@ -1,0 +1,25 @@
+{
+  "case": "checkin-atrasado-nao-penaliza",
+  "kind": "checkin",
+  "requirement": "T-03",
+  "state": {
+    "difficulty": 3,
+    "review_count": 1,
+    "interval_days": 10,
+    "due_date": "2026-09-10",
+    "on_time_streak": 1
+  },
+  "checkins": [
+    {
+      "today": "2026-09-20",
+      "expected": {
+        "difficulty": 3,
+        "review_count": 2,
+        "interval_days": 20,
+        "due_date": "2026-10-10",
+        "late": true,
+        "on_time_streak": 0
+      }
+    }
+  ]
+}

@@ -1,8 +1,20 @@
 {
   "case": "progressao-ate-teto",
+  "kind": "progression",
+  "requirement": "T-02",
   "difficulty": 3,
   "base_interval_days": 5,
   "cap_days": 365,
   "checkins": 9,
-  "expected_intervals": [5, 10, 20, 40, 80, 160, 320, 365, 365]
+  "expected_intervals": [
+    5,
+    10,
+    20,
+    40,
+    80,
+    160,
+    320,
+    365,
+    365
+  ]
 }
