@@ -10,7 +10,7 @@ Escrito pela ENG-3 / BOS-28; o PR foi o #3.
 
 ## O que o core não faz
 
-- Não persiste, não abre banco e não conhece SQLite — isso é a ENG-5.
+- Não persiste, não abre banco e não conhece SQLite — a camada é a ENG-5, em `apps/cli/src/persistence/` (ADR-016); o `packages/core` continua sem importar API de Node (S-01/S-16).
 - Não ordena a fila nem formata saída. A ordem de exibição e todo o texto de
   prompt são do CLI (ENG-6).
 - Não lê relógio nem gera id por conta própria: as duas coisas chegam por `deps`.
@@ -58,7 +58,7 @@ const deps: Deps = {
 
 `Item` espelha a entidade canônica de `docs/especificacao/MODELO-DE-DADOS.md` campo a campo,
 **sem chaves derivadas**: `titleKey` e `subjectKey` são helpers puros que quem
-chama aplica (a persistência da ENG-5 guarda os valores para os índices).
+chama aplica (a persistência da ENG-5, em `apps/cli/src/persistence/mapping.ts`, guarda os valores para os índices).
 
 | Campo | Tipo | Invariante |
 | --- | --- | --- |
