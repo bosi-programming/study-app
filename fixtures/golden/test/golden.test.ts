@@ -89,14 +89,21 @@ describe('S-05 golden progressao-ate-teto', () => {
 })
 
 describe('S-18 golden coverage of the plan cases', () => {
-  const requirements = new Set(goldenFixtures.map((fixture) => fixture.requirement))
-  const kinds = new Set(goldenFixtures.map((fixture) => fixture.kind))
+  const onDisk = fixtureNames().map((name) => readFixture(name))
+  const requirements = new Set(onDisk.map((fixture) => fixture.requirement))
+  const kinds = new Set(onDisk.map((fixture) => fixture.kind))
 
   it.each(REQUIRED_REQUIREMENTS)('%s has a fixture', (requirement) => {
     expect(requirements.has(requirement), `nenhum fixture cobre ${requirement}`).toBe(true)
   })
 
   it.each(Object.keys(REQUIRED_KEYS_BY_KIND))('the %s kind has a fixture', (kind) => {
-    expect(kinds.has(kind as FixtureKind), `nenhum fixture usa o kind ${kind}`).toBe(true)
+    expect(kinds.has(kind), `nenhum fixture usa o kind ${kind}`).toBe(true)
+  })
+
+  it('exports every fixture on disk from the package', () => {
+    const exported = goldenFixtures.map((fixture) => fixture.case).sort()
+    const files = onDisk.map((fixture) => fixture.case).sort()
+    expect(exported).toEqual(files)
   })
 })
