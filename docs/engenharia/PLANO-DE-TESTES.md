@@ -88,6 +88,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 - `S-18`..`S-20` nasceram do BOS-29: o `S-18` exige um fixture para cada `T-nn` obrigatório do plano, e exige que todo `kind` do union tenha caso; o `S-19` pina o script `test:coverage`, o provider v8 e o threshold de linhas do core; o `S-20` pina o runner dos vetores no projeto `golden` e fora do projeto `core`, que é o que mantém `pnpm test:golden` como gate de divergência.
 - Reservados para não colidir com `T-01`..`T-27` (domínio) nem com `C-01`..`C-65` (a regra, no nível de unidade).
 - Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts` e `tests/scaffold.test.ts` — 240 testes no total (BOS-29).
+- BOS-30 (ENG-5) acrescentou a suíte de persistência em `apps/cli/test/persistence/{schema,mapping,store}.test.ts` — 269 testes no total; ela roda no projeto `cli` do `vitest.config.ts` contra um SQLite real em diretório temporário.
 
 ### Suíte de regra no core (C-01..C-65)
 
@@ -132,13 +133,15 @@ Requisitos que não tinham caso em T-01..T-12:
 
 ## Execução
 
-Hoje (BOS-29, ENG-4 — golden fixtures e suíte Vitest do core):
+Hoje (BOS-30, ENG-5 — schema SQLite e camada de persistência; base BOS-29/ENG-4):
 
-- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold.
+- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold. O projeto `cli` inclui a suíte de persistência (`apps/cli/test/persistence/`): DDL canônico + PRAGMAs, mapeamento linha↔entidade (chaves derivadas, `late` 0/1 ↔ boolean, falha alta fora do domínio), round-trips, FK e CASCADE, fila da RNF-03, transações com rollback, meta e arquivo morto.
 - `pnpm test:golden` roda só o projeto golden.
 - `pnpm typecheck` roda `tsc --noEmit` nos três pacotes mais o tsconfig da raiz; é o único gate que prova a pureza do core (CA-3) e o `strict` compartilhado (CA-5), porque o Vitest não checa tipos.
-- `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-5 (persistência) e da ENG-6 (`study due --json`); a ENG-3 já entregou a regra.
-- `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014): aplica o DDL de `docs/especificacao/MODELO-DE-DADOS.md` verbatim e roda `CHECK`, FK on/off, `CASCADE`, round-trip, `backup()` e a medição da fila. É a prova executável do `S-13`.
+- `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-6 (`study due --json`); a ENG-3 entregou a regra e a ENG-5 entregou a persistência e a consulta da fila.
+- `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014) e passou a re-exportar `SCHEMA_SQL` da camada (`apps/cli/src/persistence/schema.ts`, ADR-016): uma cópia canônica no código, e o `S-14` continua pinando a mesma ligação ao bloco SQL de `MODELO-DE-DADOS.md`.
+- `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-23 reporta 100% (128/128), inalterado pela ENG-5.
+- Ainda não há CI: a verificação é local (`pnpm test`, `pnpm typecheck` e `pnpm test:coverage`).
 - `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-22 reporta 100% (128/128).
 - Ainda não há CI: a verificação é local (`pnpm test`, `pnpm typecheck` e `pnpm test:coverage`).
 

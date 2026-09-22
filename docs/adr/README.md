@@ -21,6 +21,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) | Scaffold do monorepo pnpm sem build | aceito |
 | [ADR-014](adr-014-engine-sqlite-do-cli-node-sqlite.md) | Engine SQLite do CLI: `node:sqlite` | aceito |
 | [ADR-015](adr-015-golden-fixtures-formato-e-quem-valida.md) | Golden fixtures: formato do vetor e quem valida | aceito |
+| [ADR-016](adr-016-camada-de-persistencia-do-cli-schema-mapeamento-e-store.md) | Camada de persistência do CLI: schema, mapeamento e store | aceito |
 
 ## Supersessão
 
