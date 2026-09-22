@@ -26,6 +26,9 @@ pnpm-debug.log*
 # recipe cards (local scratch)
 recipes/
 
+# agent scratch (review + visualizer pages)
+.scratch/
+
 # test output
 coverage/
 

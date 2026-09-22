@@ -1,0 +1,36 @@
+{
+  "case": "contador-de-prazo-zera-no-atraso",
+  "kind": "checkin",
+  "requirement": "T-05",
+  "state": {
+    "difficulty": 3,
+    "review_count": 0,
+    "interval_days": 5,
+    "due_date": "2026-09-20",
+    "on_time_streak": 2
+  },
+  "checkins": [
+    {
+      "today": "2026-09-20",
+      "expected": {
+        "difficulty": 3,
+        "review_count": 1,
+        "interval_days": 10,
+        "due_date": "2026-09-30",
+        "late": false,
+        "on_time_streak": 3
+      }
+    },
+    {
+      "today": "2026-10-05",
+      "expected": {
+        "difficulty": 3,
+        "review_count": 2,
+        "interval_days": 20,
+        "due_date": "2026-10-25",
+        "late": true,
+        "on_time_streak": 0
+      }
+    }
+  ]
+}

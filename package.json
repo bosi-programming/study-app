@@ -9,6 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "test:golden": "vitest run --project golden",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "pnpm -r typecheck && tsc --noEmit -p tsconfig.json",
     "bench": "node scripts/bench.ts",
     "sqlite:probe": "node scripts/sqlite-probe.ts"
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@study/cli": "workspace:*",
     "@types/node": "24.13.4",
+    "@vitest/coverage-v8": "4.1.11",
     "typescript": "5.9.3",
     "vitest": "4.1.11"
   }
