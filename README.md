@@ -14,7 +14,8 @@ Ritmo do projeto: menos de 10h/semana. As decisões de produto e de arquitetura 
 ```bash
 pnpm install
 pnpm test          # 4 projetos: core, golden, cli, scaffold
-pnpm test:golden   # só o projeto golden
+pnpm test:golden   # só o projeto golden: forma dos fixtures + vetores
+pnpm test:coverage # linhas de packages/core/src (falha abaixo de 90%)
 pnpm typecheck     # tsc --noEmit nos 3 pacotes + tsconfig da raiz
 pnpm bench         # stub: declara o bloqueio da RNF-03 (ENG-5 + ENG-6), ainda não mede
 pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)

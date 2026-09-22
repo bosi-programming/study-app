@@ -230,5 +230,11 @@ const streak = advanceQueueStreak({ streak_current: 3, streak_last_day: '2026-09
   qualquer arquivo de `src` e recusa `Date.now`, `new Date()` sem argumento,
   `Math.random`, `crypto` e `performance.now`. Quem adicionar código ao core
   passa por ele (S-01..S-17).
-- A progressão de intervalo é provada pelo golden fixture, a fonte única de
-  verdade da regra para todos os apps TS.
+- `golden.test.ts` é o runner dos golden fixtures: lê `@study/golden`, computa
+  com o core e compara com o `expected` de cada caso (`C-16`, `C-58`..`C-65`).
+  Ele executa no projeto `golden` do `vitest.config.ts`, não no projeto `core`,
+  para que `pnpm test:golden` seja o gate de divergência (ADR-015).
+- Os nove `T-nn` da ENG-4 (`T-01`..`T-05`, `T-11`, `T-12`, `T-20` e `T-21`) são
+  provados lendo os fixtures, a fonte única de verdade da regra para todos os
+  apps TS. `T-11` é a ordem da fila, que é do CLI: o caso do core só prova que
+  a ordem documentada é a que as definições do core produzem.
