@@ -195,3 +195,187 @@ describe('S-20 golden project runs the fixture vectors', () => {
     expect(projectNamed('core')?.exclude).toContain('test/golden.test.ts')
   })
 })
+
+type LintManifest = {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+  scripts?: Record<string, string>
+}
+
+const lintDependencies = {
+  eslint: '10.11.0',
+  '@eslint/js': '10.0.1',
+  'typescript-eslint': '8.70.1',
+}
+
+const lintedRoots = ['packages', 'apps', 'fixtures', 'tests', 'scripts']
+const lintIgnoredDirs = new Set(['node_modules', 'coverage', 'recipes', '.scratch'])
+const sourceFilePattern = /\.(ts|mts|cts|js|mjs|cjs)$/
+
+function textAt(relativePath: string): string {
+  const path = resolve(root, relativePath)
+  return existsSync(path) ? readFileSync(path, 'utf8') : ''
+}
+
+function sectionBetween(text: string, from: string, to: string): string {
+  const start = text.indexOf(from)
+  const end = text.indexOf(to, start + from.length)
+  return text.slice(start, end === -1 ? undefined : end)
+}
+
+function lintedSourceFiles(): string[] {
+  const files: string[] = []
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (lintIgnoredDirs.has(entry.name)) continue
+      const path = resolve(dir, entry.name)
+      if (entry.isDirectory()) walk(path)
+      else if (sourceFilePattern.test(entry.name)) files.push(path)
+    }
+  }
+  for (const name of lintedRoots) walk(resolve(root, name))
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (entry.isFile() && sourceFilePattern.test(entry.name)) files.push(resolve(root, entry.name))
+  }
+  return files
+}
+
+describe('S-21 CI workflow', () => {
+  const workflow = textAt('.github/workflows/ci.yml')
+
+  it('exists and is not empty', () => {
+    expect(workflow.trim().length).toBeGreaterThan(0)
+  })
+
+  it('triggers on pull_request against main and never on pull_request_target', () => {
+    expect(workflow).toContain('pull_request')
+    expect(workflow).not.toContain('pull_request_target')
+    expect(workflow).toMatch(/branches:\s*\[?['"]?main['"]?\]?/)
+  })
+
+  it('runs on Node 24, installs the packageManager pnpm and freezes the lockfile', () => {
+    expect(workflow).toContain('node-version: 24')
+    expect(workflow).toContain('pnpm/action-setup@v4')
+    expect(sectionBetween(workflow, 'pnpm/action-setup@v4', 'actions/setup-node@v4')).not.toMatch(
+      /^\s*version:/m,
+    )
+    expect(workflow).toContain('actions/setup-node@v4')
+    expect(sectionBetween(workflow, 'actions/setup-node@v4', 'pnpm install')).toContain(
+      'cache: pnpm',
+    )
+    expect(workflow).toContain('pnpm install --frozen-lockfile')
+    expect(readJson<PackageJson>('package.json')).toMatchObject({ packageManager: 'pnpm@12.4.1' })
+  })
+
+  it('orders checkout, pnpm setup, Node setup, install and the gates', () => {
+    const order = [
+      'actions/checkout@v4',
+      'pnpm/action-setup@v4',
+      'actions/setup-node@v4',
+      'pnpm install --frozen-lockfile',
+      'pnpm lint',
+      'pnpm typecheck',
+      'pnpm test',
+    ].map((needle) => workflow.indexOf(needle))
+    expect(order.every((index) => index >= 0)).toBe(true)
+    expect([...order].sort((left, right) => left - right)).toEqual(order)
+  })
+
+  it('gives each gate its own run step', () => {
+    const runSteps = [...workflow.matchAll(/run:\s*(.+)/g)].map((match) => (match[1] ?? '').trim())
+    expect(runSteps).toContain('pnpm lint')
+    expect(runSteps).toContain('pnpm typecheck')
+    expect(runSteps).toContain('pnpm test')
+  })
+
+  it('reads contents and lets no gate failure be masked', () => {
+    expect(workflow).toContain('permissions: contents: read')
+    expect(workflow).not.toContain('continue-on-error')
+    expect(workflow).not.toContain('|| true')
+    expect(workflow).not.toContain('if: always()')
+  })
+
+  it('needs no secret, so a fork pull request can run it', () => {
+    expect(workflow).not.toContain('secrets.')
+    expect(workflow).not.toContain('vars.')
+  })
+})
+
+describe('S-22 lint gate', () => {
+  it('declares lint as eslint . at the root', () => {
+    expect(readJson<PackageJson>('package.json').scripts?.lint).toBe('eslint .')
+  })
+
+  it('pins the lint dependencies at the root only', () => {
+    const rootManifest = readJson<LintManifest>('package.json')
+    for (const [name, version] of Object.entries(lintDependencies)) {
+      expect(rootManifest.devDependencies?.[name]).toBe(version)
+    }
+    for (const path of [
+      'packages/core/package.json',
+      'apps/cli/package.json',
+      'fixtures/golden/package.json',
+    ]) {
+      const manifest = readJson<LintManifest>(path)
+      const declared = [
+        ...Object.keys(manifest.dependencies ?? {}),
+        ...Object.keys(manifest.devDependencies ?? {}),
+      ]
+      for (const name of Object.keys(lintDependencies)) {
+        expect(declared).not.toContain(name)
+      }
+    }
+  })
+
+  it('ignores node_modules, coverage, recipes and .scratch', () => {
+    const config = textAt('eslint.config.js')
+    expect(config.trim().length).toBeGreaterThan(0)
+    for (const ignored of ['node_modules', 'coverage', 'recipes', '.scratch']) {
+      expect(config).toContain(ignored)
+    }
+  })
+
+  it('lints every workspace dir through the real ESLint with zero errors', () => {
+    const result = spawnSync(
+      'pnpm',
+      ['exec', 'eslint', '--format', 'json', ...lintedRoots],
+      { cwd: root, encoding: 'utf8' },
+    )
+    expect(result.status).toBe(0)
+    const results = JSON.parse(result.stdout) as { filePath: string; errorCount: number }[]
+    expect(results.every((entry) => entry.errorCount === 0)).toBe(true)
+    for (const name of lintedRoots) {
+      expect(results.some((entry) => entry.filePath.includes(`/${name}/`))).toBe(true)
+    }
+  })
+
+  it('leaves no lint suppression behind in the linted tree', () => {
+    const directive = ['eslint', 'disable'].join('-')
+    const files = lintedSourceFiles()
+    expect(files.length).toBeGreaterThan(0)
+    for (const file of files) {
+      expect(readFileSync(file, 'utf8')).not.toContain(directive)
+    }
+  })
+
+  it('carries the lint dependencies in the lockfile', () => {
+    const lockfile = readFileSync(resolve(root, 'pnpm-lock.yaml'), 'utf8')
+    for (const [name, version] of Object.entries(lintDependencies)) {
+      expect(lockfile).toContain(`${name}@${version}`)
+    }
+  })
+
+  it('documents lint in the README and in AGENTS', () => {
+    expect(textAt('README.md')).toContain('pnpm lint')
+    expect(textAt('AGENTS.md')).toContain('pnpm lint')
+  })
+
+  it('indexes ADR-017 and keeps the ADR count in sync', () => {
+    const adrDir = resolve(root, 'docs/adr')
+    const adr17 = readdirSync(adrDir).filter((name) => name.startsWith('adr-017'))
+    expect(adr17.length).toBe(1)
+    expect(textAt('docs/adr/README.md')).toContain(adr17[0] ?? '')
+    const count = readdirSync(adrDir).filter((name) => name !== 'README.md').length
+    expect(textAt('docs/README.md')).toContain(`${count} ADRs`)
+  })
+})
