@@ -88,8 +88,9 @@ function asString(value: unknown): string {
   return value
 }
 
-function asNullableString(value: unknown): string | null {
-  return value === null ? null : asString(value)
+function asOptionalString(value: unknown): string | null {
+  if (value === undefined || value === null) return null
+  return asString(value)
 }
 
 function asInteger(value: unknown): number {
@@ -136,16 +137,16 @@ export function fromItemJson(value: unknown): Item {
     title: asString(record.title),
     subject: asString(record.subject),
     difficulty: asDifficulty(record.difficulty),
-    note: asNullableString(record.note),
-    link: asNullableString(record.link),
+    note: asOptionalString(record.note),
+    link: asOptionalString(record.link),
     interval_days: asInteger(record.interval_days),
     due_date: asString(record.due_date),
     review_count: asInteger(record.review_count),
     on_time_streak: asInteger(record.on_time_streak),
     status: asStatus(record.status),
-    last_reviewed_at: asNullableString(record.last_reviewed_at),
-    archived_at: asNullableString(record.archived_at),
-    cold_archived_at: asNullableString(record.cold_archived_at),
+    last_reviewed_at: asOptionalString(record.last_reviewed_at),
+    archived_at: asOptionalString(record.archived_at),
+    cold_archived_at: asOptionalString(record.cold_archived_at),
     created_at: asString(record.created_at),
     updated_at: asString(record.updated_at),
   }

@@ -76,7 +76,7 @@ type BuiltContext = {
 function buildContext(options: ContextOptions): BuiltContext {
   const dbPath = resolveDbPath(options.dbPath, process.env, process.platform)
   const dbExisted = existsSync(dbPath)
-  const store = openStoreOrCorrupt(dbPath)
+  const store = openStoreOrCorrupt(dbPath, dbExisted)
   let closed = false
 
   const close = (): void => {
@@ -109,10 +109,11 @@ function buildContext(options: ContextOptions): BuiltContext {
   return { ctx, migrationLine }
 }
 
-function openStoreOrCorrupt(dbPath: string): Store {
+function openStoreOrCorrupt(dbPath: string, dbExisted: boolean): Store {
   try {
     return openStore(dbPath)
-  } catch {
+  } catch (error) {
+    if (!dbExisted) throw error
     throw CliError.invalidState(`banco corrompido: ${dbPath}`)
   }
 }

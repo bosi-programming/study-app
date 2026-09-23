@@ -109,6 +109,35 @@ describe('AC6/AC10 — o leitor recusa o arquivo fora do contrato', () => {
   })
 })
 
+describe('AC6 — o leitor aceita o que o MODELO-DE-DADOS documenta', () => {
+  it('chaves-opcionais-ausentes: o item do exemplo do doc importa com nulos', () => {
+    const example = {
+      id: '2f1c9c1e-6a1a-4a2e-9f4e-1b2c3d4e5f60',
+      title: 'Derivadas parciais',
+      subject: 'Cálculo',
+      difficulty: 4,
+      interval_days: 6,
+      due_date: '2026-09-12',
+      review_count: 2,
+      on_time_streak: 2,
+      status: 'active',
+      created_at: '2026-08-30T09:00:00Z',
+      updated_at: '2026-09-06T22:10:00Z',
+    }
+
+    const parsed = parseDumpV1(JSON.stringify(dump({ items: [example] })), FILE_PATH)
+
+    expect(parsed.items[0]).toEqual({
+      ...example,
+      note: null,
+      link: null,
+      last_reviewed_at: null,
+      archived_at: null,
+      cold_archived_at: null,
+    })
+  })
+})
+
 describe('AC2/AC11 — o leitor é o inverso exato do escritor', () => {
   it('leitor-inverso-do-escritor: item e review_log voltam idênticos', () => {
     const item = makeItem()

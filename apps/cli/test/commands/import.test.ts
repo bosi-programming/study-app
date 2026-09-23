@@ -92,6 +92,10 @@ function richSeed(dbPath: string): void {
         payload: JSON.stringify({ item: toItemJson(cold), review_logs: [toReviewLogJson(coldLog)] }),
         cold_archived_at: STAMP,
       })
+      store.setMeta('cold_archive_after_days', '90')
+      store.setMeta('locale', 'en-US')
+      store.setMeta('streak_current', '4')
+      store.setMeta('streak_last_day', '2026-09-12')
     })
   })
 }
@@ -122,6 +126,8 @@ describe('AC2/AC11 — round-trip completo (T-09)', () => {
       const result = runStudy(['import', dump, '--db', target, '--json'])
 
       expect(result.status).toBe(0)
+      const sourceCold = withStore(dbPath, (store) => store.listColdArchive())
+      expect(withStore(target, (store) => store.listColdArchive())).toEqual(sourceCold)
       const cold = withStore(target, (store) => store.getItem('cold-1'))
       expect(cold).not.toBeNull()
       expect(cold?.status).toBe('cold')
@@ -233,20 +239,31 @@ describe('AC4 — conflito de UUID resolvido pelo updated_at', () => {
     })
   })
 
-  it('conflito-comparacao-por-data: +00:00 decide pelo instante, não pela string', () => {
+  it('conflito-comparacao-por-data: o offset decide pelo instante, não pela string', () => {
     withDb((dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'i-1', title: 'Banco', updated_at: '2026-09-06T22:10:00Z' })] })
-      const dump = writeDump(
+
+      const tie = writeDump(
+        dbPath,
+        'tie-offset.json',
+        dumpWith([
+          makeItem({ id: 'i-1', title: 'Mesmo instante', updated_at: '2026-09-06T22:10:00+00:00' }),
+        ]),
+      )
+      const tied = runStudy(['import', tie, '--db', dbPath, '--json'])
+      expect(jsonOf(tied).import).toMatchObject({ written: 0, skipped: 1 })
+      expect(withStore(dbPath, (store) => store.getItem('i-1'))?.title).toBe('Banco')
+
+      const newer = writeDump(
         dbPath,
         'offset.json',
         dumpWith([
-          makeItem({ id: 'i-1', title: 'Arquivo', updated_at: '2026-09-06T22:10:30+00:00' }),
+          makeItem({ id: 'i-1', title: 'Arquivo', updated_at: '2026-09-06T22:10:00.500+00:00' }),
         ]),
       )
+      const won = runStudy(['import', newer, '--db', dbPath, '--json'])
 
-      const result = runStudy(['import', dump, '--db', dbPath, '--json'])
-
-      expect(jsonOf(result).import).toMatchObject({ written: 1 })
+      expect(jsonOf(won).import).toMatchObject({ written: 1, skipped: 0 })
       expect(withStore(dbPath, (store) => store.getItem('i-1'))?.title).toBe('Arquivo')
     })
   })
@@ -449,6 +466,44 @@ describe('AC11/AC12 — cold_archive reconstruído e as isenções do contexto',
       expect(existsSync(join(dirname(dbPath), 'exports'))).toBe(false)
       expect(withStore(dbPath, (store) => store.countItems('cold'))).toBe(0)
       expect(withStore(dbPath, (store) => store.listColdArchive())).toEqual([])
+    })
+  })
+
+  it('import-meta-do-arquivo: só as chaves que o destino conhece são gravadas', () => {
+    withDb((dbPath) => {
+      seed(dbPath, {})
+      const dump = writeDump(dbPath, 'meta.json', {
+        ...emptyDump(),
+        meta: {
+          cold_archive_after_days: 90,
+          locale: 'en-US',
+          streak_current: 4,
+          streak_last_day: '2026-09-12',
+          schema_version: 9,
+          last_cold_archive_export_at: '2026-09-13T00:00:00Z',
+        },
+      })
+
+      const result = runStudy(['import', dump, '--db', dbPath, '--json'])
+
+      expect(result.status).toBe(0)
+      expect(
+        withStore(dbPath, (store) => ({
+          window: store.getMeta('cold_archive_after_days'),
+          locale: store.getMeta('locale'),
+          streak: store.getMeta('streak_current'),
+          lastDay: store.getMeta('streak_last_day'),
+          schema: store.getMeta('schema_version'),
+          exportedAt: store.getMeta('last_cold_archive_export_at'),
+        })),
+      ).toEqual({
+        window: '90',
+        locale: 'en-US',
+        streak: '4',
+        lastDay: '2026-09-12',
+        schema: '1',
+        exportedAt: null,
+      })
     })
   })
 

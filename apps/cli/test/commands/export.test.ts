@@ -150,6 +150,19 @@ describe('AC7 — export continua possível quando o banco está fora do contrat
     })
   })
 
+  it('banco-caminho-impossivel: falha de IO não vira banco corrompido', () => {
+    withDb((dbPath) => {
+      const blocking = join(dirname(dbPath), 'pai')
+      writeFileSync(blocking, 'sou um arquivo')
+
+      const result = runStudy(['list', '--db', join(blocking, 'filho.db'), '--json'])
+
+      expect(result.status).toBe(1)
+      expect(errorOf(result).code).toBe('internal')
+      expect(errorOf(result).message).not.toContain('banco corrompido')
+    })
+  })
+
   it('banco-corrompido: arquivo que não abre como SQLite sai 3 em qualquer comando', () => {
     withDb((dbPath) => {
       writeFileSync(dbPath, 'isto não é um banco SQLite')
