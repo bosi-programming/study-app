@@ -133,23 +133,22 @@ Requisitos que não tinham caso em T-01..T-12:
 
 ## Execução
 
-Hoje (BOS-30, ENG-5 — schema SQLite e camada de persistência; base BOS-29/ENG-4):
+Hoje (BOS-39, ENG-14 — CI com lint, typecheck e testes; base BOS-30/ENG-5):
 
 - `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold. O projeto `cli` inclui a suíte de persistência (`apps/cli/test/persistence/`): DDL canônico + PRAGMAs, mapeamento linha↔entidade (chaves derivadas, `late` 0/1 ↔ boolean, falha alta fora do domínio), round-trips, FK e CASCADE, fila da RNF-03, transações com rollback, meta e arquivo morto.
 - `pnpm test:golden` roda só o projeto golden.
 - `pnpm typecheck` roda `tsc --noEmit` nos três pacotes mais o tsconfig da raiz; é o único gate que prova a pureza do core (CA-3) e o `strict` compartilhado (CA-5), porque o Vitest não checa tipos.
+- `pnpm lint` roda o ESLint em flat config sobre todo o TS do repositório — `packages/*`, `apps/*`, `fixtures/*` (src e test), `tests/`, `scripts/` e os TS da raiz —, ignorando `node_modules`, `coverage`, `recipes` e `.scratch` (ADR-017).
 - `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-6 (`study due --json`); a ENG-3 entregou a regra e a ENG-5 entregou a persistência e a consulta da fila.
 - `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014) e passou a re-exportar `SCHEMA_SQL` da camada (`apps/cli/src/persistence/schema.ts`, ADR-016): uma cópia canônica no código, e o `S-14` continua pinando a mesma ligação ao bloco SQL de `MODELO-DE-DADOS.md`.
 - `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-23 reporta 100% (128/128), inalterado pela ENG-5.
-- Ainda não há CI: a verificação é local (`pnpm test`, `pnpm typecheck` e `pnpm test:coverage`).
-- `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-22 reporta 100% (128/128).
-- Ainda não há CI: a verificação é local (`pnpm test`, `pnpm typecheck` e `pnpm test:coverage`).
+- O CI (`.github/workflows/ci.yml`, ADR-017) roda `pnpm lint`, `pnpm typecheck` e `pnpm test` em passos separados a cada PR para `main`, em `ubuntu-latest` com Node 24 e `pnpm install --frozen-lockfile`. São os mesmos comandos de raiz rodados local, então o resultado local é o do CI.
 
 Alvo da fase 1:
 
 - `pnpm test` inclui o web na fase 2; mobile e desktop entram nas fases 4 e 5.
 - `pnpm bench` gera 5.000 itens e mede `study due --json` (RNF-03); é verificação manual da fase 1, não gate de CI.
-- CI: GitHub Actions opcional na fase 1; até lá, rodar local antes de commit.
+- CI: ativo desde a ENG-14 (BOS-39); o check `ci` é a verificação padrão antes do merge e passa a ser exigido para `main` por branch protection.
 
 ## Fora do plano V1
 

@@ -16,6 +16,7 @@ Versão: 2 | Data: 2026-09-12 | Ritmo: menos de 10h/semana
 ## Fase 1 — CLI
 
 - [x] Scaffold do monorepo pnpm com `packages/core` e `apps/cli`.
+- [x] CI de lint, typecheck e testes nas PRs para `main`.
 - [ ] Implementar RN-01..RN-12 no core com golden fixtures.
 - [ ] Schema SQLite e camada de persistência.
 - [ ] Comandos de `docs/especificacao/CLI.md`.
