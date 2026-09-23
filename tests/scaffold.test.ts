@@ -288,8 +288,9 @@ describe('S-21 CI workflow', () => {
     expect(runSteps).toContain('pnpm test')
   })
 
-  it('reads contents and lets no gate failure be masked', () => {
-    expect(workflow).toContain('permissions: contents: read')
+  it('reads contents in block form, since the inline form is not valid YAML', () => {
+    expect(sectionBetween(workflow, 'permissions:', 'jobs:')).toContain('contents: read')
+    expect(workflow).not.toContain('permissions: contents: read')
     expect(workflow).not.toContain('continue-on-error')
     expect(workflow).not.toContain('|| true')
     expect(workflow).not.toContain('if: always()')
