@@ -17,7 +17,7 @@ Node >= 24 e pnpm 12.4.1. Não há build: o TypeScript é consumido direto do `s
 
 ## Comandos
 
-`pnpm install`, `pnpm test`, `pnpm test:golden`, `pnpm test:coverage`, `pnpm typecheck`, `pnpm bench` e `pnpm sqlite:probe`. Detalhes no `README.md`.
+`pnpm install`, `pnpm test`, `pnpm test:golden`, `pnpm test:coverage`, `pnpm lint`, `pnpm typecheck`, `pnpm bench` e `pnpm sqlite:probe`. Detalhes no `README.md`.
 
 ## Convenções
 
