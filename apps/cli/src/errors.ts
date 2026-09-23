@@ -1,4 +1,4 @@
-import { CoreError, type CoreErrorKind } from '@study/core'
+import { AmbiguousRefError, CoreError, type CoreErrorKind, type Item } from '@study/core'
 
 export type CliErrorCode =
   | 'usage'
@@ -43,6 +43,8 @@ export class CliError extends Error {
   }
 }
 
+const ID_PREFIX = 8
+
 const CORE_EXIT_CODES: Record<CoreErrorKind, number> = {
   'invalid-field': 2,
   'invalid-difficulty': 2,
@@ -62,11 +64,30 @@ export function errorPayload(error: unknown): ErrorPayload {
   return {
     error: {
       code: error instanceof CliError || error instanceof CoreError ? errorCode(error) : 'internal',
-      message: error instanceof Error ? error.message : String(error),
+      message: messageOf(error),
     },
   }
 }
 
 function errorCode(error: CliError | CoreError): string {
   return error instanceof CliError ? error.code : error.kind
+}
+
+function messageOf(error: unknown): string {
+  if (error instanceof AmbiguousRefError) return ambiguousRefMessage(error)
+  if (error instanceof Error) return error.message
+  return String(error)
+}
+
+function ambiguousRefMessage(error: AmbiguousRefError): string {
+  const rawRef = error.context.ref
+  const ref = typeof rawRef === 'string' ? rawRef : ''
+  const candidates = Array.isArray(error.context.candidates)
+    ? (error.context.candidates as readonly Item[])
+    : []
+  const lines = candidates.map(
+    (candidate) =>
+      `${candidate.id.slice(0, ID_PREFIX)} [${candidate.subject}] vence ${candidate.due_date}`,
+  )
+  return [`referência ambígua: ${ref}`, ...lines].join('\n')
 }
