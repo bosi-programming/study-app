@@ -10,15 +10,19 @@
     "test": "vitest run",
     "test:golden": "vitest run --project golden",
     "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
     "typecheck": "pnpm -r typecheck && tsc --noEmit -p tsconfig.json",
     "bench": "node scripts/bench.ts",
     "sqlite:probe": "node scripts/sqlite-probe.ts"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@study/cli": "workspace:*",
     "@types/node": "24.13.4",
     "@vitest/coverage-v8": "4.1.11",
+    "eslint": "10.11.0",
     "typescript": "5.9.3",
+    "typescript-eslint": "8.70.1",
     "vitest": "4.1.11"
   }
 }
