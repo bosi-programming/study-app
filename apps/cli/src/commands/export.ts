@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
 import { CliError } from '../errors.ts'
 import { writeJsonAtomic } from '../output/file.ts'
@@ -11,6 +12,9 @@ export const exportCommand: Command = (args, ctx) => {
   assertPositionals(args, 1, 1, 'export')
 
   const path = args.positionals[0] ?? ''
+  if (existsSync(path) && resolve(path) === resolve(ctx.dbPath)) {
+    throw CliError.invalidState(`arquivo de export é o banco: ${path}`)
+  }
   if (existsSync(path) && !hasFlag(args, 'yes')) {
     throw CliError.usage('arquivo já existe; use --yes para sobrescrever')
   }

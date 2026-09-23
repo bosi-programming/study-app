@@ -116,6 +116,33 @@ describe('AC8 — export sobre arquivo existente exige --yes', () => {
       expect(existsSync(`${out}.tmp`)).toBe(false)
     })
   })
+
+  it('export-sobre-o-proprio-banco: sai 3 e não sobrescreve a origem', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem()] })
+
+      const result = runStudy(['export', dbPath, '--db', dbPath, '--yes', '--json'])
+
+      expect(result.status).toBe(3)
+      expect(errorOf(result)).toEqual({
+        code: 'invalid-state',
+        message: `arquivo de export é o banco: ${dbPath}`,
+      })
+      expect(runStudy(['list', '--db', dbPath, '--json']).status).toBe(0)
+    })
+  })
+
+  it('export-sobre-o-proprio-banco-com-outra-grafia: o mesmo arquivo por outro caminho também é recusado', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem()] })
+      const spelled = join(dirname(dbPath), '.', 'study.db')
+
+      const result = runStudy(['export', spelled, '--db', dbPath, '--yes', '--json'])
+
+      expect(result.status).toBe(3)
+      expect(runStudy(['list', '--db', dbPath, '--json']).status).toBe(0)
+    })
+  })
 })
 
 describe('AC7 — export continua possível quando o banco está fora do contrato (RNF-07)', () => {

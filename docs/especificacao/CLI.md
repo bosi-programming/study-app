@@ -242,6 +242,7 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 | Export sobre arquivo existente | 1 | `arquivo já existe; use --yes para sobrescrever` |
 | Arquivo de import ausente ou ilegível | 3 | `arquivo não encontrado: <path>` |
 | Arquivo de import fora do contrato | 2 | `arquivo inválido: <path>` |
+| Export sobre o próprio banco | 3 | `arquivo de export é o banco: <path>` |
 | Import com schema futuro | 2 | `schema_version 2 não suportado` |
 | Banco que existe e não abre como SQLite | 3 | `banco corrompido: <path>` |
 | Backup do init falhou | 3 | `backup falhou; banco não foi alterado` |
