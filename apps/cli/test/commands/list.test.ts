@@ -129,8 +129,8 @@ describe('AC3 — list filtra e ordena (RF-02, T-27)', () => {
 
       const header = runStudy(['list', '--db', dbPath]).stdout.split('\n')[0] ?? ''
 
-      expect(header).toContain('Difficulty')
-      expect(header).toContain('Review Count')
+      expect(header).toContain('Dificuldade')
+      expect(header).toContain('Check-ins')
       expect(header).not.toMatch(/\bD\b.*\bN\b/)
     })
   })

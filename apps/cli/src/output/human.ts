@@ -4,8 +4,8 @@ const ID_WIDTH = 8
 const TITLE_WIDTH = 28
 const SUBJECT_WIDTH = 14
 const DUE_WIDTH = 10
-const DIFFICULTY_WIDTH = 10
-const REVIEWS_WIDTH = 12
+const DIFFICULTY_WIDTH = 11
+const REVIEWS_WIDTH = 9
 const EMPTY_RESULT = 'Nenhum item.'
 const EMPTY_HISTORY = '  nenhum check-in'
 const ABSENT = '—'
@@ -23,8 +23,8 @@ export function itemTable(items: readonly Item[]): string {
     cell('Matéria', SUBJECT_WIDTH),
     cell('Título', TITLE_WIDTH),
     cell('Vence', DUE_WIDTH),
-    cell('Difficulty', DIFFICULTY_WIDTH),
-    cell('Review Count', REVIEWS_WIDTH),
+    cell('Dificuldade', DIFFICULTY_WIDTH),
+    cell('Check-ins', REVIEWS_WIDTH),
     'Status',
   ].join('  ')
 
