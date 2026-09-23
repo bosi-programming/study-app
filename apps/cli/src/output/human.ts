@@ -1,4 +1,11 @@
-import { DIFFICULTY_LABELS, type Item, type ReviewLog, daysLate, isLate } from '@study/core'
+import {
+  DIFFICULTY_LABELS,
+  type Item,
+  type ReviewLog,
+  daysLate,
+  isLate,
+  localDateOf,
+} from '@study/core'
 
 const ID_WIDTH = 8
 const TITLE_WIDTH = 28
@@ -7,6 +14,8 @@ const DUE_WIDTH = 10
 const DIFFICULTY_WIDTH = 11
 const REVIEWS_WIDTH = 9
 const EMPTY_RESULT = 'Nenhum item.'
+const EMPTY_COLD = 'Nenhum item no arquivo morto.'
+const COLD_DATE_WIDTH = 12
 const QUEUE_LABEL_WIDTH = 40
 const QUEUE_DUE_WIDTH = 22
 const CHECKIN_PREFIX = 'Check-in registrado: '
@@ -90,6 +99,64 @@ export function updatedLine(item: Item): string {
 
 export function removedLine(item: Item): string {
   return `Item removido: ${item.title} (${idPrefix(item.id)})`
+}
+
+export function archivedLine(item: Item): string {
+  return `Item arquivado: ${item.title} (${idPrefix(item.id)})`
+}
+
+export function unarchivedLine(item: Item): string {
+  return `Item desarquivado: ${item.title} (${idPrefix(item.id)})`
+}
+
+export function restoredLine(item: Item): string {
+  return `Item restaurado: ${item.title} (${idPrefix(item.id)})`
+}
+
+export function purgedLine(item: Item): string {
+  return `Item removido do arquivo morto: ${item.title} (${idPrefix(item.id)})`
+}
+
+export function configLine(key: string, value: number): string {
+  return `${key}: ${value}`
+}
+
+export function migratedLine(count: number, path: string): string {
+  return `${count} itens migrados para o arquivo morto; export: ${path}`
+}
+
+export function migrationFailedLine(path: string): string {
+  return `falha ao exportar o arquivo morto (${path}); nenhum item foi migrado`
+}
+
+export function coldTable(items: readonly Item[]): string {
+  if (items.length === 0) return EMPTY_COLD
+
+  const header = [
+    cell('ID', ID_WIDTH),
+    cell('Matéria', SUBJECT_WIDTH),
+    cell('Título', TITLE_WIDTH),
+    cell('Migrado em', COLD_DATE_WIDTH),
+    cell('Dificuldade', DIFFICULTY_WIDTH),
+    cell('Check-ins', REVIEWS_WIDTH),
+  ].join('  ')
+
+  const rows = items.map((item) =>
+    [
+      cell(idPrefix(item.id), ID_WIDTH),
+      cell(item.subject, SUBJECT_WIDTH),
+      cell(item.title, TITLE_WIDTH),
+      cell(coldDate(item), COLD_DATE_WIDTH),
+      numberCell(item.difficulty, DIFFICULTY_WIDTH),
+      numberCell(item.review_count, REVIEWS_WIDTH),
+    ].join('  '),
+  )
+
+  return [header, ...rows].join('\n')
+}
+
+function coldDate(item: Item): string {
+  return item.cold_archived_at === null ? ABSENT : localDateOf(item.cold_archived_at)
 }
 
 export function createdDbLine(dbPath: string): string {

@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { type Deps } from '@study/core'
+import { migrateColdArchive } from './coldArchive.ts'
+import { migrationFailedLine, migratedLine } from './output/human.ts'
 import { type Store, openStore } from './persistence/index.ts'
 import { systemDeps } from './deps.ts'
 import { CliError } from './errors.ts'
@@ -72,6 +74,8 @@ function buildContext(options: ContextOptions): CommandContext {
     throw CliError.unsupportedSchema(version ?? 0)
   }
 
+  announceColdArchiveMigration(store, dbPath, options.exportDir ?? null)
+
   return {
     dbPath,
     dbExisted,
@@ -82,4 +86,24 @@ function buildContext(options: ContextOptions): CommandContext {
     exportDir: options.exportDir ?? null,
     close,
   }
+}
+
+function announceColdArchiveMigration(
+  store: Store,
+  dbPath: string,
+  exportDir: string | null,
+): void {
+  const result = migrateColdArchive({
+    store,
+    deps: systemDeps,
+    exportDir,
+    dbPath,
+    today: systemDeps.clock.todayLocalDate(),
+  })
+  if (result.exportPath === null) return
+  const line =
+    result.exportError === null
+      ? migratedLine(result.migrated, result.exportPath)
+      : migrationFailedLine(result.exportPath)
+  process.stderr.write(`${line}\n`)
 }
