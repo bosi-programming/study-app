@@ -120,15 +120,16 @@ describe('AC6 — edit altera e recalcula (RF-03, T-13)', () => {
     })
   })
 
-  it('edit-recusa-arquivado: sai 3 com a mensagem do status', () => {
+  it('edit-edita-arquivado: altera o arquivado, sem guarda de status', () => {
     withDb((dbPath) => {
       const item = makeItem({ status: 'archived' })
       seed(dbPath, { items: [item] })
 
       const result = runStudy(['edit', item.id.slice(0, 8), '-d', '5', '--db', dbPath, '--json'])
 
-      expect(result.status).toBe(3)
-      expect(errorOf(result).message).toBe('item arquivado; use study unarchive <ref>')
+      expect(result.status).toBe(0)
+      expect(itemOf(result, 'edit')).toMatchObject({ difficulty: 5, status: 'archived' })
+      expect(withStore(dbPath, (store) => store.getItem(item.id))?.difficulty).toBe(5)
     })
   })
 

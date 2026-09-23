@@ -1,5 +1,4 @@
 import {
-  ItemNotActiveError,
   type Item,
   reevaluateDifficulty,
   resolveRef,
@@ -27,7 +26,6 @@ export const editCommand: Command = (args, ctx) => {
   }
 
   const current = resolveRef(args.positionals[0] ?? '', ctx.store.listItems())
-  if (current.status !== 'active') throw new ItemNotActiveError(current.status)
 
   const result = updatedItem(args, current, ctx)
   ctx.store.saveItem(result)

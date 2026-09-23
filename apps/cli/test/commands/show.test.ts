@@ -85,18 +85,29 @@ describe('AC5 — show mostra vencimento e histórico (RF-06, RF-10, T-16)', () 
     })
   })
 
-  it('show-recusa-arquivado: sai 3 com a mensagem do status', () => {
+  it('show-le-arquivado: lê o arquivado, sem guarda de status', () => {
     withDb((dbPath) => {
-      const item = makeItem({ status: 'archived' })
+      const item = makeItem({ title: 'Item guardado', status: 'archived' })
+      seed(dbPath, { items: [item] })
+
+      const result = runStudy(['show', item.id.slice(0, 8), '--db', dbPath, '--json'])
+      const human = runStudy(['show', item.id.slice(0, 8), '--db', dbPath])
+
+      expect(result.status).toBe(0)
+      expect(itemOf(result, 'show')).toMatchObject({ status: 'archived', title: 'Item guardado' })
+      expect(human.stdout).toContain('Item guardado')
+    })
+  })
+
+  it('show-le-arquivo-morto: lê o item do cold, sem guarda de status', () => {
+    withDb((dbPath) => {
+      const item = makeItem({ status: 'cold' })
       seed(dbPath, { items: [item] })
 
       const result = runStudy(['show', item.id.slice(0, 8), '--db', dbPath, '--json'])
 
-      expect(result.status).toBe(3)
-      expect(errorOf(result)).toEqual({
-        code: 'item-not-active',
-        message: 'item arquivado; use study unarchive <ref>',
-      })
+      expect(result.status).toBe(0)
+      expect(itemOf(result, 'show')).toMatchObject({ status: 'cold' })
     })
   })
 
