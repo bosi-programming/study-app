@@ -30,7 +30,7 @@ export type Store = {
   getItem(id: string): Item | null
   deleteItem(id: string): void
   listItems(filter?: ItemFilter): Item[]
-  findItems(term: string): Item[]
+  findItems(term: string, filter?: ItemFilter): Item[]
   dueItems(today: string): Item[]
   countItems(status: ItemStatus): number
   saveReviewLog(log: ReviewLog): void
@@ -107,9 +107,12 @@ export function openStore(dbPath: string): Store {
     return row === undefined ? null : rowToItem(rowAsItemRow(row))
   }
 
-  function listItems(filter?: ItemFilter): Item[] {
+  function filterClauses(filter: ItemFilter | undefined): {
+    clauses: string[]
+    params: string[]
+  } {
     const clauses: string[] = []
-    const params: Array<string> = []
+    const params: string[] = []
     if (filter?.status !== undefined) {
       clauses.push('status = ?')
       params.push(filter.status)
@@ -118,6 +121,11 @@ export function openStore(dbPath: string): Store {
       clauses.push('subject_key = ?')
       params.push(filter.subjectKey)
     }
+    return { clauses, params }
+  }
+
+  function listItems(filter?: ItemFilter): Item[] {
+    const { clauses, params } = filterClauses(filter)
     const where = clauses.length === 0 ? '' : ` WHERE ${clauses.join(' AND ')}`
     const rows = db
       .prepare(`SELECT * FROM items${where} ${SELECT_ITEMS_ORDER}`)
@@ -125,11 +133,13 @@ export function openStore(dbPath: string): Store {
     return rows.map((row) => rowToItem(rowAsItemRow(row)))
   }
 
-  function findItems(term: string): Item[] {
+  function findItems(term: string, filter?: ItemFilter): Item[] {
     const pattern = `%${normalizeText(term).replace(/[\\%_]/g, (char) => `\\${char}`)}%`
+    const { clauses, params } = filterClauses(filter)
+    const where = [`title_key LIKE ? ESCAPE '\\'`, ...clauses].join(' AND ')
     const rows = db
-      .prepare(`SELECT * FROM items WHERE title_key LIKE ? ESCAPE '\\' ${SELECT_ITEMS_ORDER}`)
-      .all(pattern)
+      .prepare(`SELECT * FROM items WHERE ${where} ${SELECT_ITEMS_ORDER}`)
+      .all(pattern, ...params)
     return rows.map((row) => rowToItem(rowAsItemRow(row)))
   }
 
