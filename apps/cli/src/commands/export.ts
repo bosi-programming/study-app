@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, realpathSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
 import { CliError } from '../errors.ts'
@@ -12,7 +12,7 @@ export const exportCommand: Command = (args, ctx) => {
   assertPositionals(args, 1, 1, 'export')
 
   const path = args.positionals[0] ?? ''
-  if (existsSync(path) && resolve(path) === resolve(ctx.dbPath)) {
+  if (realPathOf(path) === realPathOf(ctx.dbPath)) {
     throw CliError.invalidState(`arquivo de export é o banco: ${path}`)
   }
   if (existsSync(path) && !hasFlag(args, 'yes')) {
@@ -30,5 +30,13 @@ export const exportCommand: Command = (args, ctx) => {
       cold_archive: dump.cold_archive.length,
     },
     human: exportedLine(path),
+  }
+}
+
+function realPathOf(path: string): string {
+  try {
+    return realpathSync(path)
+  } catch {
+    return resolve(path)
   }
 }

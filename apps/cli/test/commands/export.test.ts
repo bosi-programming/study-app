@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { addDays } from '@study/core'
 import { describe, expect, it } from 'vitest'
@@ -138,6 +138,19 @@ describe('AC8 — export sobre arquivo existente exige --yes', () => {
       const spelled = join(dirname(dbPath), '.', 'study.db')
 
       const result = runStudy(['export', spelled, '--db', dbPath, '--yes', '--json'])
+
+      expect(result.status).toBe(3)
+      expect(runStudy(['list', '--db', dbPath, '--json']).status).toBe(0)
+    })
+  })
+
+  it('export-sobre-o-proprio-banco-por-symlink: um link para o banco também é recusado', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem()] })
+      const link = join(dirname(dbPath), 'backup.json')
+      symlinkSync(dbPath, link)
+
+      const result = runStudy(['export', link, '--db', dbPath, '--yes', '--json'])
 
       expect(result.status).toBe(3)
       expect(runStudy(['list', '--db', dbPath, '--json']).status).toBe(0)
