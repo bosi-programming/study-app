@@ -101,3 +101,28 @@ describe('AC1 — init cria e recria com backup (T-24)', () => {
     })
   })
 })
+
+describe('AC1 — init recusa o backup que não serializa', () => {
+  it('init-backup-invalido: dump corrompido também sai 3 sem tocar no banco', () => {
+    withDb((dbPath) => {
+      const item = makeItem()
+      seed(dbPath, { items: [item] })
+      withStore(dbPath, (store) =>
+        store.saveColdArchive({
+          id: 'cold-1',
+          payload: 'nao-e-json',
+          cold_archived_at: '2026-09-01T00:00:00Z',
+        }),
+      )
+
+      const result = runStudy(['init', '--reset', '--yes', '--db', dbPath, '--json'])
+
+      expect(result.status).toBe(3)
+      expect(errorOf(result)).toEqual({
+        code: 'backup-failed',
+        message: 'backup falhou; banco não foi alterado',
+      })
+      expect(withStore(dbPath, (store) => store.getItem(item.id))).toEqual(item)
+    })
+  })
+})

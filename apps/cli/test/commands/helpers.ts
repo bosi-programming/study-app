@@ -80,7 +80,3 @@ export function todayLocalDate(): string {
 export function expectedDue(difficulty: Difficulty): string {
   return initialDueDate(difficulty, todayLocalDate())
 }
-
-export function idPrefix(id: string): string {
-  return id.slice(0, 8)
-}

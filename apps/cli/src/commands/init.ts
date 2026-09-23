@@ -1,10 +1,11 @@
 import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { type Deps } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
 import { CliError } from '../errors.ts'
 import { createdDbLine, resetDbLine } from '../output/human.ts'
 import { dumpJsonV1 } from '../output/json.ts'
-import { openStore } from '../persistence/index.ts'
+import { type Store, openStore } from '../persistence/index.ts'
 import { type Command } from './types.ts'
 
 const BACKUP_DIR = 'backups'
@@ -27,8 +28,7 @@ export const initCommand: Command = (args, ctx) => {
     throw CliError.usage('init com banco existente exige --reset --yes')
   }
 
-  const dump = JSON.stringify(dumpJsonV1(ctx.store, ctx.deps))
-  const backupPath = writeBackup(ctx.dbPath, dump, ctx.deps.clock.nowUtc())
+  const backupPath = writeBackup(ctx.store, ctx.deps, ctx.dbPath)
   ctx.close()
   removeDbFiles(ctx.dbPath)
   openStore(ctx.dbPath).close()
@@ -39,11 +39,16 @@ export const initCommand: Command = (args, ctx) => {
   }
 }
 
-function writeBackup(dbPath: string, contents: string, nowUtc: string): string {
-  const target = join(dirname(dbPath), BACKUP_DIR, `${BACKUP_PREFIX}${backupStamp(nowUtc)}.json`)
+function writeBackup(store: Store, deps: Deps, dbPath: string): string {
+  const target = join(
+    dirname(dbPath),
+    BACKUP_DIR,
+    `${BACKUP_PREFIX}${backupStamp(deps.clock.nowUtc())}.json`,
+  )
   try {
+    const dump = JSON.stringify(dumpJsonV1(store, deps))
     mkdirSync(dirname(target), { recursive: true })
-    writeFileSync(`${target}${TMP_SUFFIX}`, contents)
+    writeFileSync(`${target}${TMP_SUFFIX}`, dump)
     renameSync(`${target}${TMP_SUFFIX}`, target)
   } catch {
     throw CliError.backupFailed()
