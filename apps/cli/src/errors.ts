@@ -3,6 +3,8 @@ import { AmbiguousRefError, CoreError, type CoreErrorKind, type Item } from '@st
 export type CliErrorCode =
   | 'usage'
   | 'invalid-status'
+  | 'invalid-value'
+  | 'invalid-state'
   | 'unsupported-schema'
   | 'backup-failed'
   | 'aborted'
@@ -29,6 +31,14 @@ export class CliError extends Error {
 
   static invalidStatus(): CliError {
     return new CliError('invalid-status', 2, 'status inválido: use active, archived ou cold')
+  }
+
+  static invalidValue(message: string): CliError {
+    return new CliError('invalid-value', 2, message)
+  }
+
+  static invalidState(message: string): CliError {
+    return new CliError('invalid-state', 3, message)
   }
 
   static unsupportedSchema(version: number): CliError {

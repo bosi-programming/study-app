@@ -1,4 +1,5 @@
 import { type Deps, type Item, type ReviewLog, daysLate } from '@study/core'
+import { readColdArchiveWindow } from '../config.ts'
 import { type Store } from '../persistence/index.ts'
 
 export type ItemJson = {
@@ -46,7 +47,6 @@ export type DumpJsonV1 = {
 }
 
 const SCHEMA_VERSION = 1
-const DEFAULT_COLD_ARCHIVE_DAYS = 180
 const DEFAULT_LOCALE = 'pt-BR'
 
 export function toItemJson(item: Item): ItemJson {
@@ -95,10 +95,7 @@ export function dumpJsonV1(store: Store, deps: Deps): DumpJsonV1 {
     schema_version: SCHEMA_VERSION,
     exported_at: deps.clock.nowUtc(),
     meta: {
-      cold_archive_after_days: numberMeta(
-        store.getMeta('cold_archive_after_days'),
-        DEFAULT_COLD_ARCHIVE_DAYS,
-      ),
+      cold_archive_after_days: readColdArchiveWindow(store),
       locale: store.getMeta('locale') ?? DEFAULT_LOCALE,
       streak_current: numberMeta(store.getMeta('streak_current'), 0),
       streak_last_day: store.getMeta('streak_last_day'),

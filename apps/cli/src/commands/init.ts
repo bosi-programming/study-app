@@ -1,8 +1,9 @@
-import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { type Deps } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
 import { CliError } from '../errors.ts'
+import { writeJsonAtomic } from '../output/file.ts'
 import { createdDbLine, resetDbLine } from '../output/human.ts'
 import { dumpJsonV1 } from '../output/json.ts'
 import { type Store, openStore } from '../persistence/index.ts'
@@ -10,7 +11,6 @@ import { type Command } from './types.ts'
 
 const BACKUP_DIR = 'backups'
 const BACKUP_PREFIX = 'pre-reset-'
-const TMP_SUFFIX = '.tmp'
 const DB_SUFFIXES = ['', '-wal', '-shm']
 
 export const initCommand: Command = (args, ctx) => {
@@ -46,10 +46,7 @@ function writeBackup(store: Store, deps: Deps, dbPath: string): string {
     `${BACKUP_PREFIX}${backupStamp(deps.clock.nowUtc())}.json`,
   )
   try {
-    const dump = JSON.stringify(dumpJsonV1(store, deps))
-    mkdirSync(dirname(target), { recursive: true })
-    writeFileSync(`${target}${TMP_SUFFIX}`, dump)
-    renameSync(`${target}${TMP_SUFFIX}`, target)
+    writeJsonAtomic(target, dumpJsonV1(store, deps))
   } catch {
     throw CliError.backupFailed()
   }

@@ -1,5 +1,8 @@
 import { ALL_FLAGS, type ParsedArgs, hasFlag, parseArgs, valueOf } from './args.ts'
 import { addCommand } from './commands/add.ts'
+import { archiveCommand } from './commands/archive.ts'
+import { coldCommand } from './commands/cold.ts'
+import { configCommand } from './commands/config.ts'
 import { dueCommand } from './commands/due.ts'
 import { difficultyCommand } from './commands/difficulty.ts'
 import { editCommand } from './commands/edit.ts'
@@ -9,6 +12,7 @@ import { listCommand } from './commands/list.ts'
 import { removeCommand } from './commands/remove.ts'
 import { reviewCommand } from './commands/review.ts'
 import { showCommand } from './commands/show.ts'
+import { unarchiveCommand } from './commands/unarchive.ts'
 import { type Command } from './commands/types.ts'
 import { withContext } from './context.ts'
 import { CliError, exitCodeFor } from './errors.ts'
@@ -25,6 +29,10 @@ const COMMANDS: Record<string, Command> = {
   edit: editCommand,
   remove: removeCommand,
   review: reviewCommand,
+  archive: archiveCommand,
+  unarchive: unarchiveCommand,
+  cold: coldCommand,
+  config: configCommand,
 }
 
 const USAGE = `study — app de estudo espaçado
@@ -43,6 +51,13 @@ Comandos:
   show <ref>          detalhe e vencimento; --history inclui os check-ins
   edit <ref>          edita --title, -s, -n, -l ou -d
   remove <ref>        remove em definitivo (exige --yes)
+  archive <ref>       arquiva o item; sai da fila e das contagens
+  unarchive <ref>     devolve o item arquivado à fila
+  cold list           visão do arquivo morto, com a data de migração
+  cold restore <ref>  restaura o item do arquivo morto
+  cold purge <ref>    remove do arquivo morto em definitivo (exige --yes)
+  config get <chave>  lê uma configuração
+  config set <chave> <valor>  altera uma configuração
 
 Opções:
   -s, --subject <nome>       matéria

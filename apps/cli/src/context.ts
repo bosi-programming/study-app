@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { type Deps } from '@study/core'
+import { migrateColdArchive } from './coldArchive.ts'
+import { migrationFailedLine, migratedLine } from './output/human.ts'
 import { type Store, openStore } from './persistence/index.ts'
 import { systemDeps } from './deps.ts'
 import { CliError } from './errors.ts'
@@ -46,15 +48,30 @@ function defaultDbPath(env: NodeJS.ProcessEnv, platform: NodeJS.Platform): strin
 }
 
 export function withContext<T>(options: ContextOptions, run: (ctx: CommandContext) => T): T {
-  const ctx = buildContext(options)
+  const built = buildContext(options)
   try {
-    return run(ctx)
+    const result = run(built.ctx)
+    writeMigrationWarning(built)
+    return result
+  } catch (error) {
+    if (!built.ctx.json) writeMigrationWarning(built)
+    throw error
   } finally {
-    ctx.close()
+    built.ctx.close()
   }
 }
 
-function buildContext(options: ContextOptions): CommandContext {
+function writeMigrationWarning(built: BuiltContext): void {
+  if (built.migrationLine === null) return
+  process.stderr.write(`${built.migrationLine}\n`)
+}
+
+type BuiltContext = {
+  readonly ctx: CommandContext
+  readonly migrationLine: string | null
+}
+
+function buildContext(options: ContextOptions): BuiltContext {
   const dbPath = resolveDbPath(options.dbPath, process.env, process.platform)
   const dbExisted = existsSync(dbPath)
   const store = openStore(dbPath)
@@ -72,7 +89,7 @@ function buildContext(options: ContextOptions): CommandContext {
     throw CliError.unsupportedSchema(version ?? 0)
   }
 
-  return {
+  const ctx: CommandContext = {
     dbPath,
     dbExisted,
     deps: systemDeps,
@@ -82,4 +99,24 @@ function buildContext(options: ContextOptions): CommandContext {
     exportDir: options.exportDir ?? null,
     close,
   }
+
+  return { ctx, migrationLine: coldArchiveWarningLine(store, dbPath, ctx.exportDir) }
+}
+
+function coldArchiveWarningLine(
+  store: Store,
+  dbPath: string,
+  exportDir: string | null,
+): string | null {
+  const result = migrateColdArchive({
+    store,
+    deps: systemDeps,
+    exportDir,
+    dbPath,
+    today: systemDeps.clock.todayLocalDate(),
+  })
+  if (result.exportPath === null) return null
+  return result.exportError === null
+    ? migratedLine(result.migrated, result.exportPath)
+    : migrationFailedLine(result.exportPath)
 }

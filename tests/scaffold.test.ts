@@ -157,6 +157,16 @@ describe('S-17 ADR index', () => {
       expect(existsSync(resolve(adrDir, link))).toBe(true)
     }
   })
+
+  it('adr-021-contagem: o índice linka o ADR-021 e o docs/README.md conta 21', () => {
+    const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
+    const adr21 = files.filter((name) => name.startsWith('adr-021'))
+
+    expect(adr21.length).toBe(1)
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr21[0] ?? '')
+    expect(files.length).toBe(21)
+    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('21 ADRs')
+  })
 })
 
 function projectNamed(name: string) {
