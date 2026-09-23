@@ -122,4 +122,16 @@ describe('AC3 — list filtra e ordena (RF-02, T-27)', () => {
       expect(jsonOf(json)).toMatchObject({ list: { items: [] } })
     })
   })
+
+  it('list-cabecalho: dificuldade e check-ins aparecem por extenso', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem({ id: 'a', difficulty: 4, review_count: 7 })] })
+
+      const header = runStudy(['list', '--db', dbPath]).stdout.split('\n')[0] ?? ''
+
+      expect(header).toContain('Difficulty')
+      expect(header).toContain('Review Count')
+      expect(header).not.toMatch(/\bD\b.*\bN\b/)
+    })
+  })
 })

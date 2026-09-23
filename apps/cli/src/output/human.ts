@@ -4,6 +4,8 @@ const ID_WIDTH = 8
 const TITLE_WIDTH = 28
 const SUBJECT_WIDTH = 14
 const DUE_WIDTH = 10
+const DIFFICULTY_WIDTH = 10
+const REVIEWS_WIDTH = 12
 const EMPTY_RESULT = 'Nenhum item.'
 const EMPTY_HISTORY = '  nenhum check-in'
 const ABSENT = '—'
@@ -21,8 +23,8 @@ export function itemTable(items: readonly Item[]): string {
     cell('Matéria', SUBJECT_WIDTH),
     cell('Título', TITLE_WIDTH),
     cell('Vence', DUE_WIDTH),
-    'D',
-    'N',
+    cell('Difficulty', DIFFICULTY_WIDTH),
+    cell('Review Count', REVIEWS_WIDTH),
     'Status',
   ].join('  ')
 
@@ -32,8 +34,8 @@ export function itemTable(items: readonly Item[]): string {
       cell(item.subject, SUBJECT_WIDTH),
       cell(item.title, TITLE_WIDTH),
       cell(item.due_date, DUE_WIDTH),
-      String(item.difficulty),
-      String(item.review_count),
+      numberCell(item.difficulty, DIFFICULTY_WIDTH),
+      numberCell(item.review_count, REVIEWS_WIDTH),
       item.status,
     ].join('  '),
   )
@@ -98,4 +100,8 @@ function cell(value: string, width: number): string {
   if (value.length === width) return value
   if (value.length > width) return `${value.slice(0, width - 1)}${ELLIPSIS}`
   return value.padEnd(width, ' ')
+}
+
+function numberCell(value: number, width: number): string {
+  return String(value).padStart(width, ' ')
 }
