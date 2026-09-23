@@ -1,6 +1,13 @@
 import { spawnSync, type SpawnSyncReturns } from 'node:child_process'
 import { resolve } from 'node:path'
-import { type Difficulty, type Item, type ReviewLog, initialDueDate } from '@study/core'
+import {
+  type Difficulty,
+  type Item,
+  type ReviewLog,
+  addDays,
+  daysBetween,
+  initialDueDate,
+} from '@study/core'
 import { systemDeps } from '../../src/deps.ts'
 import { type ItemJson, type ReviewLogJson } from '../../src/output/json.ts'
 import { type Store, openStore } from '../../src/persistence/index.ts'
@@ -41,6 +48,10 @@ export function itemsOf(result: SpawnSyncReturns<string>, command: string): Item
   return dataOf(result, command)['items'] as ItemJson[]
 }
 
+export function queueOf(result: SpawnSyncReturns<string>): Record<string, unknown> {
+  return dataOf(result, 'due')
+}
+
 export function historyOf(result: SpawnSyncReturns<string>): ReviewLogJson[] {
   return dataOf(result, 'show')['history'] as ReviewLogJson[]
 }
@@ -79,4 +90,12 @@ export function todayLocalDate(): string {
 
 export function expectedDue(difficulty: Difficulty): string {
   return initialDueDate(difficulty, todayLocalDate())
+}
+
+export function rebaseDelta(fixtureToday: string): number {
+  return daysBetween(fixtureToday, todayLocalDate())
+}
+
+export function rebasedDate(date: string, deltaDays: number): string {
+  return addDays(date, deltaDays)
 }

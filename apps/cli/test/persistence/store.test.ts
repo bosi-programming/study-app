@@ -298,3 +298,60 @@ describe('store meta and cold archive', () => {
     })
   })
 })
+describe('AC11 — a porta da fila (ADR-020)', () => {
+  it('store-dueItems-mantem-active: sem filtro, só active com due_date <= today, na ordem due_date, id', () => {
+    withDb((dbPath) => {
+      const store = openStore(dbPath)
+      try {
+        const today = makeItem({ id: 'b', due_date: '2026-09-12' })
+        const overdue = makeItem({ id: 'a', due_date: '2026-09-01' })
+        const sameDayLateId = makeItem({ id: 'd', due_date: '2026-09-01' })
+        const future = makeItem({ id: 'c', due_date: '2026-09-20' })
+        const archived = makeItem({ id: 'e', due_date: '2026-09-01', status: 'archived' })
+        const cold = makeItem({ id: 'f', due_date: '2026-09-01', status: 'cold' })
+        for (const item of [today, overdue, sameDayLateId, future, archived, cold]) store.saveItem(item)
+
+        expect(store.dueItems('2026-09-12').map((item) => item.id)).toEqual(['a', 'd', 'b'])
+      } finally {
+        store.close()
+      }
+    })
+  })
+
+  it('store-dueItems-filtra-materia: subjectKey corta a fila no SQL', () => {
+    withDb((dbPath) => {
+      const store = openStore(dbPath)
+      try {
+        const calculo = makeItem({ id: 'a', subject: 'Cálculo', due_date: '2026-09-01' })
+        const ingles = makeItem({ id: 'b', subject: 'Inglês', due_date: '2026-09-01' })
+        store.saveItem(calculo)
+        store.saveItem(ingles)
+
+        expect(store.dueItems('2026-09-12', { subjectKey: 'calculo' }).map((item) => item.id)).toEqual(
+          ['a'],
+        )
+        expect(store.dueItems('2026-09-12', { subjectKey: 'cálculo' })).toEqual([])
+      } finally {
+        store.close()
+      }
+    })
+  })
+
+  it('store-dueItems-status-explicito: o status explícito vence o padrão, sem cláusula duplicada', () => {
+    withDb((dbPath) => {
+      const store = openStore(dbPath)
+      try {
+        const active = makeItem({ id: 'a', due_date: '2026-09-01', status: 'active' })
+        const archived = makeItem({ id: 'b', due_date: '2026-09-01', status: 'archived' })
+        const futureArchived = makeItem({ id: 'c', due_date: '2026-09-20', status: 'archived' })
+        for (const item of [active, archived, futureArchived]) store.saveItem(item)
+
+        expect(store.dueItems('2026-09-12', { status: 'archived' }).map((item) => item.id)).toEqual([
+          'b',
+        ])
+      } finally {
+        store.close()
+      }
+    })
+  })
+})

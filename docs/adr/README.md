@@ -1,6 +1,6 @@
 # Registro de Decisões (ADRs)
 
-Data: 2026-09-09 | Atualizado: 2026-09-22 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
+Data: 2026-09-09 | Atualizado: 2026-09-23 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
 
 Cada decisão vive em um arquivo próprio. Número, título, data e status vêm do frontmatter do arquivo correspondente.
 
@@ -25,6 +25,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-017](adr-017-ci-com-lint-typecheck-e-testes-nas-prs-para-main.md) | CI com lint, typecheck e testes nas PRs para main | aceito |
 | [ADR-018](adr-018-finditems-com-filtro-porta-de-consulta-do-store.md) | `findItems` com filtro: a porta de consulta do store | aceito |
 | [ADR-019](adr-019-item-nao-ativo-e-legivel-e-editavel.md) | Item não ativo é legível e editável; só o check-in recusa | aceito |
+| [ADR-020](adr-020-dueitems-com-filtro-fila-do-dia.md) | `dueItems` com filtro: a fila do dia reusa a porta de consulta | aceito |
 
 ## Supersessão
 

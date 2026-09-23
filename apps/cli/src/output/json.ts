@@ -1,4 +1,4 @@
-import { type Deps, type Item, type ReviewLog } from '@study/core'
+import { type Deps, type Item, type ReviewLog, daysLate } from '@study/core'
 import { type Store } from '../persistence/index.ts'
 
 export type ItemJson = {
@@ -28,6 +28,12 @@ export type ReviewLogJson = {
   readonly interval_after: number
   readonly review_count_after: number
   readonly late: boolean
+}
+
+export type QueueItemJson = {
+  readonly id: string
+  readonly subject: string
+  readonly days_late: number
 }
 
 export type DumpJsonV1 = {
@@ -62,6 +68,10 @@ export function toItemJson(item: Item): ItemJson {
     created_at: item.created_at,
     updated_at: item.updated_at,
   }
+}
+
+export function toQueueItemJson(item: Item, today: string): QueueItemJson {
+  return { id: item.id, subject: item.subject, days_late: daysLate(item, today) }
 }
 
 export function toReviewLogJson(log: ReviewLog): ReviewLogJson {

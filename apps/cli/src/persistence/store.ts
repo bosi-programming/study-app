@@ -31,7 +31,7 @@ export type Store = {
   deleteItem(id: string): void
   listItems(filter?: ItemFilter): Item[]
   findItems(term: string, filter?: ItemFilter): Item[]
-  dueItems(today: string): Item[]
+  dueItems(today: string, filter?: ItemFilter): Item[]
   countItems(status: ItemStatus): number
   saveReviewLog(log: ReviewLog): void
   listReviewLogs(itemId?: string): ReviewLog[]
@@ -42,6 +42,8 @@ export type Store = {
   deleteColdArchive(id: string): void
   transaction<T>(run: () => T): T
 }
+
+const ACTIVE_STATUS: ItemStatus = 'active'
 
 const ITEM_COLUMNS = [
   'id',
@@ -143,14 +145,13 @@ export function openStore(dbPath: string): Store {
     return rows.map((row) => rowToItem(rowAsItemRow(row)))
   }
 
-  function dueItems(today: string): Item[] {
+  function dueItems(today: string, filter?: ItemFilter): Item[] {
+    const effective: ItemFilter = { status: ACTIVE_STATUS, ...filter }
+    const { clauses, params } = filterClauses(effective)
+    const where = [...clauses, 'due_date <= ?'].join(' AND ')
     const rows = db
-      .prepare(
-        `SELECT * FROM items
-           WHERE status = 'active' AND due_date <= ?
-           ${SELECT_ITEMS_ORDER}`,
-      )
-      .all(today)
+      .prepare(`SELECT * FROM items WHERE ${where} ${SELECT_ITEMS_ORDER}`)
+      .all(...params, today)
     return rows.map((row) => rowToItem(rowAsItemRow(row)))
   }
 

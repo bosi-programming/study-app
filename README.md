@@ -18,7 +18,7 @@ pnpm test:golden   # só o projeto golden: forma dos fixtures + vetores
 pnpm test:coverage # linhas de packages/core/src (falha abaixo de 90%)
 pnpm lint          # ESLint em todo o TS do repo (ADR-017)
 pnpm typecheck     # tsc --noEmit nos 3 pacotes + tsconfig da raiz
-pnpm bench         # stub: declara o bloqueio da RNF-03 (ENG-5 + ENG-6), ainda não mede
+pnpm bench         # stub: declara o bloqueio da RNF-03, ainda não mede
 pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)
 ```
 

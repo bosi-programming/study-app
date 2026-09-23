@@ -7,6 +7,15 @@ const DUE_WIDTH = 10
 const DIFFICULTY_WIDTH = 11
 const REVIEWS_WIDTH = 9
 const EMPTY_RESULT = 'Nenhum item.'
+const QUEUE_LABEL_WIDTH = 40
+const QUEUE_DUE_WIDTH = 22
+const CHECKIN_PREFIX = 'Check-in registrado: '
+const NEXT_DUE_PREFIX = 'Próximo vencimento: '
+const QUEUE_HEADER = 'Fila de hoje'
+const OVERDUE_SECTION = 'Atrasados'
+const TODAY_SECTION = 'Hoje'
+const SUBJECT_SUMMARY_PREFIX = 'Por matéria:'
+const TODAY_DUE_TEXT = 'vence hoje'
 const EMPTY_HISTORY = '  nenhum check-in'
 const ABSENT = '—'
 const ELLIPSIS = '…'
@@ -104,4 +113,82 @@ function cell(value: string, width: number): string {
 
 function numberCell(value: number, width: number): string {
   return String(value).padStart(width, ' ')
+}
+
+export type QueueSplit = {
+  readonly overdue: readonly Item[]
+  readonly dueToday: readonly Item[]
+}
+
+export function splitQueue(items: readonly Item[], today: string): QueueSplit {
+  return {
+    overdue: items.filter((item) => isLate(item, today)),
+    dueToday: items.filter((item) => !isLate(item, today)),
+  }
+}
+
+export function countBySubject(items: readonly Item[]): Record<string, number> {
+  const counts: Record<string, number> = {}
+  for (const item of items) counts[item.subject] = (counts[item.subject] ?? 0) + 1
+  return counts
+}
+
+export function dueQueue(
+  overdue: readonly Item[],
+  dueToday: readonly Item[],
+  today: string,
+  bySubject: Readonly<Record<string, number>>,
+): string {
+  const lines = [`${QUEUE_HEADER} — ${today}`]
+  let index = 1
+
+  if (overdue.length > 0) {
+    lines.push('', `${OVERDUE_SECTION} (${overdue.length})`)
+    for (const item of overdue) {
+      lines.push(queueLine(index, item, today))
+      index += 1
+    }
+  }
+
+  if (dueToday.length > 0) {
+    lines.push('', `${TODAY_SECTION} (${dueToday.length})`)
+    for (const item of dueToday) {
+      lines.push(queueLine(index, item, today))
+      index += 1
+    }
+  }
+
+  const summary = dueSummary(bySubject)
+  lines.push('', ...(summary === null ? [] : [summary]), dueTotals(overdue.length, dueToday.length))
+  return lines.join('\n')
+}
+
+export function dueSummary(bySubject: Readonly<Record<string, number>>): string | null {
+  const entries = Object.entries(bySubject)
+  if (entries.length === 0) return null
+  const parts = entries.map(([subject, count]) => `${subject} ${count}`)
+  return `${SUBJECT_SUMMARY_PREFIX} ${parts.join(', ')}`
+}
+
+export function dueTotals(overdueCount: number, todayCount: number): string {
+  return `${overdueCount} atrasados, ${todayCount} para hoje.`
+}
+
+export function checkinLine(item: Item): string {
+  return `${CHECKIN_PREFIX}${item.title}`
+}
+
+export function nextDueLine(item: Item): string {
+  return `${NEXT_DUE_PREFIX}${item.due_date} (intervalo ${item.interval_days}d, n=${item.review_count})`
+}
+
+function queueLine(index: number, item: Item, today: string): string {
+  const label = cell(`${index}. [${item.subject}] ${item.title}`, QUEUE_LABEL_WIDTH)
+  const due = dueText(item, today).padEnd(QUEUE_DUE_WIDTH, ' ')
+  return `  ${label}  ${due}  d${item.difficulty}  n=${item.review_count}`
+}
+
+function dueText(item: Item, today: string): string {
+  if (!isLate(item, today)) return TODAY_DUE_TEXT
+  return `venceu ${item.due_date} (${daysLate(item, today)}d)`
 }

@@ -14,5 +14,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@study/golden": "workspace:*"
   }
 }
