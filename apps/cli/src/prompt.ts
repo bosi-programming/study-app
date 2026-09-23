@@ -29,11 +29,17 @@ function readLine(): string {
     const buffer = Buffer.alloc(MAX_LINE_BYTES)
     const bytes = readSync(fd, buffer, 0, buffer.length, null)
     return buffer.subarray(0, bytes).toString('utf8').split('\n')[0] ?? ''
-  } catch {
-    throw CliError.aborted()
+  } catch (error) {
+    if (isReadAbort(error)) throw CliError.aborted()
+    throw CliError.internal(error instanceof Error ? error.message : String(error))
   } finally {
     if (fd !== STDIN) closeSync(fd)
   }
+}
+
+function isReadAbort(error: unknown): boolean {
+  const code = (error as { readonly code?: string } | null)?.code
+  return code === 'EINTR' || code === 'EAGAIN'
 }
 
 function openTty(): number {

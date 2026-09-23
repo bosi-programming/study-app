@@ -120,6 +120,21 @@ describe('AC1 — due mostra a fila do dia (RF-05, CA-12, T-11)', () => {
     })
   })
 
+  it('due-atraso-longo: o vencimento do atrasado não é truncado com dois dígitos', () => {
+    withDb((dbPath) => {
+      const today = todayLocalDate()
+      const overdueDate = rebasedDate(today, -12)
+      seed(dbPath, {
+        items: [makeItem({ id: 'a', title: 'Atrasado', due_date: overdueDate })],
+      })
+
+      const human = runStudy(['due', '--db', dbPath]).stdout
+
+      expect(human).toContain(`venceu ${overdueDate} (12d)`)
+      expect(human).not.toContain('…')
+    })
+  })
+
   it('due-fila-vazia: cabeçalho e totais zerados, sem seção e sem resumo', () => {
     withDb((dbPath) => {
       const human = runStudy(['due', '--db', dbPath]).stdout

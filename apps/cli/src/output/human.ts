@@ -184,7 +184,7 @@ export function nextDueLine(item: Item): string {
 
 function queueLine(index: number, item: Item, today: string): string {
   const label = cell(`${index}. [${item.subject}] ${item.title}`, QUEUE_LABEL_WIDTH)
-  const due = cell(dueText(item, today), QUEUE_DUE_WIDTH)
+  const due = dueText(item, today).padEnd(QUEUE_DUE_WIDTH, ' ')
   return `  ${label}  ${due}  d${item.difficulty}  n=${item.review_count}`
 }
 
