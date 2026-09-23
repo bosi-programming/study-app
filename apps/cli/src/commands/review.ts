@@ -9,7 +9,7 @@ import { assertAllowedFlags, assertPositionals, valueOf } from '../args.ts'
 import { CliError } from '../errors.ts'
 import { checkinLine, nextDueLine } from '../output/human.ts'
 import { toItemJson } from '../output/json.ts'
-import { promptDifficulty, withPromptAbort } from '../prompt.ts'
+import { promptDifficulty } from '../prompt.ts'
 import { type Command } from './types.ts'
 
 export const reviewCommand: Command = (args, ctx) => {
@@ -30,7 +30,7 @@ export const reviewCommand: Command = (args, ctx) => {
 
   if (!ctx.json) process.stdout.write(`${checkinLine(checkedIn.item)}\n`)
 
-  const chosen = flagged ?? withPromptAbort(() => promptDifficulty(checkedIn.item.difficulty))
+  const chosen = flagged ?? promptDifficulty(checkedIn.item.difficulty)
   const reviewed = reevaluateDifficulty(checkedIn.item, chosen, ctx.deps)
   if (reviewed !== checkedIn.item) ctx.store.saveItem(reviewed)
 

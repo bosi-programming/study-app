@@ -5,7 +5,6 @@ import { CliError } from './errors.ts'
 const MAX_LINE_BYTES = 64
 const STDIN = 0
 const DIFFICULTY_VALUES = [1, 2, 3, 4, 5] as const
-const ABORT_EXIT_CODE = 130
 
 export function difficultyFromLine(line: string, current?: Difficulty): Difficulty {
   const trimmed = line.trim()
@@ -22,18 +21,6 @@ export function difficultyPromptLabel(current?: Difficulty): string {
 export function promptDifficulty(current?: Difficulty): Difficulty {
   process.stderr.write(`${difficultyPromptLabel(current)}\n`)
   return difficultyFromLine(readLine(), current)
-}
-
-export function withPromptAbort<T>(run: () => T): T {
-  const onInterrupt = (): void => {
-    process.exit(ABORT_EXIT_CODE)
-  }
-  process.on('SIGINT', onInterrupt)
-  try {
-    return run()
-  } finally {
-    process.off('SIGINT', onInterrupt)
-  }
 }
 
 function readLine(): string {

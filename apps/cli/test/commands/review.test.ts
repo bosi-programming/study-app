@@ -25,12 +25,10 @@ import {
 
 const promptMock = vi.hoisted(() => ({
   promptDifficulty: vi.fn(),
-  withPromptAbort: vi.fn((run: () => unknown) => run()),
 }))
 
 vi.mock('../../src/prompt.ts', () => ({
   promptDifficulty: promptMock.promptDifficulty,
-  withPromptAbort: promptMock.withPromptAbort,
 }))
 
 const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
