@@ -47,6 +47,14 @@ describe('apoio — uso, dispatch e banco', () => {
     expect(result.stderr).toContain('comando desconhecido')
   })
 
+  it('usage-lista-os-tres: o USAGE traz due, review e difficulty', () => {
+    const stdout = runStudy(['--help']).stdout
+
+    expect(stdout).toMatch(/\bdue\b/)
+    expect(stdout).toContain('review <ref>')
+    expect(stdout).toContain('difficulty <ref> <1-5>')
+  })
+
   it('flag-desconhecida: sai 1', () => {
     const result = runStudy(['list', '--nope'])
 
@@ -74,14 +82,17 @@ describe('apoio — uso, dispatch e banco', () => {
     }
   })
 
-  it('envelope-por-comando: {schema_version: 1, <comando>: ...} nos sete', () => {
+  it('envelope-por-comando-dez: {schema_version: 1, <comando>: ...} nos dez', () => {
     const cases: Array<[string, (dbPath: string) => string[]]> = [
       ['init', (dbPath) => ['init', '--db', dbPath]],
       ['add', (dbPath) => ['add', 'Título', '-s', 'Matéria', '-d', '4', '--db', dbPath]],
       ['list', (dbPath) => ['list', '--db', dbPath]],
       ['find', (dbPath) => ['find', 'título', '--db', dbPath]],
+      ['due', (dbPath) => ['due', '--db', dbPath]],
+      ['review', (dbPath) => ['review', '2f1c9c1e', '-d', '4', '--db', dbPath]],
       ['show', (dbPath) => ['show', '2f1c9c1e', '--db', dbPath]],
       ['edit', (dbPath) => ['edit', '2f1c9c1e', '-d', '3', '--db', dbPath]],
+      ['difficulty', (dbPath) => ['difficulty', '2f1c9c1e', '2', '--db', dbPath]],
       ['remove', (dbPath) => ['remove', '2f1c9c1e', '--yes', '--db', dbPath]],
     ]
 

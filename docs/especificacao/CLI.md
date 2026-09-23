@@ -132,7 +132,7 @@ Atrasados (2)
   2. [Inglês] Phrasal verbs             venceu 2026-09-08 (4d)   d3  n=1
 
 Hoje (1)
-  3. [Cálculo] Integrais por partes     vence 2026-09-12         d5  n=0
+  3. [Cálculo] Integrais por partes     vence hoje              d5  n=0
 
 Por matéria: Cálculo 2, Inglês 1
 2 atrasados, 1 para hoje.
