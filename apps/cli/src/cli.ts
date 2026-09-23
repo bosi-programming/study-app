@@ -1,6 +1,7 @@
 import { ALL_FLAGS, type ParsedArgs, hasFlag, parseArgs, valueOf } from './args.ts'
 import { addCommand } from './commands/add.ts'
 import { dueCommand } from './commands/due.ts'
+import { difficultyCommand } from './commands/difficulty.ts'
 import { editCommand } from './commands/edit.ts'
 import { findCommand } from './commands/find.ts'
 import { initCommand } from './commands/init.ts'
@@ -19,6 +20,7 @@ const COMMANDS: Record<string, Command> = {
   list: listCommand,
   find: findCommand,
   due: dueCommand,
+  difficulty: difficultyCommand,
   show: showCommand,
   edit: editCommand,
   remove: removeCommand,
@@ -37,6 +39,7 @@ Comandos:
   find <termo>        busca por substring no título (--status, -s)
   due                 fila do dia, atrasados primeiro (-s)
   review <ref>        check-in e dificuldade (-d pula o prompt)
+  difficulty <ref> <1-5>  reavalia a dificuldade sem check-in
   show <ref>          detalhe e vencimento; --history inclui os check-ins
   edit <ref>          edita --title, -s, -n, -l ou -d
   remove <ref>        remove em definitivo (exige --yes)
