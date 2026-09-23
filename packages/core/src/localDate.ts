@@ -77,3 +77,14 @@ export function daysBetween(from: string, to: string): number {
 export function previousDay(date: string, days = 1): string {
   return addDays(date, -days)
 }
+
+export function localDateOf(instant: string): string {
+  const parsed = new Date(instant)
+  if (Number.isNaN(parsed.getTime())) {
+    throw new InvalidFieldError('instant', 'instante inválido: use ISO 8601')
+  }
+  const year = pad(parsed.getFullYear(), 4)
+  const month = pad(parsed.getMonth() + 1, 2)
+  const day = pad(parsed.getDate(), 2)
+  return `${year}-${month}-${day}`
+}
