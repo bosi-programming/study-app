@@ -106,6 +106,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 - O export é escrito **antes** da migração: ele é o backup do estado anterior (ADR-005). O item migrado aparece no arquivo ainda como `archived`, e o snapshot novo de `cold_archive` entra no export da execução seguinte. Duas migrações no mesmo dia sobrescrevem o arquivo com o dump completo, sem merge.
 - Se o export falhar, nada migra; o aviso vai para o stderr e o comando em execução segue com a saída normal.
 - A migração não bloqueia nem altera a saída do comando em execução.
+- O aviso sai também quando o comando em execução falha, já que a migração já aconteceu. Com `--json` o stderr do erro continua sendo só `{"error":{...}}`, então o aviso é omitido nesse caso, para não quebrar o parse do erro.
 - `cold restore` volta o item a `active` com o mesmo `n` e a mesma dificuldade, limpa `archived_at`/`cold_archived_at` e apaga a linha de `cold_archive`.
 - `cold purge` exige `--yes` e é a única operação destrutiva do arquivo: apaga o item, os seus `ReviewLog` (CASCADE) e a linha de `cold_archive`. O arquivo de export do dia continua no disco.
 - `config get|set` cobre só `cold_archive_after_days`. O `set` migra primeiro com a janela antiga e grava a nova depois, então itens que passam a ser elegíveis migram na execução seguinte.

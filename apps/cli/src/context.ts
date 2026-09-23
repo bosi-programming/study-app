@@ -51,11 +51,19 @@ export function withContext<T>(options: ContextOptions, run: (ctx: CommandContex
   const built = buildContext(options)
   try {
     const result = run(built.ctx)
-    if (built.migrationLine !== null) process.stderr.write(`${built.migrationLine}\n`)
+    writeMigrationWarning(built)
     return result
+  } catch (error) {
+    if (!built.ctx.json) writeMigrationWarning(built)
+    throw error
   } finally {
     built.ctx.close()
   }
+}
+
+function writeMigrationWarning(built: BuiltContext): void {
+  if (built.migrationLine === null) return
+  process.stderr.write(`${built.migrationLine}\n`)
 }
 
 type BuiltContext = {

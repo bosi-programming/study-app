@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { type Deps, type Item, type ReviewLog, daysBetween } from '@study/core'
 import { readColdArchiveWindow } from './config.ts'
-import { localDateOf } from './deps.ts'
+import { tryLocalDateOf } from './deps.ts'
 import { writeJsonAtomic } from './output/file.ts'
 import { dumpJsonV1, toItemJson, toReviewLogJson } from './output/json.ts'
 import { type Store } from './persistence/index.ts'
@@ -42,7 +42,9 @@ export function itemsDueForColdArchive(
   return items.filter((item) => {
     if (item.status !== 'archived') return false
     if (item.archived_at === null) return false
-    return daysBetween(localDateOf(item.archived_at), today) > window
+    const archivedOn = tryLocalDateOf(item.archived_at)
+    if (archivedOn === null) return false
+    return daysBetween(archivedOn, today) > window
   })
 }
 

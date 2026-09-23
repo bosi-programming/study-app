@@ -9,8 +9,6 @@ import { type Command, type CommandArgs } from './types.ts'
 const NO_SUBCOMMAND = 'study cold exige um subcomando: list, restore ou purge'
 
 export const coldCommand: Command = (args, ctx) => {
-  assertAllowedFlags(args, ['yes'], 'cold')
-
   const [subcommand, ...rest] = args.positionals
   if (subcommand === undefined) throw CliError.usage(NO_SUBCOMMAND)
   const subArgs: CommandArgs = { positionals: rest, flags: args.flags }
@@ -21,6 +19,7 @@ export const coldCommand: Command = (args, ctx) => {
 }
 
 const coldList: Command = (args, ctx) => {
+  assertAllowedFlags(args, [], 'cold list')
   assertPositionals(args, 0, 0, 'cold list')
 
   const items = ctx.store.listItems({ status: 'cold' })
@@ -28,6 +27,7 @@ const coldList: Command = (args, ctx) => {
 }
 
 const coldRestore: Command = (args, ctx) => {
+  assertAllowedFlags(args, [], 'cold restore')
   assertPositionals(args, 1, 1, 'cold restore')
 
   const ref = args.positionals[0] ?? ''
@@ -44,6 +44,7 @@ const coldRestore: Command = (args, ctx) => {
 }
 
 const coldPurge: Command = (args, ctx) => {
+  assertAllowedFlags(args, ['yes'], 'cold purge')
   assertPositionals(args, 1, 1, 'cold purge')
   if (!hasFlag(args, 'yes')) throw CliError.usage('cold purge exige --yes')
 

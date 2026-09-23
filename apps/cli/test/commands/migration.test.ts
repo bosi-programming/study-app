@@ -142,6 +142,20 @@ describe('AC6 — o predicado: estritamente maior, em data local (RF-16, RN-10, 
       expect(statusOf(dbPath, 'oitenta-e-nove')).toBe('archived')
     })
   })
+
+  it('migracao-archived-at-invalido: um instante que não parseia não derruba o comando', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem({ id: 'a', status: 'archived', archived_at: 'nao-e-data' })] })
+
+      const list = runStudy(['list', '--status', 'archived', '--db', dbPath, '--json'])
+      const due = runStudy(['due', '--db', dbPath, '--json'])
+
+      expect(list.status).toBe(0)
+      expect(itemsOf(list, 'list').map((item) => item.id)).toEqual(['a'])
+      expect(due.status).toBe(0)
+      expect(statusOf(dbPath, 'a')).toBe('archived')
+    })
+  })
 })
 
 describe('AC7 — o snapshot do arquivo morto (RF-16)', () => {
@@ -315,6 +329,21 @@ describe('AC9 — o aviso no stderr e a saída intacta (critério 4)', () => {
       expect(JSON.parse(result.stderr)).toEqual({
         error: { code: 'not-found', message: 'item não encontrado: deadbeef' },
       })
+      expect(statusOf(dbPath, 'a')).toBe('cold')
+    })
+  })
+
+  it('migracao-erro-aviso-humano: sem --json o aviso sai mesmo quando o comando falha', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem({ id: 'a', status: 'archived', archived_at: stamp(-181) })] })
+
+      const result = runStudy(['archive', 'deadbeef', '--db', dbPath])
+
+      expect(result.status).toBe(3)
+      expect(result.stderr).toContain(
+        `1 itens migrados para o arquivo morto; export: ${exportPathOf(dbPath)}`,
+      )
+      expect(result.stderr).toContain('item não encontrado: deadbeef')
       expect(statusOf(dbPath, 'a')).toBe('cold')
     })
   })

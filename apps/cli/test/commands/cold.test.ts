@@ -178,6 +178,24 @@ describe('AC13 — a validação do subcomando', () => {
       expect(errorOf(result).code).toBe('usage')
     })
   })
+
+  it('cold-flag-fora-do-subcomando: --yes só existe em cold purge', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [coldItem('a-1')] })
+
+      const list = runStudy(['cold', 'list', '--yes', '--db', dbPath, '--json'])
+      const restore = runStudy(['cold', 'restore', 'a-1', '--yes', '--db', dbPath, '--json'])
+
+      expect(list.status).toBe(1)
+      expect(errorOf(list)).toEqual({
+        code: 'usage',
+        message: 'flag --yes não existe em study cold list',
+      })
+      expect(restore.status).toBe(1)
+      expect(errorOf(restore).message).toBe('flag --yes não existe em study cold restore')
+      expect(withStore(dbPath, (store) => store.getItem('a-1')?.status)).toBe('cold')
+    })
+  })
 })
 
 describe('AC14 — o envelope --json dos comandos novos (RNF-08, T-25)', () => {
