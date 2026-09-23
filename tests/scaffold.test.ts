@@ -219,8 +219,10 @@ function textAt(relativePath: string): string {
 
 function sectionBetween(text: string, from: string, to: string): string {
   const start = text.indexOf(from)
+  if (start === -1) throw new Error(`section start not found: ${from}`)
   const end = text.indexOf(to, start + from.length)
-  return text.slice(start, end === -1 ? undefined : end)
+  if (end === -1) throw new Error(`section end not found: ${to}`)
+  return text.slice(start, end)
 }
 
 function lintedSourceFiles(): string[] {
@@ -336,15 +338,19 @@ describe('S-22 lint gate', () => {
     }
   })
 
-  it('lints every workspace dir through the real ESLint with zero errors', () => {
+  it('lints every workspace dir through the real ESLint with zero errors and zero warnings', () => {
     const result = spawnSync(
       'pnpm',
       ['exec', 'eslint', '--format', 'json', ...lintedRoots],
       { cwd: root, encoding: 'utf8' },
     )
     expect(result.status).toBe(0)
-    const results = JSON.parse(result.stdout) as { filePath: string; errorCount: number }[]
-    expect(results.every((entry) => entry.errorCount === 0)).toBe(true)
+    const results = JSON.parse(result.stdout) as {
+      filePath: string
+      errorCount: number
+      warningCount: number
+    }[]
+    expect(results.every((entry) => entry.errorCount === 0 && entry.warningCount === 0)).toBe(true)
     for (const name of lintedRoots) {
       expect(results.some((entry) => entry.filePath.includes(`/${name}/`))).toBe(true)
     }
