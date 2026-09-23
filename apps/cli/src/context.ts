@@ -24,6 +24,8 @@ export type ContextOptions = {
   readonly json: boolean
   readonly noInput: boolean
   readonly exportDir: string | undefined
+  readonly skipSchemaGate: boolean
+  readonly skipMigrationHook: boolean
 }
 
 export function resolveDbPath(
@@ -74,7 +76,7 @@ type BuiltContext = {
 function buildContext(options: ContextOptions): BuiltContext {
   const dbPath = resolveDbPath(options.dbPath, process.env, process.platform)
   const dbExisted = existsSync(dbPath)
-  const store = openStore(dbPath)
+  const store = openStoreOrCorrupt(dbPath)
   let closed = false
 
   const close = (): void => {
@@ -84,7 +86,7 @@ function buildContext(options: ContextOptions): BuiltContext {
   }
 
   const version = store.schemaVersion()
-  if (version !== 1) {
+  if (!options.skipSchemaGate && version !== 1) {
     close()
     throw CliError.unsupportedSchema(version ?? 0)
   }
@@ -100,7 +102,19 @@ function buildContext(options: ContextOptions): BuiltContext {
     close,
   }
 
-  return { ctx, migrationLine: coldArchiveWarningLine(store, dbPath, ctx.exportDir) }
+  const migrationLine = options.skipMigrationHook
+    ? null
+    : coldArchiveWarningLine(store, dbPath, ctx.exportDir)
+
+  return { ctx, migrationLine }
+}
+
+function openStoreOrCorrupt(dbPath: string): Store {
+  try {
+    return openStore(dbPath)
+  } catch {
+    throw CliError.invalidState(`banco corrompido: ${dbPath}`)
+  }
 }
 
 function coldArchiveWarningLine(

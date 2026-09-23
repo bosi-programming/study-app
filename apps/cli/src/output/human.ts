@@ -161,6 +161,14 @@ export function resetDbLine(dbPath: string, backupPath: string): string {
   return `Banco recriado em ${dbPath}\nBackup: ${backupPath}`
 }
 
+export function exportedLine(path: string): string {
+  return `Export: ${path}`
+}
+
+export function importedLine(items: number, checkins: number): string {
+  return `Import: ${items} itens, ${checkins} check-ins`
+}
+
 function dueLine(item: Item, today: string): string {
   if (!isLate(item, today)) return item.due_date
   return `${item.due_date} (atrasado ${daysLate(item, today)}d)`

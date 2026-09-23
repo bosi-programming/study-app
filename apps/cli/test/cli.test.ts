@@ -1,6 +1,6 @@
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { itemsOf, jsonOf, runStudy } from './commands/helpers.ts'
 import { makeItem } from './persistence/helpers.ts'
@@ -82,7 +82,7 @@ describe('apoio — uso, dispatch e banco', () => {
     }
   })
 
-  it('envelope-por-comando-dez: {schema_version: 1, <comando>: ...} nos dez', () => {
+  it('envelope-por-comando-doze: {schema_version: 1, <comando>: ...} nos doze', () => {
     const cases: Array<[string, (dbPath: string) => string[]]> = [
       ['init', (dbPath) => ['init', '--db', dbPath]],
       ['add', (dbPath) => ['add', 'Título', '-s', 'Matéria', '-d', '4', '--db', dbPath]],
@@ -94,6 +94,25 @@ describe('apoio — uso, dispatch e banco', () => {
       ['edit', (dbPath) => ['edit', '2f1c9c1e', '-d', '3', '--db', dbPath]],
       ['difficulty', (dbPath) => ['difficulty', '2f1c9c1e', '2', '--db', dbPath]],
       ['remove', (dbPath) => ['remove', '2f1c9c1e', '--yes', '--db', dbPath]],
+      ['export', (dbPath) => ['export', join(dirname(dbPath), 'export.json'), '--db', dbPath]],
+      [
+        'import',
+        (dbPath) => {
+          const dumpPath = join(dirname(dbPath), 'import.json')
+          writeFileSync(
+            dumpPath,
+            JSON.stringify({
+              schema_version: 1,
+              exported_at: '2026-09-23T12:00:00Z',
+              meta: {},
+              items: [],
+              review_logs: [],
+              cold_archive: [],
+            }),
+          )
+          return ['import', dumpPath, '--db', dbPath]
+        },
+      ],
     ]
 
     for (const [command, build] of cases) {
