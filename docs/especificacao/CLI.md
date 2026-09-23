@@ -113,6 +113,14 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 - `config get|set` cobre só `cold_archive_after_days`. O `set` migra primeiro com a janela antiga e grava a nova depois, então itens que passam a ser elegíveis migram na execução seguinte.
 - As confirmações seguem o formato dos comandos de item: `Item arquivado: <título> (<id8>)`, `Item desarquivado: <título> (<id8>)`, `Item restaurado: <título> (<id8>)` e `Item removido do arquivo morto: <título> (<id8>)`; `config get` e `config set` imprimem `<chave>: <valor>`.
 
+## Export e import
+
+- `study export <path>` tira o acervo inteiro num único JSON v1 e `study import <path>` o devolve para um banco: os dois juntos são o backup e o restore, e levam ativos, arquivados, arquivo morto e histórico para outra máquina ou de volta depois de um `init --reset`.
+- Round-trip: exportar, importar num banco vazio e exportar de novo produz o mesmo conteúdo. A única chave que difere é `exported_at`, que é o relógio de cada execução (T-09).
+- O import é aditivo, não espelho: item ou check-in que só existe no banco local nunca é apagado, e reimportar o mesmo arquivo não escreve nada — o `written: 0` do envelope é a prova da idempotência.
+- O conflito de id é resolvido pelo `updated_at` mais novo, comparado por instante: empate ou local mais novo não toca no banco, e um `ReviewLog` (evento imutável, sem `updated_at`) nunca é sobrescrito.
+- As regras de `schema_version` — igual ou menor aceito pela escada de migrações, futuro recusado com exit 2 — estão em `docs/especificacao/MODELO-DE-DADOS.md`; as isenções dos dois comandos no gancho e no portão do contexto, em `## Arquivo morto` e no ADR-022.
+
 ## Contrato `--json`
 
 - Todo comando devolve um único objeto JSON no stdout, com `schema_version: 1` e a chave do comando como raiz.
