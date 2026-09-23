@@ -89,6 +89,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 - Reservados para não colidir com `T-01`..`T-27` (domínio) nem com `C-01`..`C-65` (a regra, no nível de unidade).
 - Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts` e `tests/scaffold.test.ts` — 240 testes no total (BOS-29).
 - BOS-30 (ENG-5) acrescentou a suíte de persistência em `apps/cli/test/persistence/{schema,mapping,store}.test.ts` — 269 testes no total; ela roda no projeto `cli` do `vitest.config.ts` contra um SQLite real em diretório temporário.
+- BOS-31 (ENG-6) acrescentou a suíte dos comandos de item — `apps/cli/test/commands/{add,edit,find,init,list,ref,remove,show}.test.ts` mais o `helpers.ts` que dá spawn no bin `study` com `--db` temporário e `--json` — e reescreveu `apps/cli/test/cli.test.ts` (o `S-06`/`S-07` deixam de pinar o banner e passam a pinar bin, uso, `--help` e `--db`), além de dois casos de `findItems(term, filter)` em `persistence/store.test.ts` (ADR-018). São 340 testes no total; o projeto `cli` sobe para 12 arquivos/102 casos e cobre `T-13`, `T-14`, `T-16`, `T-17`, `T-18`, `T-23`, `T-24` e `T-27`, mais o envelope `T-25` e a guarda de schema futuro do ADR-016.
 
 ### Suíte de regra no core (C-01..C-65)
 
@@ -133,15 +134,15 @@ Requisitos que não tinham caso em T-01..T-12:
 
 ## Execução
 
-Hoje (BOS-39, ENG-14 — CI com lint, typecheck e testes; base BOS-30/ENG-5):
+Hoje (BOS-31, ENG-6 — comandos de item do CLI, sobre o CI da BOS-39/ENG-14; base BOS-30/ENG-5):
 
-- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold. O projeto `cli` inclui a suíte de persistência (`apps/cli/test/persistence/`): DDL canônico + PRAGMAs, mapeamento linha↔entidade (chaves derivadas, `late` 0/1 ↔ boolean, falha alta fora do domínio), round-trips, FK e CASCADE, fila da RNF-03, transações com rollback, meta e arquivo morto.
+- `pnpm test` roda os 4 projetos do `vitest.config.ts` — core, golden, cli e scaffold. O projeto `cli` inclui a suíte de persistência (`apps/cli/test/persistence/`): DDL canônico + PRAGMAs, mapeamento linha↔entidade (chaves derivadas, `late` 0/1 ↔ boolean, falha alta fora do domínio), round-trips, FK e CASCADE, fila da RNF-03, transações com rollback, meta e arquivo morto. A ENG-6 acrescentou a suíte dos sete comandos de item (`apps/cli/test/commands/`), que dá spawn no bin com `--db` temporário e `--json` e prova exit code, canal e payload de cada caso.
 - `pnpm test:golden` roda só o projeto golden.
 - `pnpm typecheck` roda `tsc --noEmit` nos três pacotes mais o tsconfig da raiz; é o único gate que prova a pureza do core (CA-3) e o `strict` compartilhado (CA-5), porque o Vitest não checa tipos.
 - `pnpm lint` roda o ESLint em flat config sobre todo o TS do repositório — `packages/*`, `apps/*`, `fixtures/*` (src e test), `tests/`, `scripts/` e os TS da raiz —, ignorando `node_modules`, `coverage`, `recipes` e `.scratch` (ADR-017).
-- `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-6 (`study due --json`); a ENG-3 entregou a regra e a ENG-5 entregou a persistência e a consulta da fila.
+- `pnpm bench` ainda não mede: sai com 0 declarando que a RNF-03 depende da ENG-7 (`study due --json`); a ENG-3 entregou a regra, a ENG-5 a persistência e a ENG-6 os comandos de item, mas a fila ainda não existe.
 - `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014) e passou a re-exportar `SCHEMA_SQL` da camada (`apps/cli/src/persistence/schema.ts`, ADR-016): uma cópia canônica no código, e o `S-14` continua pinando a mesma ligação ao bloco SQL de `MODELO-DE-DADOS.md`.
-- `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-23 reporta 100% (128/128), inalterado pela ENG-5.
+- `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-23 reporta 100% (128/128), inalterado pelas ENG-5 e ENG-6.
 - O CI (`.github/workflows/ci.yml`, ADR-017) roda `pnpm lint`, `pnpm typecheck` e `pnpm test` em passos separados a cada PR para `main`, em `ubuntu-latest` com Node 24 e `pnpm install --frozen-lockfile`. São os mesmos comandos de raiz rodados local, então o resultado local é o do CI.
 
 Alvo da fase 1:

@@ -99,6 +99,73 @@ describe('store items', () => {
     })
   })
 
+  it('filters find results by status and subject key', () => {
+    withDb((dbPath) => {
+      const store = openStore(dbPath)
+      try {
+        store.saveItem(makeItem({ id: 'a', title: 'Derivadas parciais', subject: 'Cálculo' }))
+        store.saveItem(
+          makeItem({ id: 'b', title: 'Derivadas implícitas', subject: 'Cálculo', status: 'archived' }),
+        )
+        store.saveItem(makeItem({ id: 'c', title: 'Derivadas', subject: 'Inglês' }))
+
+        expect(store.findItems('derivadas', { status: 'active' }).map((item) => item.id)).toEqual([
+          'a',
+          'c',
+        ])
+        expect(store.findItems('derivadas', { subjectKey: 'calculo' }).map((item) => item.id)).toEqual(
+          ['a', 'b'],
+        )
+        expect(
+          store
+            .findItems('derivadas', { status: 'archived', subjectKey: 'calculo' })
+            .map((item) => item.id),
+        ).toEqual(['b'])
+      } finally {
+        store.close()
+      }
+    })
+  })
+
+  it('combines the term and the filter keeping the due_date, id order', () => {
+    withDb((dbPath) => {
+      const store = openStore(dbPath)
+      try {
+        const sameDayLateId = makeItem({
+          id: 'b',
+          title: 'Integrais',
+          subject: 'Cálculo',
+          due_date: '2026-09-10',
+        })
+        const sameDayEarlyId = makeItem({
+          id: 'a',
+          title: 'Integrais duplas',
+          subject: 'Cálculo',
+          due_date: '2026-09-10',
+        })
+        const earliest = makeItem({
+          id: 'c',
+          title: 'Integrais triplas',
+          subject: 'Cálculo',
+          due_date: '2026-09-05',
+        })
+        const otherSubject = makeItem({
+          id: 'd',
+          title: 'Integrais',
+          subject: 'Inglês',
+          due_date: '2026-09-01',
+        })
+        for (const item of [sameDayLateId, sameDayEarlyId, earliest, otherSubject]) store.saveItem(item)
+
+        expect(
+          store.findItems('integrais', { subjectKey: 'calculo' }).map((item) => item.id),
+        ).toEqual(['c', 'a', 'b'])
+      } finally {
+        store.close()
+      }
+    })
+  })
+
   it('returns only active overdue items in the due queue, ordered by due_date and id', () => {
     withDb((dbPath) => {
       const store = openStore(dbPath)

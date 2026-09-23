@@ -23,6 +23,8 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-015](adr-015-golden-fixtures-formato-e-quem-valida.md) | Golden fixtures: formato do vetor e quem valida | aceito |
 | [ADR-016](adr-016-camada-de-persistencia-do-cli-schema-mapeamento-e-store.md) | Camada de persistência do CLI: schema, mapeamento e store | aceito |
 | [ADR-017](adr-017-ci-com-lint-typecheck-e-testes-nas-prs-para-main.md) | CI com lint, typecheck e testes nas PRs para main | aceito |
+| [ADR-018](adr-018-finditems-com-filtro-porta-de-consulta-do-store.md) | `findItems` com filtro: a porta de consulta do store | aceito |
+| [ADR-019](adr-019-item-nao-ativo-e-legivel-e-editavel.md) | Item não ativo é legível e editável; só o check-in recusa | aceito |
 
 ## Supersessão
 

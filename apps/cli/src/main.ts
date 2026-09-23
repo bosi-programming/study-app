@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { CORE_VERSION } from '@study/core'
+import { runCli } from './cli.ts'
 
-console.log(`study (core ${CORE_VERSION}) — no commands yet`)
+runCli(process.argv.slice(2))
