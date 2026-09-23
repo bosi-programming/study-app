@@ -26,6 +26,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-018](adr-018-finditems-com-filtro-porta-de-consulta-do-store.md) | `findItems` com filtro: a porta de consulta do store | aceito |
 | [ADR-019](adr-019-item-nao-ativo-e-legivel-e-editavel.md) | Item não ativo é legível e editável; só o check-in recusa | aceito |
 | [ADR-020](adr-020-dueitems-com-filtro-fila-do-dia.md) | `dueItems` com filtro: a fila do dia reusa a porta de consulta | aceito |
+| [ADR-021](adr-021-ciclo-de-vida-do-item-e-arquivo-morto.md) | Ciclo de vida do item e arquivo morto: linha em `items`, gancho no contexto e export antes da migração | aceito |
 
 ## Supersessão
 
