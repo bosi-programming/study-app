@@ -12,14 +12,7 @@ export {
 
 export type { CoreErrorContext, CoreErrorKind } from './errors.ts'
 
-export {
-  addDays,
-  compareDates,
-  daysBetween,
-  isValidLocalDate,
-  localDateOf,
-  previousDay,
-} from './localDate.ts'
+export { addDays, compareDates, daysBetween, isValidLocalDate, previousDay } from './localDate.ts'
 export type { DateOrder } from './localDate.ts'
 
 export type { Clock, Deps, IdGenerator } from './clock.ts'

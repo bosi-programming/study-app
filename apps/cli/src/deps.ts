@@ -1,13 +1,23 @@
 import { randomUUID } from 'node:crypto'
-import { type Clock, type Deps, type IdGenerator } from '@study/core'
+import { InvalidFieldError, type Clock, type Deps, type IdGenerator } from '@study/core'
 
 function pad(value: number, width: number): string {
   return String(value).padStart(width, '0')
 }
 
+export function localDateOf(instant: string): string {
+  const parsed = new Date(instant)
+  if (Number.isNaN(parsed.getTime())) {
+    throw new InvalidFieldError('instant', 'instante inválido: use ISO 8601')
+  }
+  const year = pad(parsed.getFullYear(), 4)
+  const month = pad(parsed.getMonth() + 1, 2)
+  const day = pad(parsed.getDate(), 2)
+  return `${year}-${month}-${day}`
+}
+
 function todayLocalDate(): string {
-  const now = new Date()
-  return `${pad(now.getFullYear(), 4)}-${pad(now.getMonth() + 1, 2)}-${pad(now.getDate(), 2)}`
+  return localDateOf(new Date().toISOString())
 }
 
 export const systemClock: Clock = {

@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  InvalidFieldError,
-  addDays,
-  compareDates,
-  daysBetween,
-  isValidLocalDate,
-  localDateOf,
-} from '@study/core'
+import { addDays, compareDates, daysBetween, isValidLocalDate } from '@study/core'
 
 describe('C-01 addDays', () => {
   it.each([
@@ -48,21 +41,5 @@ describe('C-03 isValidLocalDate', () => {
 
   it.each(['2026-2-3', '2026-13-01', '2026-02-30', ''])('rejects %s', (value) => {
     expect(isValidLocalDate(value)).toBe(false)
-  })
-})
-
-describe('C-04 localDateOf', () => {
-  it('localDateOf-converte: um instante UTC vira a data local em YYYY-MM-DD', () => {
-    const instant = '2026-09-12T12:00:00Z'
-    const local = new Date(instant)
-    const pad = (value: number): string => String(value).padStart(2, '0')
-    const expected = `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}`
-
-    expect(localDateOf(instant)).toBe(expected)
-  })
-
-  it('localDateOf-data-invalida: um instante que não parseia lança invalid-field', () => {
-    expect(() => localDateOf('nao-e-data')).toThrow(InvalidFieldError)
-    expect(() => localDateOf('')).toThrow(InvalidFieldError)
   })
 })

@@ -304,4 +304,18 @@ describe('AC9 — o aviso no stderr e a saída intacta (critério 4)', () => {
       expect(existsSync(exportPathOf(dbPath))).toBe(true)
     })
   })
+
+  it('migracao-erro-json-limpo: um comando que falha deixa o stderr só com o erro', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem({ id: 'a', status: 'archived', archived_at: stamp(-181) })] })
+
+      const result = runStudy(['archive', 'deadbeef', '--db', dbPath, '--json'])
+
+      expect(result.status).toBe(3)
+      expect(JSON.parse(result.stderr)).toEqual({
+        error: { code: 'not-found', message: 'item não encontrado: deadbeef' },
+      })
+      expect(statusOf(dbPath, 'a')).toBe('cold')
+    })
+  })
 })

@@ -48,15 +48,22 @@ function defaultDbPath(env: NodeJS.ProcessEnv, platform: NodeJS.Platform): strin
 }
 
 export function withContext<T>(options: ContextOptions, run: (ctx: CommandContext) => T): T {
-  const ctx = buildContext(options)
+  const built = buildContext(options)
   try {
-    return run(ctx)
+    const result = run(built.ctx)
+    if (built.migrationLine !== null) process.stderr.write(`${built.migrationLine}\n`)
+    return result
   } finally {
-    ctx.close()
+    built.ctx.close()
   }
 }
 
-function buildContext(options: ContextOptions): CommandContext {
+type BuiltContext = {
+  readonly ctx: CommandContext
+  readonly migrationLine: string | null
+}
+
+function buildContext(options: ContextOptions): BuiltContext {
   const dbPath = resolveDbPath(options.dbPath, process.env, process.platform)
   const dbExisted = existsSync(dbPath)
   const store = openStore(dbPath)
@@ -74,9 +81,7 @@ function buildContext(options: ContextOptions): CommandContext {
     throw CliError.unsupportedSchema(version ?? 0)
   }
 
-  announceColdArchiveMigration(store, dbPath, options.exportDir ?? null)
-
-  return {
+  const ctx: CommandContext = {
     dbPath,
     dbExisted,
     deps: systemDeps,
@@ -86,13 +91,15 @@ function buildContext(options: ContextOptions): CommandContext {
     exportDir: options.exportDir ?? null,
     close,
   }
+
+  return { ctx, migrationLine: coldArchiveWarningLine(store, dbPath, ctx.exportDir) }
 }
 
-function announceColdArchiveMigration(
+function coldArchiveWarningLine(
   store: Store,
   dbPath: string,
   exportDir: string | null,
-): void {
+): string | null {
   const result = migrateColdArchive({
     store,
     deps: systemDeps,
@@ -100,10 +107,8 @@ function announceColdArchiveMigration(
     dbPath,
     today: systemDeps.clock.todayLocalDate(),
   })
-  if (result.exportPath === null) return
-  const line =
-    result.exportError === null
-      ? migratedLine(result.migrated, result.exportPath)
-      : migrationFailedLine(result.exportPath)
-  process.stderr.write(`${line}\n`)
+  if (result.exportPath === null) return null
+  return result.exportError === null
+    ? migratedLine(result.migrated, result.exportPath)
+    : migrationFailedLine(result.exportPath)
 }

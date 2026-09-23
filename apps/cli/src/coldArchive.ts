@@ -1,6 +1,7 @@
 import { dirname, join } from 'node:path'
-import { type Deps, type Item, type ReviewLog, daysBetween, localDateOf } from '@study/core'
+import { type Deps, type Item, type ReviewLog, daysBetween } from '@study/core'
 import { readColdArchiveWindow } from './config.ts'
+import { localDateOf } from './deps.ts'
 import { writeJsonAtomic } from './output/file.ts'
 import { dumpJsonV1, toItemJson, toReviewLogJson } from './output/json.ts'
 import { type Store } from './persistence/index.ts'

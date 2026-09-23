@@ -1,11 +1,5 @@
-import {
-  DIFFICULTY_LABELS,
-  type Item,
-  type ReviewLog,
-  daysLate,
-  isLate,
-  localDateOf,
-} from '@study/core'
+import { DIFFICULTY_LABELS, type Item, type ReviewLog, daysLate, isLate } from '@study/core'
+import { localDateOf } from '../deps.ts'
 
 const ID_WIDTH = 8
 const TITLE_WIDTH = 28
