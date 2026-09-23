@@ -1,6 +1,6 @@
 # CLI — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-20 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 4 | Data: 2026-09-23 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -12,7 +12,7 @@ Versão: 3 | Data: 2026-09-20 | Base: `docs/especificacao/REQUISITOS.md`
 - Sobrescrita por `--db <path>` ou variável `STUDY_DB`; diretórios-pai são criados quando faltarem.
 - Saída humana por padrão; `--json` para script e testes de snapshot.
 - Prompts vão para o stderr; resultado vai para o stdout.
-- Comandos destrutivos exigem a flag de confirmação: `--yes` em `remove`, `cold purge` e `init --reset`.
+- Comandos destrutivos exigem a flag de confirmação: `--yes` em `remove`, `cold purge`, `init --reset` e `export` (esse só quando o arquivo de destino já existe).
 
 ### Exit codes
 
@@ -63,8 +63,8 @@ Qualquer ambiguidade é erro de estado (exit 3) e lista os candidatos com id, ma
 | `study config get <chave>` | lê uma configuração | `study config get cold_archive_after_days` |
 | `study config set <chave> <valor>` | altera uma configuração | `study config set cold_archive_after_days 90` |
 | `study stats` | métricas do RF-21..RF-23 | `study stats` |
-| `study export <path>` | exporta JSON v1 | `study export backup.json` |
-| `study import <path>` | importa JSON v1 | `study import backup.json` |
+| `study export <path>` | exporta o acervo inteiro num JSON v1; sobre arquivo existente exige `--yes` | `study export backup.json` |
+| `study import <path>` | importa um JSON v1, sem duplicar o que já existe | `study import backup.json` |
 
 `study list --status cold` é o filtro genérico (mesmas colunas de `list`); `study cold list` é a visão do ciclo de vida, com `cold_archived_at` e o agrupamento de `restore`/`purge`.
 
@@ -82,7 +82,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 | `--status <active\|archived\|cold>` | list, find | um único valor; sem a flag, apenas ativos |
 | `--history` | show | inclui os check-ins registrados |
 | `--reset` | init | autoriza recriar o banco existente |
-| `--yes` | remove, cold purge, init --reset | confirma a operação destrutiva |
+| `--yes` | remove, cold purge, init --reset, export | confirma a operação destrutiva; no export, sobrescreve o arquivo de destino |
 | `--no-input` | todos | nunca pergunta |
 | `--export-dir <path>` | todos | destino do export automático do arquivo morto |
 | `--json` | todos | saída JSON estável para testes |
@@ -97,7 +97,8 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 
 ## Arquivo morto
 
-- A checagem roda no início de todo comando, depois de abrir o banco e antes da ação pedida. `--help`, erro de `parseArgs` e `study` sem comando não abrem banco e não migram.
+- A checagem roda no início de todo comando, depois de abrir o banco e antes da ação pedida, exceto em `export` e `import`. `--help`, erro de `parseArgs` e `study` sem comando não abrem banco e não migram.
+- `export` fica fora da checagem por ser o caminho de saída quando o banco está fora do contrato (RNF-07); `import` fica fora porque migrar o estado pré-restore não muda o resultado — a migração roda de novo no comando seguinte, já sobre os dados restaurados.
 - Itens arquivados há mais que `cold_archive_after_days` (padrão 180) migram com aviso no stderr.
 - O aviso de sucesso é `N itens migrados para o arquivo morto; export: <path>`; o de falha do export é `falha ao exportar o arquivo morto (<path>); nenhum item foi migrado`.
 - A conta é estritamente maior e em data local: migra quem tem `daysBetween(dataLocalDe(archived_at), hoje) > janela`. Item `archived` com `archived_at` nulo não migra.
@@ -111,6 +112,14 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 - `cold purge` exige `--yes` e é a única operação destrutiva do arquivo: apaga o item, os seus `ReviewLog` (CASCADE) e a linha de `cold_archive`. O arquivo de export do dia continua no disco.
 - `config get|set` cobre só `cold_archive_after_days`. O `set` migra primeiro com a janela antiga e grava a nova depois, então itens que passam a ser elegíveis migram na execução seguinte.
 - As confirmações seguem o formato dos comandos de item: `Item arquivado: <título> (<id8>)`, `Item desarquivado: <título> (<id8>)`, `Item restaurado: <título> (<id8>)` e `Item removido do arquivo morto: <título> (<id8>)`; `config get` e `config set` imprimem `<chave>: <valor>`.
+
+## Export e import
+
+- `study export <path>` tira o acervo inteiro num único JSON v1 e `study import <path>` o devolve para um banco: os dois juntos são o backup e o restore, e levam ativos, arquivados, arquivo morto e histórico para outra máquina ou de volta depois de um `init --reset`.
+- Round-trip: exportar, importar num banco vazio e exportar de novo produz o mesmo conteúdo. A única chave que difere é `exported_at`, que é o relógio de cada execução (T-09).
+- O import é aditivo, não espelho: item ou check-in que só existe no banco local nunca é apagado, e reimportar o mesmo arquivo não escreve nada — o `written: 0` do envelope é a prova da idempotência.
+- O conflito de id é resolvido pelo `updated_at` mais novo, comparado por instante: empate ou local mais novo não toca no banco, e um `ReviewLog` (evento imutável, sem `updated_at`) nunca é sobrescrito.
+- As regras de `schema_version` — igual ou menor aceito pela escada de migrações, futuro recusado com exit 2 — estão em `docs/especificacao/MODELO-DE-DADOS.md`; as isenções dos dois comandos no gancho e no portão do contexto, em `## Arquivo morto` e no ADR-022.
 
 ## Contrato `--json`
 
@@ -128,6 +137,29 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
     ],
     "today": [],
     "by_subject": { "Cálculo": 2 }
+  }
+}
+```
+
+`export` e `import` respondem com as contagens do arquivo e, no import, com o resultado do merge — `written` é o que entrou e `skipped` o que já existia, que é o que torna a idempotência visível na segunda rodada:
+
+```json
+{
+  "schema_version": 1,
+  "export": { "path": "backup.json", "items": 12, "review_logs": 40, "cold_archive": 3 }
+}
+```
+
+```json
+{
+  "schema_version": 1,
+  "import": {
+    "path": "backup.json",
+    "items": 10,
+    "review_logs": 34,
+    "cold_archive": 2,
+    "written": 46,
+    "skipped": 0
   }
 }
 ```
@@ -165,6 +197,18 @@ ID        Matéria         Título                        Migrado em    Dificuld
 2f1c9c1e  Cálculo         Derivadas parciais            2026-09-01              4          2
 ```
 
+### `study export <path>`
+
+```
+Export: backup.json
+```
+
+### `study import <path>`
+
+```
+Import: 12 itens, 40 check-ins
+```
+
 ### `study stats`
 
 ```
@@ -196,7 +240,11 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 | Confirmação ausente na purga | 1 | `cold purge exige --yes` |
 | Valor faltando sem terminal | 1 | `-d é obrigatório sem terminal interativo` |
 | Export sobre arquivo existente | 1 | `arquivo já existe; use --yes para sobrescrever` |
+| Arquivo de import ausente ou ilegível | 3 | `arquivo não encontrado: <path>` |
+| Arquivo de import fora do contrato | 2 | `arquivo inválido: <path>` |
+| Export sobre o próprio banco | 3 | `arquivo de export é o banco: <path>` |
 | Import com schema futuro | 2 | `schema_version 2 não suportado` |
+| Banco que existe e não abre como SQLite | 3 | `banco corrompido: <path>` |
 | Backup do init falhou | 3 | `backup falhou; banco não foi alterado` |
 
 ## Notas de implementação

@@ -158,14 +158,14 @@ describe('S-17 ADR index', () => {
     }
   })
 
-  it('adr-021-contagem: o índice linka o ADR-021 e o docs/README.md conta 21', () => {
+  it('adr-022-contagem: o índice linka o ADR-022 e o docs/README.md conta 22', () => {
     const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
-    const adr21 = files.filter((name) => name.startsWith('adr-021'))
+    const adr22 = files.filter((name) => name.startsWith('adr-022'))
 
-    expect(adr21.length).toBe(1)
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr21[0] ?? '')
-    expect(files.length).toBe(21)
-    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('21 ADRs')
+    expect(adr22.length).toBe(1)
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr22[0] ?? '')
+    expect(files.length).toBe(22)
+    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('22 ADRs')
   })
 })
 

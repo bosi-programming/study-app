@@ -6,7 +6,9 @@ import { configCommand } from './commands/config.ts'
 import { dueCommand } from './commands/due.ts'
 import { difficultyCommand } from './commands/difficulty.ts'
 import { editCommand } from './commands/edit.ts'
+import { exportCommand } from './commands/export.ts'
 import { findCommand } from './commands/find.ts'
+import { importCommand } from './commands/import.ts'
 import { initCommand } from './commands/init.ts'
 import { listCommand } from './commands/list.ts'
 import { removeCommand } from './commands/remove.ts'
@@ -33,6 +35,20 @@ const COMMANDS: Record<string, Command> = {
   unarchive: unarchiveCommand,
   cold: coldCommand,
   config: configCommand,
+  export: exportCommand,
+  import: importCommand,
+}
+
+type ContextException = {
+  readonly skipSchemaGate: boolean
+  readonly skipMigrationHook: boolean
+}
+
+const NO_EXCEPTION: ContextException = { skipSchemaGate: false, skipMigrationHook: false }
+
+const CONTEXT_EXCEPTIONS: Record<string, ContextException> = {
+  export: { skipSchemaGate: true, skipMigrationHook: true },
+  import: { skipSchemaGate: false, skipMigrationHook: true },
 }
 
 const USAGE = `study — app de estudo espaçado
@@ -58,6 +74,8 @@ Comandos:
   cold purge <ref>    remove do arquivo morto em definitivo (exige --yes)
   config get <chave>  lê uma configuração
   config set <chave> <valor>  altera uma configuração
+  export <path>       exporta todo o acervo em JSON v1 (--yes sobrescreve)
+  import <path>       importa um JSON v1 sem duplicar nada
 
 Opções:
   -s, --subject <nome>       matéria
@@ -110,12 +128,15 @@ export function runCli(argv: readonly string[]): void {
   const commandArgs: ParsedArgs = { positionals: args.positionals.slice(1), flags: args.flags }
 
   try {
+    const exception = CONTEXT_EXCEPTIONS[commandName] ?? NO_EXCEPTION
     const result = withContext(
       {
         dbPath: valueOf(args, 'db'),
         json,
         noInput: hasFlag(args, 'no-input'),
         exportDir: valueOf(args, 'export-dir'),
+        skipSchemaGate: exception.skipSchemaGate,
+        skipMigrationHook: exception.skipMigrationHook,
       },
       (ctx) => command(commandArgs, ctx),
     )
