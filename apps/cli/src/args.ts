@@ -77,9 +77,10 @@ export function parseArgs(argv: readonly string[], spec: readonly FlagSpec[]): P
 }
 
 function splitToken(token: string): { flag: string; inlineValue: string | null } {
-  const equals = token.indexOf('=')
-  if (equals === -1) return { flag: token, inlineValue: null }
-  return { flag: token.slice(0, equals), inlineValue: token.slice(equals + 1) }
+  const body = token.startsWith('--') ? token.slice(2) : token.slice(1)
+  const equals = body.indexOf('=')
+  if (equals === -1) return { flag: body, inlineValue: null }
+  return { flag: body.slice(0, equals), inlineValue: body.slice(equals + 1) }
 }
 
 export function valueOf(args: ParsedArgs, name: string): string | undefined {
