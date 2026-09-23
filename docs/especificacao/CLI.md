@@ -68,6 +68,8 @@ Qualquer ambiguidade é erro de estado (exit 3) e lista os candidatos com id, ma
 
 `study list --status cold` é o filtro genérico (mesmas colunas de `list`); `study cold list` é a visão do ciclo de vida, com `cold_archived_at` e o agrupamento de `restore`/`purge`.
 
+O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `active` e `archived`, a migração automática leva o `archived` antigo para `cold` e `cold restore` devolve o item a `active`. `remove` e `cold purge` são as duas saídas definitivas; `cold purge` é a única que exige `--yes` dentro do arquivo morto.
+
 ## Flags
 
 | Flag | Aplica a | Efeito |
@@ -97,6 +99,7 @@ Qualquer ambiguidade é erro de estado (exit 3) e lista os candidatos com id, ma
 
 - A checagem roda no início de todo comando, depois de abrir o banco e antes da ação pedida. `--help`, erro de `parseArgs` e `study` sem comando não abrem banco e não migram.
 - Itens arquivados há mais que `cold_archive_after_days` (padrão 180) migram com aviso no stderr.
+- O aviso de sucesso é `N itens migrados para o arquivo morto; export: <path>`; o de falha do export é `falha ao exportar o arquivo morto (<path>); nenhum item foi migrado`.
 - A conta é estritamente maior e em data local: migra quem tem `daysBetween(dataLocalDe(archived_at), hoje) > janela`. Item `archived` com `archived_at` nulo não migra.
 - A migração mantém a linha em `items` com `status = 'cold'` e `cold_archived_at`, e grava um snapshot `{item, review_logs}` em `cold_archive`.
 - Cada migração dispara o export automático para `<data-dir>/exports/cold-archive-<YYYY-MM-DD>.json`, sobrescrevível por `--export-dir`.
@@ -106,6 +109,7 @@ Qualquer ambiguidade é erro de estado (exit 3) e lista os candidatos com id, ma
 - `cold restore` volta o item a `active` com o mesmo `n` e a mesma dificuldade, limpa `archived_at`/`cold_archived_at` e apaga a linha de `cold_archive`.
 - `cold purge` exige `--yes` e é a única operação destrutiva do arquivo: apaga o item, os seus `ReviewLog` (CASCADE) e a linha de `cold_archive`. O arquivo de export do dia continua no disco.
 - `config get|set` cobre só `cold_archive_after_days`. O `set` migra primeiro com a janela antiga e grava a nova depois, então itens que passam a ser elegíveis migram na execução seguinte.
+- As confirmações seguem o formato dos comandos de item: `Item arquivado: <título> (<id8>)`, `Item desarquivado: <título> (<id8>)`, `Item restaurado: <título> (<id8>)` e `Item removido do arquivo morto: <título> (<id8>)`; `config get` e `config set` imprimem `<chave>: <valor>`.
 
 ## Contrato `--json`
 
@@ -186,6 +190,7 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 | `--status` inválido | 2 | `status inválido: use active, archived ou cold` |
 | Chave de config desconhecida | 2 | `chave desconhecida: <chave>` |
 | Valor de config fora do domínio | 2 | `valor inválido para <chave>: <valor>` |
+| Valor negativo cru em `config set` | 1 | `flag desconhecida: <valor>` |
 | Flag de confirmação ausente | 1 | `remove exige --yes` |
 | Confirmação ausente na purga | 1 | `cold purge exige --yes` |
 | Valor faltando sem terminal | 1 | `-d é obrigatório sem terminal interativo` |
@@ -199,4 +204,5 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 - Formatação de tabela com largura fixa na V1; sem cores obrigatórias.
 - `--json` é o contrato usado pelos testes de snapshot do CLI.
 - A resolução por título usa `title_key` (normalizado) e o índice `idx_items_title`.
+- O parser lê todo token iniciado por `-` como flag, então um valor negativo precisa vir depois de `--`: `study config set cold_archive_after_days -- -1` sai 2, enquanto o `-1` cru vira flag desconhecida e sai 1.
 - O prompt lê de `/dev/tty` quando disponível, para não consumir stdin redirecionado.
