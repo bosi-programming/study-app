@@ -12,6 +12,7 @@ export type CommandContext = {
   readonly deps: Deps
   readonly store: Store
   readonly interactive: boolean
+  readonly json: boolean
   readonly exportDir: string | null
   close(): void
 }
@@ -77,6 +78,7 @@ function buildContext(options: ContextOptions): CommandContext {
     deps: systemDeps,
     store,
     interactive: process.stdin.isTTY === true && !options.json && !options.noInput,
+    json: options.json,
     exportDir: options.exportDir ?? null,
     close,
   }

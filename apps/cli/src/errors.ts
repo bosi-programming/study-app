@@ -5,6 +5,7 @@ export type CliErrorCode =
   | 'invalid-status'
   | 'unsupported-schema'
   | 'backup-failed'
+  | 'aborted'
   | 'internal'
 
 export type ErrorPayload = {
@@ -36,6 +37,10 @@ export class CliError extends Error {
 
   static backupFailed(): CliError {
     return new CliError('backup-failed', 3, 'backup falhou; banco não foi alterado')
+  }
+
+  static aborted(): CliError {
+    return new CliError('aborted', 130, 'operação abortada')
   }
 
   static internal(message: string): CliError {
