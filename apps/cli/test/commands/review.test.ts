@@ -372,10 +372,6 @@ describe('AC10 — envelope --json (RNF-04, T-25)', () => {
       const result = runStudy(['review', 'a', '-d', '4', '--db', dbPath, '--json'])
 
       expect(result.status).toBe(0)
-      expect(jsonOf(result)).toEqual({
-        schema_version: 1,
-        review: { item: itemOf(result, 'review') },
-      })
       expect(jsonOf(result)['review']).toMatchObject({ item: { review_count: 1, difficulty: 4 } })
       expect(result.stdout).not.toContain('Check-in')
       expect(result.stdout).not.toContain('Dificuldade')

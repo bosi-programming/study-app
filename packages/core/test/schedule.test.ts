@@ -35,8 +35,6 @@ describe('C-17 intervalFor', () => {
   it.each([8, 9, 12, 200])('clamps at the cap for n=%i', (n) => {
     const value = intervalFor(1, n)
     expect(value).toBe(365)
-    expect(Number.isFinite(value)).toBe(true)
-    expect(Number.isNaN(value)).toBe(false)
   })
 })
 
@@ -101,8 +99,6 @@ describe('C-22 reevaluateDifficulty with the current value', () => {
     const next = reevaluateDifficulty(item, 5, deps())
 
     expect(next).toEqual(item)
-    expect(next.due_date).toBe(item.due_date)
-    expect(next.updated_at).toBe(item.updated_at)
   })
 })
 
