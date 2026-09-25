@@ -42,13 +42,19 @@ const COMMANDS: Record<string, Command> = {
 type ContextException = {
   readonly skipSchemaGate: boolean
   readonly skipMigrationHook: boolean
+  readonly skipStreakHook: boolean
 }
 
-const NO_EXCEPTION: ContextException = { skipSchemaGate: false, skipMigrationHook: false }
+const NO_EXCEPTION: ContextException = {
+  skipSchemaGate: false,
+  skipMigrationHook: false,
+  skipStreakHook: false,
+}
 
 const CONTEXT_EXCEPTIONS: Record<string, ContextException> = {
-  export: { skipSchemaGate: true, skipMigrationHook: true },
-  import: { skipSchemaGate: false, skipMigrationHook: true },
+  export: { skipSchemaGate: true, skipMigrationHook: true, skipStreakHook: true },
+  import: { skipSchemaGate: false, skipMigrationHook: true, skipStreakHook: true },
+  init: { skipSchemaGate: false, skipMigrationHook: false, skipStreakHook: true },
 }
 
 const USAGE = `study — app de estudo espaçado
@@ -137,6 +143,7 @@ export function runCli(argv: readonly string[]): void {
         exportDir: valueOf(args, 'export-dir'),
         skipSchemaGate: exception.skipSchemaGate,
         skipMigrationHook: exception.skipMigrationHook,
+        skipStreakHook: exception.skipStreakHook,
       },
       (ctx) => command(commandArgs, ctx),
     )
