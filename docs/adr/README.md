@@ -29,6 +29,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-021](adr-021-ciclo-de-vida-do-item-e-arquivo-morto.md) | Ciclo de vida do item e arquivo morto: linha em `items`, gancho no contexto e export antes da migração | aceito |
 | [ADR-022](adr-022-export-import-do-json-v1.md) | Export/import do JSON v1: isenções do contexto e merge por `updated_at` | aceito |
 | [ADR-023](adr-023-gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |
+| [ADR-024](adr-024-vocabulario-de-error-code-e-envelope-sem-comando.md) | Vocabulário fechado de `error.code` e envelope no `study` sem comando | aceito |
 
 ## Supersessão
 
