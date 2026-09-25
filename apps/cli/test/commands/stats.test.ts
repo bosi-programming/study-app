@@ -192,6 +192,9 @@ describe('AC9 — a saída humana (CLI.md)', () => {
         items: [
           makeItem({ id: 'calculo-1', subject: 'Cálculo', due_date: addDays(todayLocalDate(), FAR_FUTURE_DAYS) }),
           makeItem({ id: 'ingles-1', subject: 'Inglês', due_date: addDays(todayLocalDate(), FAR_FUTURE_DAYS + 1) }),
+          makeItem({ id: 'arquivado-1', subject: 'Cálculo', status: 'archived' }),
+          makeItem({ id: 'morto-1', subject: 'Cálculo', status: 'cold' }),
+          makeItem({ id: 'morto-2', subject: 'Inglês', status: 'cold' }),
         ],
         logs: [
           logOn('calculo-1', 'log-1', OLD_INSTANT),
@@ -205,7 +208,7 @@ describe('AC9 — a saída humana (CLI.md)', () => {
       expect(result.stdout).toBe(
         [
           'Streak de fila zerada: 5 dias',
-          'Ativos: 2   Arquivados: 0   Arquivo morto: 0',
+          'Ativos: 2   Arquivados: 1   Arquivo morto: 2',
           'Check-ins hoje: 1   Total por matéria: Cálculo 2, Inglês 1',
           '',
         ].join('\n'),
