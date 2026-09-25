@@ -121,6 +121,15 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 - O conflito de id é resolvido pelo `updated_at` mais novo, comparado por instante: empate ou local mais novo não toca no banco, e um `ReviewLog` (evento imutável, sem `updated_at`) nunca é sobrescrito.
 - As regras de `schema_version` — igual ou menor aceito pela escada de migrações, futuro recusado com exit 2 — estão em `docs/especificacao/MODELO-DE-DADOS.md`; as isenções dos dois comandos no gancho e no portão do contexto, em `## Arquivo morto` e no ADR-022.
 
+## Streak de fila zerada
+
+- O streak é recalculado no início de todo comando que abre o banco, depois da migração do arquivo morto, e de novo no fim, quando a ação termina bem: o primeiro carimbo faz `stats` imprimir o valor de hoje (RF-21) e o segundo faz uma ação que mudou a fila marcar o dia em que aconteceu (RN-14).
+- `export`, `import` e `init` ficam fora do gancho — o primeiro não escreve (RNF-07), o segundo grava o `meta` do arquivo e o gancho o sobrescreveria (ADR-022), e o terceiro fecha e substitui o banco no meio do comando; o banco que sai do `init` carimba no primeiro comando seguinte.
+- O cálculo é o do core (`advanceQueueStreak`/`hasDueItems`, `CORE.md`) e o resultado são as duas chaves de `meta` (`streak_current`/`streak_last_day`) que o export leva e o import devolve.
+- Banco novo ou vazio com a fila vazia carimba 1, não 0 (CA-16); um dia que abriu com item devido carimba 0 e não se recupera no mesmo dia.
+- O streak é global: `-s` recorta as contagens e os check-ins de `stats`, não a consistência.
+- As decisões por trás do gancho — por que antes e depois do comando, e por que o streak não acompanha o `-s` — estão no ADR-023, com as alternativas rejeitadas.
+
 ## Contrato `--json`
 
 - Todo comando devolve um único objeto JSON no stdout, com `schema_version: 1` e a chave do comando como raiz.
