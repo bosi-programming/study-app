@@ -1,7 +1,6 @@
 import {
   DIFFICULTY_LABELS,
   type Item,
-  type QueueStreak,
   type ReviewLog,
   daysLate,
   isLate,
@@ -252,7 +251,7 @@ export function dueSummary(bySubject: Readonly<Record<string, number>>): string 
   return `${SUBJECT_SUMMARY_PREFIX} ${subjectCountsText(bySubject)}`
 }
 
-export function subjectCountsText(bySubject: Readonly<Record<string, number>>): string {
+function subjectCountsText(bySubject: Readonly<Record<string, number>>): string {
   return Object.entries(bySubject)
     .map(([subject, count]) => `${subject} ${count}`)
     .join(', ')
@@ -269,7 +268,7 @@ export type StatsCounts = {
 }
 
 export function statsLines(
-  streak: QueueStreak,
+  currentStreak: number,
   items: StatsCounts,
   checkinsToday: number,
   bySubject: Readonly<Record<string, number>>,
@@ -279,7 +278,7 @@ export function statsLines(
   const checkins = `${CHECKINS_TODAY_PREFIX}${checkinsToday}${STATS_SEPARATOR}${TOTAL_BY_SUBJECT_PREFIX}${total}`
 
   return [
-    `${STREAK_PREFIX}${streak.streak_current}${STREAK_SUFFIX}`,
+    `${STREAK_PREFIX}${currentStreak}${STREAK_SUFFIX}`,
     counts,
     checkins,
   ].join('\n')

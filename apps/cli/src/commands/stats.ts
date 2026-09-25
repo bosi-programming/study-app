@@ -1,4 +1,4 @@
-import { type Item, type ReviewLog, subjectKey } from '@study/core'
+import { type ReviewLog } from '@study/core'
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
 import { localDateOf } from '../deps.ts'
 import { type StatsCounts, statsLines } from '../output/human.ts'
@@ -29,7 +29,7 @@ export const statsCommand: Command = (args, ctx) => {
       checkins_today: checkins.today,
       checkins_by_subject: checkins.bySubject,
     },
-    human: statsLines(streak, items, checkins.today, checkins.bySubject),
+    human: statsLines(streak.streak_current, items, checkins.today, checkins.bySubject),
   }
 }
 
@@ -43,8 +43,7 @@ function checkinTotals(store: Store, filter: ItemFilter, today: string): Checkin
   const bySubject: Record<string, number> = {}
   let countToday = 0
 
-  for (const item of store.listItems()) {
-    if (!matchesFilter(item, filter)) continue
+  for (const item of store.listItems(filter)) {
     const logs = logsByItem.get(item.id)
     if (logs === undefined) continue
 
@@ -63,9 +62,4 @@ function logsByItemId(logs: readonly ReviewLog[]): Map<string, readonly ReviewLo
     else itemLogs.push(log)
   }
   return byItem
-}
-
-function matchesFilter(item: Item, filter: ItemFilter): boolean {
-  if (filter.subjectKey === undefined) return true
-  return subjectKey(item) === filter.subjectKey
 }

@@ -8,15 +8,20 @@ const DEFAULT_STATUS: ItemStatus = 'active'
 
 export function itemFilter(args: CommandArgs): ItemFilter {
   const status = parseStatus(valueOf(args, 'status'))
-  const subject = valueOf(args, 'subject')
-  if (subject === undefined) return { status }
-  return { status, subjectKey: normalizeText(subject) }
+  const subjectKey = normalizedSubject(args)
+  if (subjectKey === undefined) return { status }
+  return { status, subjectKey }
 }
 
 export function subjectFilter(args: CommandArgs): ItemFilter {
+  const subjectKey = normalizedSubject(args)
+  if (subjectKey === undefined) return {}
+  return { subjectKey }
+}
+
+function normalizedSubject(args: CommandArgs): string | undefined {
   const subject = valueOf(args, 'subject')
-  if (subject === undefined) return {}
-  return { subjectKey: normalizeText(subject) }
+  return subject === undefined ? undefined : normalizeText(subject)
 }
 
 function parseStatus(value: string | undefined): ItemStatus {

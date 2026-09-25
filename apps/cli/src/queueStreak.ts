@@ -1,8 +1,8 @@
 import { advanceQueueStreak, hasDueItems, type QueueStreak } from '@study/core'
 import { type Store } from './persistence/index.ts'
 
-export const STREAK_CURRENT = 'streak_current'
-export const STREAK_LAST_DAY = 'streak_last_day'
+const STREAK_CURRENT = 'streak_current'
+const STREAK_LAST_DAY = 'streak_last_day'
 
 export function readQueueStreak(store: Store): QueueStreak {
   return {
