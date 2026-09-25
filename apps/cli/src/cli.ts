@@ -118,15 +118,21 @@ export function runCli(argv: readonly string[]): void {
     return
   }
 
+  const json = hasFlag(args, 'json')
   const commandName = args.positionals[0]
   if (commandName === undefined) {
+    if (json) {
+      const error = CliError.usage('nenhum comando informado')
+      printError(error, { json: true })
+      process.exitCode = error.exitCode
+      return
+    }
     process.stderr.write(`${USAGE}\n`)
     process.exitCode = 1
     return
   }
 
   const command = COMMANDS[commandName]
-  const json = hasFlag(args, 'json')
   if (command === undefined) {
     const error = CliError.usage(`comando desconhecido: ${commandName}`)
     printError(error, { json })
