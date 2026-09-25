@@ -1,7 +1,18 @@
+import { type NormalizeFixture, goldenFixtures } from '@study/golden'
 import { describe, expect, it } from 'vitest'
 import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
 import { errorOf, itemsOf, jsonOf, runStudy, seed } from './helpers.ts'
+
+const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
+
+function normalizeFixture(name: string): NormalizeFixture {
+  const fixture = fixturesByCase.get(name)
+  if (fixture === undefined || fixture.kind !== 'normalize') {
+    throw new Error(`fixture ausente: ${name}`)
+  }
+  return fixture
+}
 
 describe('AC3 — list filtra e ordena (RF-02, T-27)', () => {
   it('list-default-ativos: sem --status só os ativos aparecem', () => {
@@ -132,6 +143,39 @@ describe('AC3 — list filtra e ordena (RF-02, T-27)', () => {
       expect(header).toContain('Dificuldade')
       expect(header).toContain('Check-ins')
       expect(header).not.toMatch(/\bD\b.*\bN\b/)
+    })
+  })
+})
+
+describe('AC1 — normalização de matéria no filtro (T-12, RN-12)', () => {
+  it('list-filtra-materia-sem-acento: os pares do vetor casam pelo subjectKey no -s', () => {
+    withDb((dbPath) => {
+      const fixture = normalizeFixture('normalizacao-de-materia')
+      seed(dbPath, {
+        items: fixture.pairs.map((pair, index) =>
+          makeItem({ id: `pair-${index}`, title: `Item ${index}`, subject: pair.input }),
+        ),
+      })
+
+      fixture.pairs.forEach((pair, index) => {
+        const returned = itemsOf(
+          runStudy(['list', '-s', pair.expected_key, '--db', dbPath, '--json']),
+          'list',
+        ).map((item) => item.id)
+
+        expect(returned, `"${pair.input}" com -s ${pair.expected_key}`).toContain(`pair-${index}`)
+      })
+
+      const keys = new Set(fixture.pairs.map((pair) => pair.expected_key))
+      for (const key of keys) {
+        const expected = fixture.pairs.filter((pair) => pair.expected_key === key).length
+        const returned = itemsOf(
+          runStudy(['list', '-s', key, '--db', dbPath, '--json']),
+          'list',
+        )
+
+        expect(returned, `-s ${key}`).toHaveLength(expected)
+      }
     })
   })
 })

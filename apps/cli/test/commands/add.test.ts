@@ -1,7 +1,26 @@
 import { BASE_INTERVAL_DAYS } from '@study/core'
+import { type InitialDueFixture, goldenFixtures } from '@study/golden'
 import { describe, expect, it } from 'vitest'
 import { withDb } from '../persistence/helpers/db.ts'
-import { errorOf, expectedDue, itemOf, itemsOf, runStudy } from './helpers.ts'
+import {
+  errorOf,
+  expectedDue,
+  itemOf,
+  itemsOf,
+  rebaseDelta,
+  rebasedDate,
+  runStudy,
+} from './helpers.ts'
+
+const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
+
+function initialDueFixture(name: string): InitialDueFixture {
+  const fixture = fixturesByCase.get(name)
+  if (fixture === undefined || fixture.kind !== 'initial-due') {
+    throw new Error(`fixture ausente: ${name}`)
+  }
+  return fixture
+}
 
 describe('AC2 — add cria com vencimento inicial (RF-01)', () => {
   it('add-happy: trima os textos e calcula o vencimento inicial', () => {
@@ -42,6 +61,34 @@ describe('AC2 — add cria com vencimento inicial (RF-01)', () => {
 
       expect(result.status).toBe(0)
       expect(itemOf(result, 'add')).toMatchObject({ note: null, link: null })
+    })
+  })
+
+  it('add-vencimento-por-dificuldade: o vetor T-01 rebaseado cobre as dificuldades 1–5', () => {
+    withDb((dbPath) => {
+      const fixture = initialDueFixture('vencimento-inicial-por-dificuldade')
+      const delta = rebaseDelta(fixture.created_on)
+
+      for (const entry of fixture.cases) {
+        const result = runStudy([
+          'add',
+          fixture.new_item.title,
+          '-s',
+          fixture.new_item.subject,
+          '-d',
+          String(entry.difficulty),
+          '--db',
+          dbPath,
+          '--json',
+        ])
+
+        expect(result.status).toBe(0)
+        expect(itemOf(result, 'add'), `dificuldade ${entry.difficulty}`).toMatchObject({
+          difficulty: entry.difficulty,
+          interval_days: entry.expected_interval_days,
+          due_date: rebasedDate(entry.expected_due_date, delta),
+        })
+      }
     })
   })
 
