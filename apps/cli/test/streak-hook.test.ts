@@ -99,14 +99,15 @@ describe('AC1 — o streak aparece (RF-21, RN-14, CA-16, T-21)', () => {
 })
 
 describe('AC2 — o gancho roda antes do comando (RN-14)', () => {
-  it('gancho-antes-do-comando: list carimba o dia antes de rodar e o meta fica fresco', () => {
+  it('gancho-antes-do-comando: o dia carimbado com item devido não se recupera quando a fila esvazia depois', () => {
     withStreakDb((dbPath, today) => {
+      seed(dbPath, { items: [makeItem({ id: 'review-1', due_date: today })] })
       seedStreak(dbPath, 4, rebasedDate(today, -1))
 
-      const result = runStudy(['list', '--db', dbPath, '--json'])
+      const result = runStudy(['review', 'review-1', '-d', '4', '--db', dbPath, '--json'])
 
       expect(result.status).toBe(0)
-      expect(streakMeta(dbPath)).toEqual({ current: '5', lastDay: today })
+      expect(streakMeta(dbPath)).toEqual({ current: '0', lastDay: today })
     })
   })
 
@@ -207,3 +208,18 @@ describe('AC4 — as isenções (ADR-022)', () => {
   })
 })
 
+describe('AC10 — o meta ilegível (CA-16)', () => {
+  it('gancho-meta-nao-numerico: um streak_current ilegível conta como zero e rola de ontem', () => {
+    withStreakDb((dbPath, today) => {
+      withStore(dbPath, (store) => {
+        store.setMeta('streak_current', 'abc')
+        store.setMeta('streak_last_day', rebasedDate(today, -1))
+      })
+
+      const result = runStudy(['stats', '--db', dbPath, '--json'])
+
+      expect(result.status).toBe(0)
+      expect(dataOf(result, 'stats')['streak']).toEqual({ current: 1, last_day: today })
+    })
+  })
+})

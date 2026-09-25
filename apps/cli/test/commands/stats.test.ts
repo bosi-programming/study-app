@@ -85,21 +85,28 @@ describe('AC5 — as contagens de item (RF-22, RN-09)', () => {
 })
 
 describe('AC6 — os check-ins de hoje (RF-23)', () => {
-  it('stats-checkins-hoje-local: conta o log do dia local e ignora o de outro dia', () => {
-    withDb((dbPath) => {
-      seed(dbPath, {
-        items: [makeItem({ id: 'item-1', due_date: addDays(todayLocalDate(), FAR_FUTURE_DAYS) })],
-        logs: [
-          logOn('item-1', 'hoje', systemDeps.clock.nowUtc()),
-          logOn('item-1', 'antigo', OLD_INSTANT),
-        ],
+  it('stats-checkins-hoje-local: conta o log do dia local mesmo com o dia UTC já virado', () => {
+    const originalTz = process.env.TZ
+    process.env.TZ = 'America/Sao_Paulo'
+    try {
+      const today = todayLocalDate()
+      withDb((dbPath) => {
+        seed(dbPath, {
+          items: [makeItem({ id: 'item-1', due_date: addDays(today, FAR_FUTURE_DAYS) })],
+          logs: [
+            logOn('item-1', 'hoje', `${addDays(today, 1)}T01:00:00Z`),
+            logOn('item-1', 'antigo', OLD_INSTANT),
+          ],
+        })
+
+        const result = runStudy(['stats', '--db', dbPath, '--json'])
+
+        expect(result.status).toBe(0)
+        expect(statsOf(result)['checkins_today']).toBe(1)
       })
-
-      const result = runStudy(['stats', '--db', dbPath, '--json'])
-
-      expect(result.status).toBe(0)
-      expect(statsOf(result)['checkins_today']).toBe(1)
-    })
+    } finally {
+      process.env.TZ = originalTz
+    }
   })
 
   it('stats-checkins-hoje-sem-status: o check-in de item arquivado e o de cold contam', () => {
@@ -272,16 +279,25 @@ describe('AC10 — os casos de borda', () => {
 })
 
 describe('AC12 — o uso do comando', () => {
-  it('stats-uso: posicional e flag de outro comando saem 1, e o USAGE lista stats', () => {
+  it('stats-uso-posicional: um argumento posicional sai 1', () => {
     withDb((dbPath) => {
-      const positional = runStudy(['stats', 'extra', '--db', dbPath, '--json'])
-      const foreignFlag = runStudy(['stats', '-d', '4', '--db', dbPath, '--json'])
+      const result = runStudy(['stats', 'extra', '--db', dbPath, '--json'])
 
-      expect(positional.status).toBe(1)
-      expect(errorOf(positional).code).toBe('usage')
-      expect(foreignFlag.status).toBe(1)
-      expect(errorOf(foreignFlag).code).toBe('usage')
-      expect(runStudy(['--help']).stdout).toMatch(/\bstats\b/)
+      expect(result.status).toBe(1)
+      expect(errorOf(result).code).toBe('usage')
     })
+  })
+
+  it('stats-uso-flag-estrangeira: uma flag de outro comando sai 1', () => {
+    withDb((dbPath) => {
+      const result = runStudy(['stats', '-d', '4', '--db', dbPath, '--json'])
+
+      expect(result.status).toBe(1)
+      expect(errorOf(result).code).toBe('usage')
+    })
+  })
+
+  it('stats-uso-help: o USAGE lista stats', () => {
+    expect(runStudy(['--help']).stdout).toMatch(/\bstats\b/)
   })
 })
