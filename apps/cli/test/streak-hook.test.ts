@@ -1,11 +1,11 @@
 import { writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { type QueueStreakFixture, goldenFixtures } from '@study/golden'
 import { describe, expect, it } from 'vitest'
 import { makeItem } from './persistence/helpers.ts'
 import { withDb } from './persistence/helpers/db.ts'
 import {
   dataOf,
+  fixtureOf,
   rebaseDelta,
   rebasedDate,
   runStudy,
@@ -16,16 +16,6 @@ import {
 
 const STREAK_FIXTURE = 'streak-de-fila-zerada'
 const FAR_FUTURE_DAYS = 30
-
-const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
-
-function streakFixture(name: string): QueueStreakFixture {
-  const fixture = fixturesByCase.get(name)
-  if (fixture === undefined || fixture.kind !== 'queue-streak') {
-    throw new Error(`fixture ausente: ${name}`)
-  }
-  return fixture
-}
 
 type StreakMeta = {
   readonly current: string | null
@@ -51,7 +41,7 @@ function withStreakDb(run: (dbPath: string, today: string) => void): void {
 }
 
 describe('AC1 — o streak aparece (RF-21, RN-14, CA-16, T-21)', () => {
-  const fixture = streakFixture(STREAK_FIXTURE)
+  const fixture = fixtureOf('queue-streak', STREAK_FIXTURE)
   const today = todayLocalDate()
   const previousStates = [fixture.initial, ...fixture.days.map((day) => day.expected)]
   const vectorCases = fixture.days.map((day, index) => {

@@ -1,18 +1,7 @@
-import { type NormalizeFixture, goldenFixtures } from '@study/golden'
 import { describe, expect, it } from 'vitest'
 import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
-import { errorOf, itemsOf, jsonOf, runStudy, seed } from './helpers.ts'
-
-const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
-
-function normalizeFixture(name: string): NormalizeFixture {
-  const fixture = fixturesByCase.get(name)
-  if (fixture === undefined || fixture.kind !== 'normalize') {
-    throw new Error(`fixture ausente: ${name}`)
-  }
-  return fixture
-}
+import { errorOf, fixtureOf, itemsOf, jsonOf, runStudy, seed } from './helpers.ts'
 
 describe('AC3 — list filtra e ordena (RF-02, T-27)', () => {
   it('list-default-ativos: sem --status só os ativos aparecem', () => {
@@ -150,7 +139,7 @@ describe('AC3 — list filtra e ordena (RF-02, T-27)', () => {
 describe('AC1 — normalização de matéria no filtro (T-12, RN-12)', () => {
   it('list-filtra-materia-sem-acento: os pares do vetor casam pelo subjectKey no -s', () => {
     withDb((dbPath) => {
-      const fixture = normalizeFixture('normalizacao-de-materia')
+      const fixture = fixtureOf('normalize', 'normalizacao-de-materia')
       seed(dbPath, {
         items: fixture.pairs.map((pair, index) =>
           makeItem({ id: `pair-${index}`, title: `Item ${index}`, subject: pair.input }),

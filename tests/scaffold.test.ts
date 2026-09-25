@@ -2,10 +2,12 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_QUEUE_BUDGET_MS, DEFAULT_QUEUE_SIZE, bench } from '../scripts/bench.ts'
 import { SCHEMA_SQL } from '../scripts/sqlite-probe.ts'
 import vitestConfig from '../vitest.config.ts'
 
 const root = resolve(import.meta.dirname, '..')
+const benchTimeoutMs = 30_000
 
 function readJson<T = Record<string, unknown>>(relativePath: string): T {
   return JSON.parse(readFileSync(resolve(root, relativePath), 'utf8')) as T
@@ -88,15 +90,14 @@ describe('S-12 real bench', () => {
       .split('\n')
       .find((line) => line.includes('RNF-03')) ?? ''
   const script = textAt('scripts/bench.ts')
+  const size = Number((/(\d[\d.]*)\s*itens/.exec(requirementLine)?.[1] ?? '').replaceAll('.', ''))
+  const budget = Number(/(\d+)\s*ms/.exec(requirementLine)?.[1])
 
   it('pins the queue size and the budget to the RNF-03 line of the requirements', () => {
-    const size = Number((/(\d[\d.]*)\s*itens/.exec(requirementLine)?.[1] ?? '').replaceAll('.', ''))
-    const budget = Number(/(\d+)\s*ms/.exec(requirementLine)?.[1])
-
     expect(size).toBe(5_000)
     expect(budget).toBe(200)
-    expect(script).toContain('QUEUE_SIZE = 5_000')
-    expect(script).toContain('QUEUE_BUDGET_MS = 200')
+    expect(DEFAULT_QUEUE_SIZE).toBe(size)
+    expect(DEFAULT_QUEUE_BUDGET_MS).toBe(budget)
   })
 
   it('seeds, warms up, takes the median through the binary and leaves the stub behind', () => {
@@ -107,6 +108,37 @@ describe('S-12 real bench', () => {
     expect(script).toContain('median')
     expect(script).not.toContain('nothing to measure yet')
   })
+
+  it(
+    'bench-teto: reprova a medição acima do orçamento',
+    () => {
+      expect(bench({ queueSize: 25, budgetMs: 0 }).ok).toBe(false)
+    },
+    benchTimeoutMs,
+  )
+
+  it(
+    'bench-fila: recusa quando a fila volta com tamanho diferente do semeado',
+    () => {
+      expect(() => bench({ queueSize: 25, expectedItems: 26 })).toThrow(/esperado 26/)
+    },
+    benchTimeoutMs,
+  )
+
+  it(
+    'bench-exit: o teto reprovado imprime FAIL e sai 1',
+    () => {
+      const result = spawnSync(process.execPath, ['scripts/bench.ts'], {
+        cwd: root,
+        encoding: 'utf8',
+        env: { ...process.env, STUDY_BENCH_QUEUE_SIZE: '25', STUDY_BENCH_BUDGET_MS: '0' },
+      })
+
+      expect(result.stdout).toContain('FAIL')
+      expect(result.status).toBe(1)
+    },
+    benchTimeoutMs,
+  )
 })
 
 describe('S-13 sqlite probe', () => {
@@ -237,7 +269,11 @@ function planManualCases(): string[] {
 }
 
 function phaseOneDefinitionOfDone(): string[] {
-  const line = textAt('docs/engenharia/ROADMAP.md')
+  const section =
+    textAt('docs/engenharia/ROADMAP.md')
+      .split('\n## ')
+      .find((part) => part.startsWith('Fase 1')) ?? ''
+  const line = section
     .split('\n')
     .find((candidate) => candidate.startsWith('Definition of done:'))
 

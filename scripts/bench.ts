@@ -6,15 +6,24 @@ import { systemDeps } from '../apps/cli/src/deps.ts'
 import { openStore } from '../apps/cli/src/persistence/index.ts'
 import { type Difficulty, type Item } from '../packages/core/src/index.ts'
 
-const QUEUE_SIZE = 5_000
-const QUEUE_BUDGET_MS = 200
+export const DEFAULT_QUEUE_SIZE = 5_000
+export const DEFAULT_QUEUE_BUDGET_MS = 200
 const WARMUP_ROUNDS = 2
 const MEASURE_ROUNDS = 5
+
+const QUEUE_SIZE = Number(process.env.STUDY_BENCH_QUEUE_SIZE ?? DEFAULT_QUEUE_SIZE)
+const QUEUE_BUDGET_MS = Number(process.env.STUDY_BENCH_BUDGET_MS ?? DEFAULT_QUEUE_BUDGET_MS)
 
 const BIN_PATH = resolve(import.meta.dirname, '../node_modules/.bin/study')
 const DIFFICULTIES: readonly Difficulty[] = [1, 2, 3, 4, 5]
 
 type BenchResult = { readonly ok: boolean; readonly name: string; readonly detail: string }
+
+type BenchOptions = {
+  readonly queueSize?: number
+  readonly expectedItems?: number
+  readonly budgetMs?: number
+}
 
 function benchItem(index: number, today: string): Item {
   return {
@@ -37,11 +46,11 @@ function benchItem(index: number, today: string): Item {
   }
 }
 
-function seedQueue(dbPath: string, today: string): void {
+function seedQueue(dbPath: string, today: string, size: number): void {
   const store = openStore(dbPath)
   try {
     store.transaction(() => {
-      for (let index = 0; index < QUEUE_SIZE; index += 1) {
+      for (let index = 0; index < size; index += 1) {
         store.saveItem(benchItem(index, today))
       }
     })
@@ -57,7 +66,7 @@ function queueTotal(stdout: string): number {
   return (payload.due?.overdue?.length ?? 0) + (payload.due?.today?.length ?? 0)
 }
 
-function measureRound(dbPath: string): number {
+function measureRound(dbPath: string, expectedItems: number): number {
   const started = performance.now()
   const result = spawnSync(BIN_PATH, ['due', '--json', '--db', dbPath], { encoding: 'utf8' })
   const elapsed = performance.now() - started
@@ -66,8 +75,8 @@ function measureRound(dbPath: string): number {
     throw new Error(`study due saiu com ${String(result.status)}: ${result.stderr.trim()}`)
   }
   const total = queueTotal(result.stdout)
-  if (total !== QUEUE_SIZE) {
-    throw new Error(`a fila devolveu ${total} itens, esperado ${QUEUE_SIZE}`)
+  if (total !== expectedItems) {
+    throw new Error(`a fila devolveu ${total} itens, esperado ${expectedItems}`)
   }
   return elapsed
 }
@@ -79,23 +88,29 @@ function median(values: readonly number[]): number {
   return ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2
 }
 
-function bench(): BenchResult {
+export function bench(options: BenchOptions = {}): BenchResult {
+  const queueSize = options.queueSize ?? QUEUE_SIZE
+  const expectedItems = options.expectedItems ?? queueSize
+  const budgetMs = options.budgetMs ?? QUEUE_BUDGET_MS
   const dir = mkdtempSync(join(tmpdir(), 'study-bench-'))
   const dbPath = join(dir, 'bench.db')
 
   try {
     const today = systemDeps.clock.todayLocalDate()
     const seedStarted = performance.now()
-    seedQueue(dbPath, today)
+    seedQueue(dbPath, today, queueSize)
     const seedMs = performance.now() - seedStarted
 
-    for (let round = 0; round < WARMUP_ROUNDS; round += 1) measureRound(dbPath)
-    const samples = Array.from({ length: MEASURE_ROUNDS }, () => measureRound(dbPath))
+    for (let round = 0; round < WARMUP_ROUNDS; round += 1) measureRound(dbPath, expectedItems)
+    const samples = Array.from(
+      { length: MEASURE_ROUNDS },
+      () => measureRound(dbPath, expectedItems),
+    )
     const elapsed = median(samples)
 
     return {
-      ok: elapsed < QUEUE_BUDGET_MS,
-      name: `RNF-03: fila de ${QUEUE_SIZE} itens abaixo de ${QUEUE_BUDGET_MS}ms`,
+      ok: elapsed < budgetMs,
+      name: `RNF-03: fila de ${queueSize} itens abaixo de ${budgetMs}ms`,
       detail:
         `aquecimento ${WARMUP_ROUNDS} + mediana de ${MEASURE_ROUNDS} rodadas: ` +
         `${elapsed.toFixed(1)}ms (seed em ${seedMs.toFixed(0)}ms)`,

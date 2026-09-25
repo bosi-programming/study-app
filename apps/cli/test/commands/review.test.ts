@@ -1,4 +1,3 @@
-import { type CheckinFixture, type ProgressionFixture, goldenFixtures } from '@study/golden'
 import { toDifficulty } from '@study/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ALL_FLAGS, parseArgs } from '../../src/args.ts'
@@ -13,6 +12,7 @@ import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
 import {
   errorOf,
+  fixtureOf,
   historyOf,
   itemOf,
   jsonOf,
@@ -30,22 +30,6 @@ const promptMock = vi.hoisted(() => ({
 vi.mock('../../src/prompt.ts', () => ({
   promptDifficulty: promptMock.promptDifficulty,
 }))
-
-const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
-
-function checkinFixture(name: string): CheckinFixture {
-  const fixture = fixturesByCase.get(name)
-  if (fixture === undefined || fixture.kind !== 'checkin') throw new Error(`fixture ausente: ${name}`)
-  return fixture
-}
-
-function progressionFixture(name: string): ProgressionFixture {
-  const fixture = fixturesByCase.get(name)
-  if (fixture === undefined || fixture.kind !== 'progression') {
-    throw new Error(`fixture ausente: ${name}`)
-  }
-  return fixture
-}
 
 type InProcessOutcome = {
   readonly result?: CommandResult
@@ -89,7 +73,7 @@ function withFreshStore<T>(dbPath: string, run: (store: Store) => T): T {
 describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, T-03, T-05, ADR-011)', () => {
   it('review-registra-checkin: o vetor T-20 rebaseado, dois check-ins no mesmo dia', () => {
     withDb((dbPath) => {
-      const fixture = checkinFixture('checkin-antecipado-e-dois-no-mesmo-dia')
+      const fixture = fixtureOf('checkin', 'checkin-antecipado-e-dois-no-mesmo-dia')
       const [first, second] = fixture.checkins
       if (first === undefined || second === undefined) throw new Error('vetor T-20 incompleto')
 
@@ -165,7 +149,7 @@ describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, T-03, T-05,
 
   it('review-progressao-ate-o-teto: o vetor T-02 rebaseado sobe ×2 até 365d', () => {
     withDb((dbPath) => {
-      const fixture = progressionFixture('progressao-ate-teto')
+      const fixture = fixtureOf('progression', 'progressao-ate-teto')
       seed(dbPath, {
         items: [
           makeItem({
@@ -203,7 +187,7 @@ describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, T-03, T-05,
 
   it('review-atrasado-nao-penaliza: o vetor T-03 rebaseado mantém o ×2 e marca late', () => {
     withDb((dbPath) => {
-      const fixture = checkinFixture('checkin-atrasado-nao-penaliza')
+      const fixture = fixtureOf('checkin', 'checkin-atrasado-nao-penaliza')
       const [step] = fixture.checkins
       if (step === undefined) throw new Error('vetor T-03 incompleto')
 

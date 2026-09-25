@@ -1,10 +1,10 @@
-import { type ReevaluateFixture, goldenFixtures } from '@study/golden'
 import { intervalFor, toDifficulty } from '@study/core'
 import { describe, expect, it } from 'vitest'
 import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
 import {
   errorOf,
+  fixtureOf,
   itemOf,
   jsonOf,
   rebaseDelta,
@@ -13,16 +13,6 @@ import {
   seed,
   todayLocalDate,
 } from './helpers.ts'
-
-const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
-
-function reevaluateFixture(name: string): ReevaluateFixture {
-  const fixture = fixturesByCase.get(name)
-  if (fixture === undefined || fixture.kind !== 'reevaluate') {
-    throw new Error(`fixture ausente: ${name}`)
-  }
-  return fixture
-}
 
 describe('AC9 — difficulty reavalia (RF-11, T-04, ADR-019)', () => {
   it('difficulty-reavalia: reusa o n e conta o vencimento novo de hoje', () => {
@@ -46,7 +36,7 @@ describe('AC9 — difficulty reavalia (RF-11, T-04, ADR-019)', () => {
 
   it('difficulty-reusa-vetor: o vetor reavaliacao-com-nova-base dá 28d', () => {
     withDb((dbPath) => {
-      const fixture = reevaluateFixture('reavaliacao-com-nova-base')
+      const fixture = fixtureOf('reevaluate', 'reavaliacao-com-nova-base')
       const delta = rebaseDelta(fixture.params.today)
       seed(dbPath, {
         items: [

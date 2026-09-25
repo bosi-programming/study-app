@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 const PLAN_DOC = resolve(import.meta.dirname, '../../../docs/engenharia/PLANO-DE-TESTES.md')
 const TEST_ROOT = import.meta.dirname
+const SWEEP_FILE = resolve(import.meta.dirname, 'traceability.test.ts')
 
 type PlanCase = {
   readonly id: string
@@ -69,6 +70,7 @@ function spawningTestFiles(): TestFile[] {
         continue
       }
       if (!entry.name.endsWith('.test.ts')) continue
+      if (path === SWEEP_FILE) continue
       const text = readFileSync(path, 'utf8')
       if (!text.includes('runStudy(')) continue
       files.push({ path, text })
