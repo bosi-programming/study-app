@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { InvalidFieldError } from '@study/core'
 import { describe, expect, it } from 'vitest'
 import { errorPayload, exitCodeFor } from '../src/errors.ts'
 import { SPAWN_SWEEP_TIMEOUT_MS, errorOf, runStudy, seed } from './commands/helpers.ts'
@@ -55,23 +54,18 @@ type MessageCheck =
   | { readonly exact: (ctx: Ctx) => string }
   | { readonly contains: (ctx: Ctx) => readonly string[] }
 
-type Spec =
-  | {
-      readonly kind: 'cli'
-      readonly message: MessageCheck
-      readonly prepare?: (ctx: Ctx) => void
-      readonly argv: (ctx: Ctx) => readonly string[]
-    }
-  | { readonly kind: 'mapper'; readonly error: unknown }
+type Spec = {
+  readonly message: MessageCheck
+  readonly prepare?: (ctx: Ctx) => void
+  readonly argv: (ctx: Ctx) => readonly string[]
+}
 
 const SPECS: Record<string, Spec> = {
   'Item não encontrado': {
-    kind: 'cli',
     argv: () => ['show', UNKNOWN_REF],
     message: { exact: () => `item não encontrado: ${UNKNOWN_REF}` },
   },
   'Referência ambígua': {
-    kind: 'cli',
     prepare: ({ dbPath }) =>
       seed(dbPath, {
         items: [
@@ -89,16 +83,22 @@ const SPECS: Record<string, Spec> = {
     },
   },
   'Dificuldade fora de 1–5': {
-    kind: 'cli',
     argv: () => ['add', 'Título', '-s', 'Matéria', '-d', '9'],
     message: { exact: () => 'dificuldade inválida: use 1 a 5' },
   },
   'Data fora de YYYY-MM-DD': {
-    kind: 'mapper',
-    error: new InvalidFieldError('date', 'data inválida: use YYYY-MM-DD'),
+    prepare: ({ dbPath, dir }) => {
+      const dumpPath = join(dir, 'due-date.json')
+      writeFileSync(
+        dumpPath,
+        JSON.stringify({ ...EMPTY_DUMP, items: [makeItem({ due_date: 'nao-e-data' })] }),
+      )
+      runStudy(['import', dumpPath, '--db', dbPath])
+    },
+    argv: () => ['show', REF8],
+    message: { exact: () => 'data inválida: use YYYY-MM-DD' },
   },
   'Referência curta demais e sem correspondência': {
-    kind: 'cli',
     argv: () => ['show', 'abc'],
     message: {
       exact: () =>
@@ -106,103 +106,85 @@ const SPECS: Record<string, Spec> = {
     },
   },
   'Check-in em arquivado': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem({ status: 'archived' })] }),
     argv: () => ['review', REF8, '-d', '4'],
     message: { exact: () => 'item arquivado; use study unarchive <ref>' },
   },
   'Check-in em item do arquivo morto': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem({ status: 'cold' })] }),
     argv: () => ['review', REF8, '-d', '4'],
     message: { exact: () => 'item no arquivo morto; use study cold restore <ref>' },
   },
   'archive repetido': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem({ status: 'archived' })] }),
     argv: () => ['archive', REF8],
     message: { exact: () => `item já está arquivado: ${REF8}` },
   },
   'unarchive em item ativo': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem()] }),
     argv: () => ['unarchive', REF8],
     message: { exact: () => `item já está ativo: ${REF8}` },
   },
   'archive/unarchive em item do arquivo morto': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem({ status: 'cold' })] }),
     argv: () => ['archive', REF8],
     message: { exact: () => `item no arquivo morto; use study cold restore ${REF8}` },
   },
   'cold restore/cold purge fora do arquivo morto': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem()] }),
     argv: () => ['cold', 'restore', REF8],
     message: { exact: () => `item não está no arquivo morto: ${REF8}` },
   },
   '--status inválido': {
-    kind: 'cli',
     argv: () => ['list', '--status', 'bogus'],
     message: { exact: () => 'status inválido: use active, archived ou cold' },
   },
   'Chave de config desconhecida': {
-    kind: 'cli',
     argv: () => ['config', 'get', 'bogus'],
     message: { exact: () => 'chave desconhecida: bogus' },
   },
   'Valor de config fora do domínio': {
-    kind: 'cli',
     argv: () => ['config', 'set', 'cold_archive_after_days', 'abc'],
     message: { exact: () => 'valor inválido para cold_archive_after_days: abc' },
   },
   'Valor negativo cru em config set': {
-    kind: 'cli',
     argv: () => ['config', 'set', 'cold_archive_after_days', '-1'],
     message: { exact: () => 'flag desconhecida: -1' },
   },
   'Flag de confirmação ausente': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem()] }),
     argv: () => ['remove', REF8],
     message: { exact: () => 'remove exige --yes' },
   },
   'Confirmação ausente na purga': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem()] }),
     argv: () => ['cold', 'purge', REF8],
     message: { exact: () => 'cold purge exige --yes' },
   },
   'Valor faltando sem terminal': {
-    kind: 'cli',
     argv: () => ['add', 'Título', '-s', 'Matéria'],
     message: { exact: () => '-d é obrigatório sem terminal interativo' },
   },
   'Export sobre arquivo existente': {
-    kind: 'cli',
     prepare: ({ dir }) => writeFileSync(join(dir, 'backup.json'), '{}'),
     argv: ({ dir }) => ['export', join(dir, 'backup.json')],
     message: { exact: () => 'arquivo já existe; use --yes para sobrescrever' },
   },
   'Arquivo de import ausente ou ilegível': {
-    kind: 'cli',
     argv: ({ dir }) => ['import', join(dir, 'missing.json')],
     message: { exact: ({ dir }) => `arquivo não encontrado: ${join(dir, 'missing.json')}` },
   },
   'Arquivo de import fora do contrato': {
-    kind: 'cli',
     prepare: ({ dir }) => writeFileSync(join(dir, 'bad.json'), '{}'),
     argv: ({ dir }) => ['import', join(dir, 'bad.json')],
     message: { exact: ({ dir }) => `arquivo inválido: ${join(dir, 'bad.json')}` },
   },
   'Export sobre o próprio banco': {
-    kind: 'cli',
     prepare: ({ dbPath }) => seed(dbPath, { items: [makeItem()] }),
     argv: ({ dbPath }) => ['export', dbPath],
     message: { exact: ({ dbPath }) => `arquivo de export é o banco: ${dbPath}` },
   },
   'Import com schema futuro': {
-    kind: 'cli',
     prepare: ({ dir }) =>
       writeFileSync(
         join(dir, 'future.json'),
@@ -212,13 +194,11 @@ const SPECS: Record<string, Spec> = {
     message: { exact: () => 'schema_version 2 não suportado' },
   },
   'Banco que existe e não abre como SQLite': {
-    kind: 'cli',
     prepare: ({ dbPath }) => writeFileSync(dbPath, 'nao-e-sqlite'),
     argv: () => ['list'],
     message: { exact: ({ dbPath }) => `banco corrompido: ${dbPath}` },
   },
   'Backup do init falhou': {
-    kind: 'cli',
     prepare: ({ dbPath, dir }) => {
       runStudy(['init', '--db', dbPath])
       writeFileSync(join(dir, 'backups'), 'nao-e-diretorio')
@@ -255,6 +235,20 @@ function expectMessage(actual: string, check: MessageCheck, ctx: Ctx): void {
   for (const line of check.contains(ctx)) expect(actual).toContain(line)
 }
 
+function templatePattern(template: string): RegExp {
+  const escaped = template.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${escaped.replace(/<[^>]*>/g, '[\\s\\S]+?')}$`)
+}
+
+function expectDocMessage(actual: string, row: DocRow, spec: Spec): void {
+  if (!('exact' in spec.message)) return
+  if (row.message.includes('<')) {
+    expect(actual, row.situation).toMatch(templatePattern(row.message))
+    return
+  }
+  expect(actual, row.situation).toBe(row.message)
+}
+
 function withSpec(row: DocRow, run: (ctx: Ctx, spec: Spec) => void): void {
   const spec = SPECS[row.situation]
   expect(spec, `sem spec para: ${row.situation}`).toBeDefined()
@@ -268,23 +262,13 @@ describe('AC4 — a varredura da tabela de erros do CLI.md', () => {
 
     for (const row of ROWS) {
       withSpec(row, (ctx, spec) => {
-        if (spec.kind === 'mapper') {
-          expect(errorPayload(spec.error), row.situation).toEqual({
-            error: { code: row.code, message: row.message },
-          })
-          expect(exitCodeFor(spec.error), row.situation).toBe(row.exit)
-          return
-        }
-
         spec.prepare?.(ctx)
         const result = runStudy([...spec.argv(ctx), '--db', ctx.dbPath, '--json'])
 
         expect(errorOf(result).code, row.situation).toBe(row.code)
         expect(result.status, row.situation).toBe(row.exit)
         expectMessage(errorOf(result).message, spec.message, ctx)
-        if (!row.message.includes('<')) {
-          expect(errorOf(result).message, row.situation).toBe(row.message)
-        }
+        expectDocMessage(errorOf(result).message, row, spec)
       })
     }
   }, SPAWN_SWEEP_TIMEOUT_MS)
@@ -292,8 +276,6 @@ describe('AC4 — a varredura da tabela de erros do CLI.md', () => {
   it('tabela-erros-stdout-vazio: toda linha de erro sai com stdout vazio', () => {
     for (const row of ROWS) {
       withSpec(row, (ctx, spec) => {
-        if (spec.kind === 'mapper') return
-
         spec.prepare?.(ctx)
         const result = runStudy([...spec.argv(ctx), '--db', ctx.dbPath, '--json'])
 

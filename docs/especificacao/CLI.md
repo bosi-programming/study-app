@@ -22,7 +22,7 @@ Versão: 5 | Data: 2026-09-24 | Base: `docs/especificacao/REQUISITOS.md`
 | 1 | uso: falta flag obrigatória ou argumento inválido | `remove` sem `--yes`; `-d` ausente sem terminal |
 | 2 | validação: valor fora do domínio | dificuldade 7; `--status` inválido; schema futuro |
 | 3 | estado ou ambiente: algo impede a operação | referência não encontrada ou ambígua; check-in em arquivado; backup do init falhou |
-| 130 | aborto do prompt: Ctrl-C depois do check-in | `review` com o prompt interrompido |
+| 130 | aborto do prompt: Ctrl-C mata o processo por SIGINT | `review` com o prompt interrompido — o shell reporta 130 e nenhum envelope é escrito |
 
 ### Referências de item
 
@@ -93,7 +93,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 
 - `study add` sem `-d` mostra os rótulos 1–5 e lê a dificuldade; valor vazio é inválido.
 - `study review` registra o check-in, imprime a confirmação e só então pergunta a dificuldade, pré-preenchida com a atual. Enter mantém; um valor novo recalcula o intervalo com a base nova e o n já incrementado.
-- Abortar o prompt depois do check-in (Ctrl-C) mantém o check-in, não altera a dificuldade e encerra com exit 130.
+- Abortar o prompt depois do check-in (Ctrl-C) mantém o check-in, não altera a dificuldade e mata o processo por SIGINT: o shell reporta exit 130 e nenhum envelope é escrito, porque o sinal encerra o processo antes de ele responder. O `code` `aborted` cobre a leitura do terminal interrompida (`EINTR`/`EAGAIN`), não o Ctrl-C.
 - `study init` com banco existente pergunta; confirmar exige `--reset --yes`, e o banco é exportado para `<data-dir>/backups/pre-reset-<timestamp>.json` antes de ser recriado. Se o backup falhar, o banco não é alterado.
 
 ## Arquivo morto
@@ -267,7 +267,7 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 
 ## Erros
 
-O `code` é o valor estável por onde o consumidor de `schema_version: 1` ramifica; a `message` é prosa para humano e pode mudar. O vocabulário é fechado em catorze valores: `usage`, `invalid-status`, `invalid-value`, `invalid-state`, `unsupported-schema`, `backup-failed`, `aborted` e `internal`, mais os seis `kind` do core (`invalid-field`, `invalid-difficulty`, `invalid-ref`, `not-found`, `ambiguous-ref`, `item-not-active`). Nada fora dessa lista é emitido; um erro que não é `CliError` nem `CoreError` sai como `internal`.
+O `code` é o valor estável por onde o consumidor de `schema_version: 1` ramifica; a `message` é prosa para humano e pode mudar. O vocabulário é fechado em catorze valores: `usage`, `invalid-status`, `invalid-value`, `invalid-state`, `unsupported-schema`, `backup-failed`, `aborted` (leitura do terminal interrompida) e `internal`, mais os seis `kind` do core (`invalid-field`, `invalid-difficulty`, `invalid-ref`, `not-found`, `ambiguous-ref`, `item-not-active`). Nada fora dessa lista é emitido; um erro que não é `CliError` nem `CoreError` sai como `internal`.
 
 | Situação | `code` | Exit | Mensagem |
 | --- | --- | --- | --- |
