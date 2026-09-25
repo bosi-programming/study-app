@@ -83,6 +83,25 @@ describe('store items', () => {
     })
   })
 
+  it('store-countitems-com-filtro: conta por status e recorta pela matéria', () => {
+    withDb((dbPath) => {
+      const store = openStore(dbPath)
+      try {
+        store.saveItem(makeItem({ id: 'a', subject: 'Cálculo', status: 'active' }))
+        store.saveItem(makeItem({ id: 'b', subject: 'Cálculo', status: 'archived' }))
+        store.saveItem(makeItem({ id: 'c', subject: 'Inglês', status: 'active' }))
+
+        expect(store.countItems('active')).toBe(2)
+        expect(store.countItems('active', { subjectKey: 'calculo' })).toBe(1)
+        expect(store.countItems('archived', { subjectKey: 'calculo' })).toBe(1)
+        expect(store.countItems('cold', { subjectKey: 'calculo' })).toBe(0)
+        expect(store.countItems('active', { subjectKey: 'nada' })).toBe(0)
+      } finally {
+        store.close()
+      }
+    })
+  })
+
   it('finds items by title substring without case or accents', () => {
     withDb((dbPath) => {
       const store = openStore(dbPath)

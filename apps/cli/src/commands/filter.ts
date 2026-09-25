@@ -13,6 +13,12 @@ export function itemFilter(args: CommandArgs): ItemFilter {
   return { status, subjectKey: normalizeText(subject) }
 }
 
+export function subjectFilter(args: CommandArgs): ItemFilter {
+  const subject = valueOf(args, 'subject')
+  if (subject === undefined) return {}
+  return { subjectKey: normalizeText(subject) }
+}
+
 function parseStatus(value: string | undefined): ItemStatus {
   if (value === undefined) return DEFAULT_STATUS
   if (value === 'active' || value === 'archived' || value === 'cold') return value
