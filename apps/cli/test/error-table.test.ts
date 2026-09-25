@@ -282,6 +282,9 @@ describe('AC4 — a varredura da tabela de erros do CLI.md', () => {
         expect(errorOf(result).code, row.situation).toBe(row.code)
         expect(result.status, row.situation).toBe(row.exit)
         expectMessage(errorOf(result).message, spec.message, ctx)
+        if (!row.message.includes('<')) {
+          expect(errorOf(result).message, row.situation).toBe(row.message)
+        }
       })
     }
   })

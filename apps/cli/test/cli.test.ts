@@ -227,6 +227,21 @@ describe('AC1 — o envelope --json', () => {
     }
   })
 
+  it('envelope-init-reset-backup-path: init --reset --yes traz action reset e backup_path', () => {
+    withDb((dbPath) => {
+      seed(dbPath, { items: [makeItem()] })
+
+      const payload = jsonOf(runStudy(['init', '--reset', '--yes', '--db', dbPath, '--json']))[
+        'init'
+      ] as Record<string, unknown>
+
+      expect(Object.keys(payload).sort()).toEqual(['action', 'backup_path', 'db_path'])
+      expect(payload['action']).toBe('reset')
+      expect(payload['db_path']).toBe(dbPath)
+      expect(String(payload['backup_path'])).toContain('pre-reset-')
+    })
+  })
+
   it('envelope-export-contagens: export traz as contagens do arquivo', () => {
     withDb((dbPath) => {
       seed(dbPath, {
