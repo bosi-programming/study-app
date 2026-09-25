@@ -10,7 +10,16 @@ const fsMock = vi.hoisted(() => ({
 
 vi.mock('node:fs', () => fsMock)
 
-const stderrSpy = vi.hoisted(() => ({ write: vi.fn<(chunk: string) => boolean>() }))
+const stderrSpy = vi.hoisted(() => ({
+  write:
+    vi.fn<
+      (
+        chunk: string | Uint8Array,
+        encoding?: BufferEncoding,
+        done?: (error?: Error | null) => void,
+      ) => boolean
+    >(),
+}))
 
 function chainInput(text: string): void {
   fsMock.readSync.mockImplementation((_fd, buffer) => {
