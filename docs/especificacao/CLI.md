@@ -22,6 +22,7 @@ Versão: 5 | Data: 2026-09-24 | Base: `docs/especificacao/REQUISITOS.md`
 | 1 | uso: falta flag obrigatória ou argumento inválido | `remove` sem `--yes`; `-d` ausente sem terminal |
 | 2 | validação: valor fora do domínio | dificuldade 7; `--status` inválido; schema futuro |
 | 3 | estado ou ambiente: algo impede a operação | referência não encontrada ou ambígua; check-in em arquivado; backup do init falhou |
+| 130 | aborto do prompt: Ctrl-C depois do check-in | `review` com o prompt interrompido |
 
 ### Referências de item
 
@@ -132,9 +133,32 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 
 ## Contrato `--json`
 
-- Todo comando devolve um único objeto JSON no stdout, com `schema_version: 1` e a chave do comando como raiz.
-- Erros vão para o stderr como `{"error":{"code","message"}}`, com o exit code correspondente.
+- Todo comando devolve um único objeto JSON no stdout, com `schema_version: 1` e a **palavra do comando como raiz**.
+- Subcomando usa a palavra do comando como raiz (`cold`, `config`), não o par (`cold list`), e o payload carrega `action`.
+- Erros vão para o **stderr** como `{"error":{"code","message"}}`, com o exit code da tabela e o **stdout vazio**. O vocabulário de `code` é fechado e está em `## Erros`.
+- `study --json` **sem comando** responde no envelope com `code: usage` e exit 1, como `comando desconhecido`; sem `--json`, o bloco de uso continua no stderr, sem envelope.
+- `--help` **não é comando**: segue no canal humano, com o uso no stdout, exit 0 e sem envelope, mesmo com `--json`.
 - Chaves em inglês, iguais às do contrato JSON v1 de `docs/especificacao/MODELO-DE-DADOS.md`.
+
+| Palavra | Forma do payload |
+| --- | --- |
+| `init` | `{ action, db_path, backup_path? }` — `action` é `created` ou `reset`, e `backup_path` só no `reset` |
+| `add` | `{ item }` |
+| `list` | `{ items }` |
+| `find` | `{ items }` |
+| `due` | `{ date, overdue, today, by_subject }` |
+| `review` | `{ item }` |
+| `show` | `{ item }` e `{ item, history }` com `--history` |
+| `edit` | `{ item }` |
+| `difficulty` | `{ item }` |
+| `remove` | `{ removed, item }` |
+| `archive` | `{ action: "archive", item }` |
+| `unarchive` | `{ action: "unarchive", item }` |
+| `cold` | `{ action: "list", items }` na lista, `{ action: "restore", item }` e `{ action: "purge", item }` |
+| `config` | `{ action: "get" \| "set", key, value }` |
+| `stats` | `{ date, streak, items, checkins_today, checkins_by_subject }` |
+| `export` | `{ path, items, review_logs, cold_archive }` |
+| `import` | `{ path, items, review_logs, cold_archive, written, skipped }` |
 
 ```json
 {
@@ -243,33 +267,35 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 
 ## Erros
 
-| Situação | Exit | Mensagem |
-| --- | --- | --- |
-| Item não encontrado | 3 | `item não encontrado: <ref>` |
-| Referência ambígua | 3 | `referência ambígua: <ref>`, seguida da lista de candidatos |
-| Dificuldade fora de 1–5 | 2 | `dificuldade inválida: use 1 a 5` |
-| Data fora de `YYYY-MM-DD` | 2 | `data inválida: use YYYY-MM-DD` |
-| Referência curta demais e sem correspondência | 2 | `referência inválida: use um UUID, um prefixo de 4 ou mais caracteres ou o título exato` |
-| Check-in em arquivado | 3 | `item arquivado; use study unarchive <ref>` |
-| Check-in em item do arquivo morto | 3 | `item no arquivo morto; use study cold restore <ref>` |
-| `archive` repetido | 3 | `item já está arquivado: <ref>` |
-| `unarchive` em item ativo | 3 | `item já está ativo: <ref>` |
-| `archive`/`unarchive` em item do arquivo morto | 3 | `item no arquivo morto; use study cold restore <ref>` |
-| `cold restore`/`cold purge` fora do arquivo morto | 3 | `item não está no arquivo morto: <ref>` |
-| `--status` inválido | 2 | `status inválido: use active, archived ou cold` |
-| Chave de config desconhecida | 2 | `chave desconhecida: <chave>` |
-| Valor de config fora do domínio | 2 | `valor inválido para <chave>: <valor>` |
-| Valor negativo cru em `config set` | 1 | `flag desconhecida: <valor>` |
-| Flag de confirmação ausente | 1 | `remove exige --yes` |
-| Confirmação ausente na purga | 1 | `cold purge exige --yes` |
-| Valor faltando sem terminal | 1 | `-d é obrigatório sem terminal interativo` |
-| Export sobre arquivo existente | 1 | `arquivo já existe; use --yes para sobrescrever` |
-| Arquivo de import ausente ou ilegível | 3 | `arquivo não encontrado: <path>` |
-| Arquivo de import fora do contrato | 2 | `arquivo inválido: <path>` |
-| Export sobre o próprio banco | 3 | `arquivo de export é o banco: <path>` |
-| Import com schema futuro | 2 | `schema_version 2 não suportado` |
-| Banco que existe e não abre como SQLite | 3 | `banco corrompido: <path>` |
-| Backup do init falhou | 3 | `backup falhou; banco não foi alterado` |
+O `code` é o valor estável por onde o consumidor de `schema_version: 1` ramifica; a `message` é prosa para humano e pode mudar. O vocabulário é fechado em catorze valores: `usage`, `invalid-status`, `invalid-value`, `invalid-state`, `unsupported-schema`, `backup-failed`, `aborted` e `internal`, mais os seis `kind` do core (`invalid-field`, `invalid-difficulty`, `invalid-ref`, `not-found`, `ambiguous-ref`, `item-not-active`). Nada fora dessa lista é emitido; um erro que não é `CliError` nem `CoreError` sai como `internal`.
+
+| Situação | `code` | Exit | Mensagem |
+| --- | --- | --- | --- |
+| Item não encontrado | `not-found` | 3 | `item não encontrado: <ref>` |
+| Referência ambígua | `ambiguous-ref` | 3 | `referência ambígua: <ref>`, seguida da lista de candidatos |
+| Dificuldade fora de 1–5 | `invalid-difficulty` | 2 | `dificuldade inválida: use 1 a 5` |
+| Data fora de `YYYY-MM-DD` | `invalid-field` | 2 | `data inválida: use YYYY-MM-DD` |
+| Referência curta demais e sem correspondência | `invalid-ref` | 2 | `referência inválida: use um UUID, um prefixo de 4 ou mais caracteres ou o título exato` |
+| Check-in em arquivado | `item-not-active` | 3 | `item arquivado; use study unarchive <ref>` |
+| Check-in em item do arquivo morto | `item-not-active` | 3 | `item no arquivo morto; use study cold restore <ref>` |
+| `archive` repetido | `invalid-state` | 3 | `item já está arquivado: <ref>` |
+| `unarchive` em item ativo | `invalid-state` | 3 | `item já está ativo: <ref>` |
+| `archive`/`unarchive` em item do arquivo morto | `invalid-state` | 3 | `item no arquivo morto; use study cold restore <ref>` |
+| `cold restore`/`cold purge` fora do arquivo morto | `invalid-state` | 3 | `item não está no arquivo morto: <ref>` |
+| `--status` inválido | `invalid-status` | 2 | `status inválido: use active, archived ou cold` |
+| Chave de config desconhecida | `invalid-value` | 2 | `chave desconhecida: <chave>` |
+| Valor de config fora do domínio | `invalid-value` | 2 | `valor inválido para <chave>: <valor>` |
+| Valor negativo cru em `config set` | `usage` | 1 | `flag desconhecida: <valor>` |
+| Flag de confirmação ausente | `usage` | 1 | `remove exige --yes` |
+| Confirmação ausente na purga | `usage` | 1 | `cold purge exige --yes` |
+| Valor faltando sem terminal | `usage` | 1 | `-d é obrigatório sem terminal interativo` |
+| Export sobre arquivo existente | `usage` | 1 | `arquivo já existe; use --yes para sobrescrever` |
+| Arquivo de import ausente ou ilegível | `invalid-state` | 3 | `arquivo não encontrado: <path>` |
+| Arquivo de import fora do contrato | `invalid-value` | 2 | `arquivo inválido: <path>` |
+| Export sobre o próprio banco | `invalid-state` | 3 | `arquivo de export é o banco: <path>` |
+| Import com schema futuro | `unsupported-schema` | 2 | `schema_version 2 não suportado` |
+| Banco que existe e não abre como SQLite | `invalid-state` | 3 | `banco corrompido: <path>` |
+| Backup do init falhou | `backup-failed` | 3 | `backup falhou; banco não foi alterado` |
 
 ## Notas de implementação
 
@@ -277,5 +303,5 @@ Check-ins hoje: 3   Total por matéria: Cálculo 8, Inglês 4
 - Formatação de tabela com largura fixa na V1; sem cores obrigatórias.
 - `--json` é o contrato usado pelos testes de snapshot do CLI.
 - A resolução por título usa `title_key` (normalizado) e o índice `idx_items_title`.
-- O parser lê todo token iniciado por `-` como flag, então um valor negativo precisa vir depois de `--`: `study config set cold_archive_after_days -- -1` sai 2, enquanto o `-1` cru vira flag desconhecida e sai 1.
+- O parser lê todo token iniciado por `-` como flag, então um valor negativo precisa vir depois de `--`: `study config set cold_archive_after_days -- -1` sai 2, enquanto o `-1` cru vira flag desconhecida e sai 1. O `--` precisa ser o último token; uma flag depois dele vira posicional, o comando perde o argumento e sai 1 por aridade.
 - O prompt lê de `/dev/tty` quando disponível, para não consumir stdin redirecionado.
