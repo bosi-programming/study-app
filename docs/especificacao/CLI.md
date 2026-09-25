@@ -1,6 +1,6 @@
 # CLI — App de Estudo Espaçado
 
-Versão: 4 | Data: 2026-09-23 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 5 | Data: 2026-09-24 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -160,6 +160,21 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
     "cold_archive": 2,
     "written": 46,
     "skipped": 0
+  }
+}
+```
+
+`stats` devolve o streak de fila zerada — global, calculado pelo core e recalculado a cada execução (RN-14) —, as contagens de item por status e os check-ins: `checkins_today` pelo dia local de `reviewed_at` e `checkins_by_subject` o total por matéria em todos os status. `-s` recorta as contagens e os dois check-ins; o streak continua global:
+
+```json
+{
+  "schema_version": 1,
+  "stats": {
+    "date": "2026-09-24",
+    "streak": { "current": 4, "last_day": "2026-09-24" },
+    "items": { "active": 12, "archived": 3, "cold": 1 },
+    "checkins_today": 3,
+    "checkins_by_subject": { "Cálculo": 8, "Inglês": 4 }
   }
 }
 ```
