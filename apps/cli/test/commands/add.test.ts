@@ -107,6 +107,7 @@ describe('AC9 — prompt desligado sem terminal (T-23)', () => {
       const result = runStudy(['add', 'Derivadas', '-s', 'Cálculo', '--db', dbPath, '--json'])
 
       expect(result.status).toBe(1)
+      expect(result.stderr).not.toContain('Dificuldade (1–5):')
       expect(errorOf(result)).toEqual({
         code: 'usage',
         message: '-d é obrigatório sem terminal interativo',
@@ -128,6 +129,7 @@ describe('AC9 — prompt desligado sem terminal (T-23)', () => {
       ])
 
       expect(result.status).toBe(1)
+      expect(result.stderr).not.toContain('Dificuldade (1–5):')
       expect(result.stderr).toContain('-d é obrigatório sem terminal interativo')
     })
   })
@@ -137,6 +139,7 @@ describe('AC9 — prompt desligado sem terminal (T-23)', () => {
       const result = runStudy(['add', 'Derivadas', '-s', 'Cálculo', '--json', '--db', dbPath])
 
       expect(result.status).toBe(1)
+      expect(result.stderr).not.toContain('Dificuldade (1–5):')
       expect(errorOf(result)).toMatchObject({ code: 'usage' })
     })
   })

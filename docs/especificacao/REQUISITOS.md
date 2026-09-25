@@ -83,7 +83,7 @@ Versão: 3 | Data: 2026-09-20 | Base: `docs/produto/PRD.md`
 - RNF-05 Dados do piloto: eventos anônimos no Sentry + aviso LGPD de 1 parágrafo.
 - RNF-06 Idioma pt-BR na V1; strings centralizadas para i18n futura.
 - RNF-07 Export sempre disponível, mesmo com banco corrompido, quando o arquivo existir.
-- RNF-08 Toda saída tem um envelope `--json` estável e versionado, consumido pelos testes de snapshot.
+- RNF-08 Toda saída tem um envelope `--json` estável e versionado, consumido pelos testes de snapshot; a exceção é o uso de `--help`, que fica no canal humano (ADR-024).
 
 ## Critérios de aceite
 
