@@ -16,7 +16,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/CORE.md` | API do domínio: portas, item, regra de agendamento, erros | Rascunho v1 |
 | `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v3 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v2 |
-| `docs/adr/README.md` | ADRs numerados com contexto e consequências | 24 ADRs |
+| `docs/adr/README.md` | ADRs numerados com contexto e consequências | 25 ADRs |
 
 ## Ordem de leitura
 
