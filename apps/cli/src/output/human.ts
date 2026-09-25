@@ -1,4 +1,11 @@
-import { DIFFICULTY_LABELS, type Item, type ReviewLog, daysLate, isLate } from '@study/core'
+import {
+  DIFFICULTY_LABELS,
+  type Item,
+  type QueueStreak,
+  type ReviewLog,
+  daysLate,
+  isLate,
+} from '@study/core'
 import { localDateOf } from '../deps.ts'
 
 const ID_WIDTH = 8
@@ -18,6 +25,14 @@ const QUEUE_HEADER = 'Fila de hoje'
 const OVERDUE_SECTION = 'Atrasados'
 const TODAY_SECTION = 'Hoje'
 const SUBJECT_SUMMARY_PREFIX = 'Por matéria:'
+const STATS_SEPARATOR = '   '
+const STREAK_PREFIX = 'Streak de fila zerada: '
+const STREAK_SUFFIX = ' dias'
+const ACTIVE_PREFIX = 'Ativos: '
+const ARCHIVED_PREFIX = 'Arquivados: '
+const COLD_PREFIX = 'Arquivo morto: '
+const CHECKINS_TODAY_PREFIX = 'Check-ins hoje: '
+const TOTAL_BY_SUBJECT_PREFIX = 'Total por matéria: '
 const TODAY_DUE_TEXT = 'vence hoje'
 const EMPTY_HISTORY = '  nenhum check-in'
 const ABSENT = '—'
@@ -233,14 +248,41 @@ export function dueQueue(
 }
 
 export function dueSummary(bySubject: Readonly<Record<string, number>>): string | null {
-  const entries = Object.entries(bySubject)
-  if (entries.length === 0) return null
-  const parts = entries.map(([subject, count]) => `${subject} ${count}`)
-  return `${SUBJECT_SUMMARY_PREFIX} ${parts.join(', ')}`
+  if (Object.keys(bySubject).length === 0) return null
+  return `${SUBJECT_SUMMARY_PREFIX} ${subjectCountsText(bySubject)}`
+}
+
+export function subjectCountsText(bySubject: Readonly<Record<string, number>>): string {
+  return Object.entries(bySubject)
+    .map(([subject, count]) => `${subject} ${count}`)
+    .join(', ')
 }
 
 export function dueTotals(overdueCount: number, todayCount: number): string {
   return `${overdueCount} atrasados, ${todayCount} para hoje.`
+}
+
+export type StatsCounts = {
+  readonly active: number
+  readonly archived: number
+  readonly cold: number
+}
+
+export function statsLines(
+  streak: QueueStreak,
+  items: StatsCounts,
+  checkinsToday: number,
+  bySubject: Readonly<Record<string, number>>,
+): string {
+  const total = Object.keys(bySubject).length === 0 ? ABSENT : subjectCountsText(bySubject)
+  const counts = `${ACTIVE_PREFIX}${items.active}${STATS_SEPARATOR}${ARCHIVED_PREFIX}${items.archived}${STATS_SEPARATOR}${COLD_PREFIX}${items.cold}`
+  const checkins = `${CHECKINS_TODAY_PREFIX}${checkinsToday}${STATS_SEPARATOR}${TOTAL_BY_SUBJECT_PREFIX}${total}`
+
+  return [
+    `${STREAK_PREFIX}${streak.streak_current}${STREAK_SUFFIX}`,
+    counts,
+    checkins,
+  ].join('\n')
 }
 
 export function checkinLine(item: Item): string {

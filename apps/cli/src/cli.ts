@@ -14,6 +14,7 @@ import { listCommand } from './commands/list.ts'
 import { removeCommand } from './commands/remove.ts'
 import { reviewCommand } from './commands/review.ts'
 import { showCommand } from './commands/show.ts'
+import { statsCommand } from './commands/stats.ts'
 import { unarchiveCommand } from './commands/unarchive.ts'
 import { type Command } from './commands/types.ts'
 import { withContext } from './context.ts'
@@ -28,6 +29,7 @@ const COMMANDS: Record<string, Command> = {
   due: dueCommand,
   difficulty: difficultyCommand,
   show: showCommand,
+  stats: statsCommand,
   edit: editCommand,
   remove: removeCommand,
   review: reviewCommand,
@@ -80,6 +82,7 @@ Comandos:
   cold purge <ref>    remove do arquivo morto em definitivo (exige --yes)
   config get <chave>  lê uma configuração
   config set <chave> <valor>  altera uma configuração
+  stats               métricas: streak, contagens e check-ins
   export <path>       exporta todo o acervo em JSON v1 (--yes sobrescreve)
   import <path>       importa um JSON v1 sem duplicar nada
 

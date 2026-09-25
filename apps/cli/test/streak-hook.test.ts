@@ -1,9 +1,31 @@
 import { writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { type QueueStreakFixture, goldenFixtures } from '@study/golden'
 import { describe, expect, it } from 'vitest'
 import { makeItem } from './persistence/helpers.ts'
 import { withDb } from './persistence/helpers/db.ts'
-import { rebasedDate, runStudy, seed, todayLocalDate, withStore } from './commands/helpers.ts'
+import {
+  dataOf,
+  rebaseDelta,
+  rebasedDate,
+  runStudy,
+  seed,
+  todayLocalDate,
+  withStore,
+} from './commands/helpers.ts'
+
+const STREAK_FIXTURE = 'streak-de-fila-zerada'
+const FAR_FUTURE_DAYS = 30
+
+const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
+
+function streakFixture(name: string): QueueStreakFixture {
+  const fixture = fixturesByCase.get(name)
+  if (fixture === undefined || fixture.kind !== 'queue-streak') {
+    throw new Error(`fixture ausente: ${name}`)
+  }
+  return fixture
+}
 
 type StreakMeta = {
   readonly current: string | null
@@ -27,6 +49,54 @@ function seedStreak(dbPath: string, current: number, lastDay: string | null): vo
 function withStreakDb(run: (dbPath: string, today: string) => void): void {
   withDb((dbPath) => run(dbPath, todayLocalDate()))
 }
+
+describe('AC1 — o streak aparece (RF-21, RN-14, CA-16, T-21)', () => {
+  const fixture = streakFixture(STREAK_FIXTURE)
+  const today = todayLocalDate()
+  const previousStates = [fixture.initial, ...fixture.days.map((day) => day.expected)]
+  const vectorCases = fixture.days.map((day, index) => {
+    const previous = previousStates[index] ?? fixture.initial
+    const delta = rebaseDelta(day.day)
+    return {
+      label: day.day,
+      seedCurrent: previous.streak_current,
+      seedLastDay:
+        previous.streak_last_day === null ? null : rebasedDate(previous.streak_last_day, delta),
+      expected: {
+        current: day.expected.streak_current,
+        last_day: rebasedDate(day.expected.streak_last_day, delta),
+      },
+      dueDate: day.queue_empty ? rebasedDate(today, FAR_FUTURE_DAYS) : today,
+    }
+  })
+
+  it('stats-streak-meta-fresco: o meta de ontem mais a fila vazia mostram ontem + 1', () => {
+    withStreakDb((dbPath, todayNow) => {
+      seedStreak(dbPath, 4, rebasedDate(todayNow, -1))
+
+      const json = runStudy(['stats', '--db', dbPath, '--json'])
+      const human = runStudy(['stats', '--db', dbPath])
+
+      expect(dataOf(json, 'stats')['streak']).toEqual({ current: 5, last_day: todayNow })
+      expect(human.stdout).toContain('Streak de fila zerada: 5 dias')
+    })
+  })
+
+  it.each(vectorCases)(
+    'stats-vetor-fila-zerada-rebaseado: $label com a fila de hoje',
+    ({ seedCurrent, seedLastDay, expected, dueDate }) => {
+      withDb((dbPath) => {
+        seedStreak(dbPath, seedCurrent, seedLastDay)
+        seed(dbPath, { items: [makeItem({ id: 'due-1', due_date: dueDate })] })
+
+        const result = runStudy(['stats', '--db', dbPath, '--json'])
+
+        expect(result.status).toBe(0)
+        expect(dataOf(result, 'stats')['streak']).toEqual(expected)
+      })
+    },
+  )
+})
 
 describe('AC2 — o gancho roda antes do comando (RN-14)', () => {
   it('gancho-antes-do-comando: list carimba o dia antes de rodar e o meta fica fresco', () => {
