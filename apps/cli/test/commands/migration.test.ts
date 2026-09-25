@@ -93,7 +93,7 @@ describe('AC5 — o gancho antes da ação, só onde há banco (critério 3)', (
   })
 })
 
-describe('AC6 — o predicado: estritamente maior, em data local (RF-16, RN-10, CA-09, CA-19)', () => {
+describe('AC6 — o predicado: estritamente maior, em data local (RF-16, T-07, RN-10, CA-09, CA-19)', () => {
   it('migracao-181-migra: 181 dias com janela 180 vira cold', () => {
     withDb((dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'a', status: 'archived', archived_at: stamp(-181) })] })

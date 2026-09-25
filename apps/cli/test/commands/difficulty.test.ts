@@ -24,7 +24,7 @@ function reevaluateFixture(name: string): ReevaluateFixture {
   return fixture
 }
 
-describe('AC9 — difficulty reavalia (RF-11, ADR-019)', () => {
+describe('AC9 — difficulty reavalia (RF-11, T-04, ADR-019)', () => {
   it('difficulty-reavalia: reusa o n e conta o vencimento novo de hoje', () => {
     withDb((dbPath) => {
       const today = todayLocalDate()

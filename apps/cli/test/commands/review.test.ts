@@ -1,4 +1,4 @@
-import { type CheckinFixture, goldenFixtures } from '@study/golden'
+import { type CheckinFixture, type ProgressionFixture, goldenFixtures } from '@study/golden'
 import { toDifficulty } from '@study/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ALL_FLAGS, parseArgs } from '../../src/args.ts'
@@ -36,6 +36,14 @@ const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fi
 function checkinFixture(name: string): CheckinFixture {
   const fixture = fixturesByCase.get(name)
   if (fixture === undefined || fixture.kind !== 'checkin') throw new Error(`fixture ausente: ${name}`)
+  return fixture
+}
+
+function progressionFixture(name: string): ProgressionFixture {
+  const fixture = fixturesByCase.get(name)
+  if (fixture === undefined || fixture.kind !== 'progression') {
+    throw new Error(`fixture ausente: ${name}`)
+  }
   return fixture
 }
 
@@ -78,7 +86,7 @@ function withFreshStore<T>(dbPath: string, run: (store: Store) => T): T {
   }
 }
 
-describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, ADR-011)', () => {
+describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, T-03, T-05, ADR-011)', () => {
   it('review-registra-checkin: o vetor T-20 rebaseado, dois check-ins no mesmo dia', () => {
     withDb((dbPath) => {
       const fixture = checkinFixture('checkin-antecipado-e-dois-no-mesmo-dia')
@@ -154,9 +162,90 @@ describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, ADR-011)', 
       expect(itemOf(result, 'review')).toMatchObject({ due_date: rebasedDate(today, 6) })
     })
   })
+
+  it('review-progressao-ate-o-teto: o vetor T-02 rebaseado sobe ×2 até 365d', () => {
+    withDb((dbPath) => {
+      const fixture = progressionFixture('progressao-ate-teto')
+      seed(dbPath, {
+        items: [
+          makeItem({
+            id: 'a',
+            difficulty: toDifficulty(fixture.difficulty),
+            interval_days: fixture.base_interval_days,
+            due_date: todayLocalDate(),
+          }),
+        ],
+      })
+
+      const initial = itemOf(runStudy(['show', 'a', '--db', dbPath, '--json']), 'show')
+      expect(initial.interval_days).toBe(fixture.expected_intervals[0])
+
+      fixture.expected_intervals.slice(1).forEach((expected, index) => {
+        const result = runStudy([
+          'review',
+          'a',
+          '-d',
+          String(fixture.difficulty),
+          '--db',
+          dbPath,
+          '--json',
+        ])
+
+        expect(result.status, `check-in ${index + 1}`).toBe(0)
+        expect(itemOf(result, 'review').interval_days, `check-in ${index + 1}`).toBe(expected)
+      })
+
+      const capped = itemOf(runStudy(['show', 'a', '--db', dbPath, '--json']), 'show')
+      expect(capped.review_count).toBe(fixture.expected_intervals.length - 1)
+      expect(capped.interval_days).toBe(fixture.cap_days)
+    })
+  })
+
+  it('review-atrasado-nao-penaliza: o vetor T-03 rebaseado mantém o ×2 e marca late', () => {
+    withDb((dbPath) => {
+      const fixture = checkinFixture('checkin-atrasado-nao-penaliza')
+      const [step] = fixture.checkins
+      if (step === undefined) throw new Error('vetor T-03 incompleto')
+
+      const delta = rebaseDelta(step.today)
+      seed(dbPath, {
+        items: [
+          makeItem({
+            id: 'a',
+            difficulty: toDifficulty(fixture.state.difficulty),
+            review_count: fixture.state.review_count,
+            interval_days: fixture.state.interval_days,
+            due_date: rebasedDate(fixture.state.due_date, delta),
+            on_time_streak: fixture.state.on_time_streak,
+          }),
+        ],
+      })
+
+      const result = runStudy([
+        'review',
+        'a',
+        '-d',
+        String(step.expected.difficulty),
+        '--db',
+        dbPath,
+        '--json',
+      ])
+      const logs = historyOf(runStudy(['show', 'a', '--history', '--db', dbPath, '--json']))
+
+      expect(result.status).toBe(0)
+      expect(itemOf(result, 'review')).toMatchObject({
+        difficulty: step.expected.difficulty,
+        review_count: step.expected.review_count,
+        interval_days: step.expected.interval_days,
+        on_time_streak: step.expected.on_time_streak,
+      })
+      expect(itemOf(result, 'review').due_date).toBe(rebasedDate(step.expected.due_date, delta))
+      expect(logs[0]).toMatchObject({ late: step.expected.late })
+    })
+  })
 })
 
-describe('AC5 — a dificuldade depois do check-in (RF-12, CA-13, CA-14)', () => {
+describe('AC5 — a dificuldade depois do check-in (RF-12, T-19, CA-13, CA-14)', () => {
   it('review-enter-mantem: o prompt devolvendo a atual deixa o check-in intacto', () => {
     withDb((dbPath) => {
       const today = todayLocalDate()
