@@ -173,7 +173,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 }
 ```
 
-`stats` devolve o streak de fila zerada — global, calculado pelo core e recalculado a cada execução (RN-14) —, as contagens de item por status e os check-ins: `checkins_today` pelo dia local de `reviewed_at` e `checkins_by_subject` o total por matéria em todos os status. `-s` recorta as contagens e os dois check-ins; o streak continua global:
+`stats` devolve o streak de fila zerada — global, calculado pelo core e recalculado a cada execução que abre o banco (RN-14) —, as contagens de item por status e os check-ins: `checkins_today` pelo dia local de `reviewed_at` e `checkins_by_subject` o total por matéria em todos os status. `-s` recorta as contagens e os dois check-ins; o streak continua global:
 
 ```json
 {
