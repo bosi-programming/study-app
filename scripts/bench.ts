@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { systemDeps } from '../apps/cli/src/deps.ts'
 import { openStore } from '../apps/cli/src/persistence/index.ts'
-import { type Difficulty, type Item } from '../packages/core/src/entity.ts'
+import { type Difficulty, type Item } from '../packages/core/src/index.ts'
 
 const QUEUE_SIZE = 5_000
 const QUEUE_BUDGET_MS = 200
