@@ -274,6 +274,11 @@ describe('AC7 — ordem, aborto e não-terminal (ADR-011, CLI.md)', () => {
       expect(outcome.error).toBeInstanceOf(CliError)
       expect((outcome.error as CliError).code).toBe('aborted')
       expect(exitCodeFor(outcome.error)).toBe(130)
+      expect(withFreshStore(dbPath, (store) => store.getItem('a'))).toMatchObject({
+        review_count: 1,
+        difficulty: 4,
+        interval_days: 6,
+      })
     })
   })
 
@@ -302,6 +307,7 @@ describe('AC7 — ordem, aborto e não-terminal (ADR-011, CLI.md)', () => {
         const result = runStudy(['review', 'a', flag, '--db', dbPath])
 
         expect(result.status, flag).toBe(1)
+        expect(result.stderr, flag).not.toContain('Dificuldade (1–5):')
         expect(result.stderr, flag).toContain('-d é obrigatório sem terminal interativo')
       }
     })
