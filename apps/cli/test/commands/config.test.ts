@@ -62,7 +62,7 @@ describe('AC12 — config e a janela (RF-25, CA-19, T-22, critério 8)', () => {
 describe('AC13 — a validação da chave, do valor e do subcomando', () => {
   it('config-chave-desconhecida: get e set de outra chave saem 2 e o meta fica intacto', () => {
     withDb((dbPath) => {
-      withStore(dbPath, (store) => store.setMeta('streak_current', '4'))
+      withStore(dbPath, (store) => store.setMeta('locale', 'pt-BR'))
 
       const get = runStudy(['config', 'get', 'outra_chave', '--db', dbPath, '--json'])
       const set = runStudy(['config', 'set', 'outra_chave', '1', '--db', dbPath, '--json'])
@@ -70,7 +70,7 @@ describe('AC13 — a validação da chave, do valor e do subcomando', () => {
       expect(get.status).toBe(2)
       expect(set.status).toBe(2)
       expect(withStore(dbPath, (store) => store.getMeta(KEY))).toBeNull()
-      expect(withStore(dbPath, (store) => store.getMeta('streak_current'))).toBe('4')
+      expect(withStore(dbPath, (store) => store.getMeta('locale'))).toBe('pt-BR')
     })
   })
 

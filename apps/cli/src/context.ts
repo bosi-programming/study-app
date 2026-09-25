@@ -7,6 +7,7 @@ import { migrationFailedLine, migratedLine } from './output/human.ts'
 import { type Store, openStore } from './persistence/index.ts'
 import { systemDeps } from './deps.ts'
 import { CliError } from './errors.ts'
+import { rollQueueStreak } from './queueStreak.ts'
 
 export type CommandContext = {
   readonly dbPath: string
@@ -26,6 +27,7 @@ export type ContextOptions = {
   readonly exportDir: string | undefined
   readonly skipSchemaGate: boolean
   readonly skipMigrationHook: boolean
+  readonly skipStreakHook: boolean
 }
 
 export function resolveDbPath(
@@ -53,6 +55,7 @@ export function withContext<T>(options: ContextOptions, run: (ctx: CommandContex
   const built = buildContext(options)
   try {
     const result = run(built.ctx)
+    rollAfterRun(built)
     writeMigrationWarning(built)
     return result
   } catch (error) {
@@ -71,6 +74,12 @@ function writeMigrationWarning(built: BuiltContext): void {
 type BuiltContext = {
   readonly ctx: CommandContext
   readonly migrationLine: string | null
+  readonly skipStreakHook: boolean
+}
+
+function rollAfterRun(built: BuiltContext): void {
+  if (built.skipStreakHook) return
+  rollQueueStreak(built.ctx.store, systemDeps.clock.todayLocalDate())
 }
 
 function buildContext(options: ContextOptions): BuiltContext {
@@ -106,7 +115,9 @@ function buildContext(options: ContextOptions): BuiltContext {
     ? null
     : coldArchiveWarningLine(store, dbPath, ctx.exportDir)
 
-  return { ctx, migrationLine }
+  if (!options.skipStreakHook) rollQueueStreak(store, systemDeps.clock.todayLocalDate())
+
+  return { ctx, migrationLine, skipStreakHook: options.skipStreakHook }
 }
 
 function openStoreOrCorrupt(dbPath: string, dbExisted: boolean): Store {

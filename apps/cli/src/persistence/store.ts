@@ -32,7 +32,7 @@ export type Store = {
   listItems(filter?: ItemFilter): Item[]
   findItems(term: string, filter?: ItemFilter): Item[]
   dueItems(today: string, filter?: ItemFilter): Item[]
-  countItems(status: ItemStatus): number
+  countItems(status: ItemStatus, filter?: ItemFilter): number
   saveReviewLog(log: ReviewLog): void
   listReviewLogs(itemId?: string): ReviewLog[]
   getMeta(key: string): string | null
@@ -155,6 +155,14 @@ export function openStore(dbPath: string): Store {
     return rows.map((row) => rowToItem(rowAsItemRow(row)))
   }
 
+  function countItems(status: ItemStatus, filter?: ItemFilter): number {
+    const { clauses, params } = filterClauses({ ...filter, status })
+    const row = db
+      .prepare(`SELECT count(*) AS total FROM items WHERE ${clauses.join(' AND ')}`)
+      .get(...params)
+    return Number(row?.total)
+  }
+
   function listReviewLogs(itemId?: string): ReviewLog[] {
     const rows =
       itemId === undefined
@@ -197,10 +205,7 @@ export function openStore(dbPath: string): Store {
     listItems,
     findItems,
     dueItems,
-    countItems: (status) => {
-      const row = db.prepare('SELECT count(*) AS total FROM items WHERE status = ?').get(status)
-      return Number(row?.total)
-    },
+    countItems,
     saveReviewLog: (log) => {
       const row = reviewLogToRow(log)
       saveReviewLogPrepared.run(

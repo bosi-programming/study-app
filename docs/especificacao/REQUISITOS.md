@@ -71,7 +71,7 @@ Versão: 3 | Data: 2026-09-20 | Base: `docs/produto/PRD.md`
 - RN-11 Item restaurado do arquivo morto volta a ativo com o mesmo n e dificuldade.
 - RN-12 Matéria é string livre, sem hierarquia; comparação sem diferenciar maiúsculas e acentos.
 - RN-13 Check-in antes do vencimento conta como no prazo; múltiplos check-ins no mesmo dia são permitidos e cada um incrementa n. O próximo vencimento conta do dia do check-in, mesmo que o vencimento anterior fosse futuro.
-- RN-14 Streak de fila zerada: dias locais consecutivos, terminando hoje, em que a fila estava vazia ao fim do dia; recalculado a cada execução.
+- RN-14 Streak de fila zerada: dias locais consecutivos, terminando hoje, em que a fila estava vazia ao fim do dia; recalculado a cada execução que abre o banco, exceto `export`, `import` e `init` (ver ADR-023).
 - RN-15 Referência de item aceita UUID, prefixo único de 4+ caracteres ou título exato normalizado; ambiguidade é erro e nunca é resolvida por escolha automática.
 
 ## Requisitos não funcionais

@@ -1,6 +1,6 @@
 # Registro de Decisões (ADRs)
 
-Data: 2026-09-09 | Atualizado: 2026-09-23 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
+Data: 2026-09-09 | Atualizado: 2026-09-24 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
 
 Cada decisão vive em um arquivo próprio. Número, título, data e status vêm do frontmatter do arquivo correspondente.
 
@@ -28,6 +28,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-020](adr-020-dueitems-com-filtro-fila-do-dia.md) | `dueItems` com filtro: a fila do dia reusa a porta de consulta | aceito |
 | [ADR-021](adr-021-ciclo-de-vida-do-item-e-arquivo-morto.md) | Ciclo de vida do item e arquivo morto: linha em `items`, gancho no contexto e export antes da migração | aceito |
 | [ADR-022](adr-022-export-import-do-json-v1.md) | Export/import do JSON v1: isenções do contexto e merge por `updated_at` | aceito |
+| [ADR-023](adr-023-gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |
 
 ## Supersessão
 
