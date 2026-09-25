@@ -3,7 +3,15 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { addDays } from '@study/core'
 import { describe, expect, it } from 'vitest'
-import { errorOf, itemsOf, jsonOf, runStudy, seed, todayLocalDate } from './commands/helpers.ts'
+import {
+  SPAWN_SWEEP_TIMEOUT_MS,
+  errorOf,
+  itemsOf,
+  jsonOf,
+  runStudy,
+  seed,
+  todayLocalDate,
+} from './commands/helpers.ts'
 import { makeItem, makeLog } from './persistence/helpers.ts'
 import { withDb } from './persistence/helpers/db.ts'
 
@@ -182,7 +190,7 @@ describe('AC1 — o envelope --json', () => {
         expect(json['schema_version'], entry.command).toBe(1)
       })
     }
-  })
+  }, SPAWN_SWEEP_TIMEOUT_MS)
 
   it('envelope-stdout-um-objeto: o stdout tem um objeto JSON e nenhuma linha extra', () => {
     withDb((dbPath) => {
@@ -225,7 +233,7 @@ describe('AC1 — o envelope --json', () => {
         expect(Object.keys(payload).sort(), entry.command).toEqual(PAYLOAD_SHAPES[entry.command])
       })
     }
-  })
+  }, SPAWN_SWEEP_TIMEOUT_MS)
 
   it('envelope-init-reset-backup-path: init --reset --yes traz action reset e backup_path', () => {
     withDb((dbPath) => {

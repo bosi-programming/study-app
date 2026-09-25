@@ -20,6 +20,8 @@ export type RunOptions = {
   readonly env?: Record<string, string>
 }
 
+export const SPAWN_SWEEP_TIMEOUT_MS = 30_000
+
 export function runStudy(args: readonly string[], options: RunOptions = {}): SpawnSyncReturns<string> {
   return spawnSync(binPath, [...args], {
     cwd: options.cwd ?? repoRoot,

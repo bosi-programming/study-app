@@ -3,7 +3,7 @@ import { dirname, join, resolve } from 'node:path'
 import { InvalidFieldError } from '@study/core'
 import { describe, expect, it } from 'vitest'
 import { errorPayload, exitCodeFor } from '../src/errors.ts'
-import { errorOf, runStudy, seed } from './commands/helpers.ts'
+import { SPAWN_SWEEP_TIMEOUT_MS, errorOf, runStudy, seed } from './commands/helpers.ts'
 import { makeItem } from './persistence/helpers.ts'
 import { withDb } from './persistence/helpers/db.ts'
 
@@ -287,7 +287,7 @@ describe('AC4 — a varredura da tabela de erros do CLI.md', () => {
         }
       })
     }
-  })
+  }, SPAWN_SWEEP_TIMEOUT_MS)
 
   it('tabela-erros-stdout-vazio: toda linha de erro sai com stdout vazio', () => {
     for (const row of ROWS) {
@@ -300,7 +300,7 @@ describe('AC4 — a varredura da tabela de erros do CLI.md', () => {
         expect(result.stdout, row.situation).toBe('')
       })
     }
-  })
+  }, SPAWN_SWEEP_TIMEOUT_MS)
 })
 
 describe('AC2 — o vocabulário fechado de code', () => {
