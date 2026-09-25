@@ -17,7 +17,7 @@ Registro datado do que fecha a fase 1. O Definition of done vem do `ROADMAP.md`;
 
 | Caso | Comando | O que mede | Data | Resultado |
 | --- | --- | --- | --- | --- |
-| T-26 | `pnpm bench` | RNF-03: `study due --json` abaixo de 200ms com 5.000 itens, com aquecimento e mediana | 2026-09-25 | (a preencher pela execução da fase) |
+| T-26 | `pnpm bench` | RNF-03: `study due --json` abaixo de 200ms com 5.000 itens, com aquecimento e mediana | 2026-09-25 | PASS — mediana de 91,3ms (aquecimento 2 + mediana de 5 rodadas; seed em 31ms) contra os 200ms do teto, exit 0 |
 
 O `T-26` é o único `(manual)` da tabela `## Casos obrigatórios` do plano; os demais `T-nn` têm execução pelo binário em `apps/cli/test/**/*.test.ts`, pinada por `apps/cli/test/traceability.test.ts` (ADR-025).
 
@@ -27,11 +27,13 @@ Data: 2026-09-25.
 
 | Projeto | Arquivos | Casos |
 | --- | --- | --- |
-| core | (a preencher) | (a preencher) |
-| golden | (a preencher) | (a preencher) |
-| cli | (a preencher) | (a preencher) |
-| scaffold | (a preencher) | (a preencher) |
-| total | (a preencher) | (a preencher) |
+| core | 9 | 168 |
+| golden | 2 | 47 |
+| cli | 28 | 319 |
+| scaffold | 1 | 45 |
+| total | 40 | 579 |
+
+Rodada completa dos comandos da fase, todos com exit 0: `pnpm test` (579 casos), `pnpm test:coverage` (579 casos, 100% de linhas do core — 128/128), `pnpm typecheck`, `pnpm lint`, `pnpm bench` e `pnpm sqlite:probe` (9/9 verificações).
 
 ## Verificações já cobertas por teste
 
