@@ -137,7 +137,7 @@ describe('AC2/AC11 — round-trip completo (T-09)', () => {
   })
 })
 
-describe('AC3/CA-11 — import é idempotente (T-10)', () => {
+describe('AC3/CA-11 — import é idempotente (RF-19, T-10)', () => {
   it('import-duas-vezes-nao-duplica: a segunda rodada escreve zero', () => {
     withDb((dbPath) => {
       richSeed(dbPath)

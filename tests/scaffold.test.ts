@@ -2,10 +2,12 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { DEFAULT_QUEUE_BUDGET_MS, DEFAULT_QUEUE_SIZE, bench } from '../scripts/bench.ts'
 import { SCHEMA_SQL } from '../scripts/sqlite-probe.ts'
 import vitestConfig from '../vitest.config.ts'
 
 const root = resolve(import.meta.dirname, '..')
+const benchTimeoutMs = 30_000
 
 function readJson<T = Record<string, unknown>>(relativePath: string): T {
   return JSON.parse(readFileSync(resolve(root, relativePath), 'utf8')) as T
@@ -82,16 +84,61 @@ describe('S-11 root scripts', () => {
   })
 })
 
-describe('S-12 bench stub', () => {
-  it('exits 0 and names the blocker instead of pretending to measure', () => {
-    const result = spawnSync(process.execPath, ['scripts/bench.ts'], {
-      cwd: root,
-      encoding: 'utf8',
-    })
-    expect(result.status).toBe(0)
-    expect(result.stdout).toContain('RNF-03')
-    expect(result.stdout).toContain('ENG-3')
+describe('S-12 real bench', () => {
+  const requirementLine =
+    textAt('docs/especificacao/REQUISITOS.md')
+      .split('\n')
+      .find((line) => line.includes('RNF-03')) ?? ''
+  const script = textAt('scripts/bench.ts')
+  const size = Number((/(\d[\d.]*)\s*itens/.exec(requirementLine)?.[1] ?? '').replaceAll('.', ''))
+  const budget = Number(/(\d+)\s*ms/.exec(requirementLine)?.[1])
+
+  it('pins the queue size and the budget to the RNF-03 line of the requirements', () => {
+    expect(size).toBe(5_000)
+    expect(budget).toBe(200)
+    expect(DEFAULT_QUEUE_SIZE).toBe(size)
+    expect(DEFAULT_QUEUE_BUDGET_MS).toBe(budget)
   })
+
+  it('seeds, warms up, takes the median through the binary and leaves the stub behind', () => {
+    expect(script).toContain('spawnSync')
+    expect(script).toContain('--json')
+    expect(script).toContain('transaction')
+    expect(script).toContain('WARMUP_ROUNDS')
+    expect(script).toContain('median')
+    expect(script).not.toContain('nothing to measure yet')
+  })
+
+  it(
+    'bench-teto: reprova a medição acima do orçamento',
+    () => {
+      expect(bench({ queueSize: 25, budgetMs: 0 }).ok).toBe(false)
+    },
+    benchTimeoutMs,
+  )
+
+  it(
+    'bench-fila: recusa quando a fila volta com tamanho diferente do semeado',
+    () => {
+      expect(() => bench({ queueSize: 25, expectedItems: 26 })).toThrow(/esperado 26/)
+    },
+    benchTimeoutMs,
+  )
+
+  it(
+    'bench-exit: o teto reprovado imprime FAIL e sai 1',
+    () => {
+      const result = spawnSync(process.execPath, ['scripts/bench.ts'], {
+        cwd: root,
+        encoding: 'utf8',
+        env: { ...process.env, STUDY_BENCH_QUEUE_SIZE: '25', STUDY_BENCH_BUDGET_MS: '0' },
+      })
+
+      expect(result.stdout).toContain('FAIL')
+      expect(result.status).toBe(1)
+    },
+    benchTimeoutMs,
+  )
 })
 
 describe('S-13 sqlite probe', () => {
@@ -158,14 +205,14 @@ describe('S-17 ADR index', () => {
     }
   })
 
-  it('scaffold-adr-024: o índice linka o ADR-024 e o docs/README.md conta 24', () => {
+  it('scaffold-adr-025: o índice linka o ADR-025 e o docs/README.md conta 25', () => {
     const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
-    const adr24 = files.filter((name) => name.startsWith('adr-024'))
+    const adr25 = files.filter((name) => name.startsWith('adr-025'))
 
-    expect(adr24.length).toBe(1)
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr24[0] ?? '')
-    expect(files.length).toBe(24)
-    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('24 ADRs')
+    expect(adr25.length).toBe(1)
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr25[0] ?? '')
+    expect(files.length).toBe(25)
+    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('25 ADRs')
   })
 })
 
@@ -203,6 +250,69 @@ describe('S-20 golden project runs the fixture vectors', () => {
 
   it('leaves that runner out of the core project, so it runs once', () => {
     expect(projectNamed('core')?.exclude).toContain('test/golden.test.ts')
+  })
+})
+
+function planManualCases(): string[] {
+  const section =
+    textAt('docs/engenharia/PLANO-DE-TESTES.md').split('\n## Casos obrigatórios\n')[1] ?? ''
+
+  return section
+    .split('\n')
+    .filter((line) => /^\| T-\d{2} \|/.test(line))
+    .map((line) => ({
+      id: (line.split('|')[1] ?? '').trim(),
+      caseName: (line.split('|')[2] ?? '').trim(),
+    }))
+    .filter((entry) => entry.caseName.includes('(manual)'))
+    .map((entry) => entry.id)
+}
+
+function phaseOneDefinitionOfDone(): string[] {
+  const section =
+    textAt('docs/engenharia/ROADMAP.md')
+      .split('\n## ')
+      .find((part) => part.startsWith('Fase 1')) ?? ''
+  const line = section
+    .split('\n')
+    .find((candidate) => candidate.startsWith('Definition of done:'))
+
+  if (line === undefined) throw new Error('Definition of done da fase 1 ausente')
+  return (line.split(':')[1] ?? '')
+    .split(',')
+    .map((item) => item.trim().replace(/\.$/, ''))
+    .filter((item) => item.length > 0)
+}
+
+describe('S-25 phase 1 verification record', () => {
+  const registry = textAt('docs/engenharia/VERIFICACAO-FASE-1.md')
+
+  it('names every Definition of done item of the phase', () => {
+    const items = phaseOneDefinitionOfDone()
+    expect(items.length).toBeGreaterThan(0)
+    for (const item of items) expect(registry, item).toContain(item)
+  })
+
+  it('names every (manual) plan case with the command that runs it', () => {
+    const manual = planManualCases()
+    expect(manual).toEqual(['T-26'])
+    for (const id of manual) expect(registry, id).toContain(id)
+    expect(registry).toContain('pnpm bench')
+  })
+
+  it('is indexed by docs/README.md', () => {
+    expect(textAt('docs/README.md')).toContain('docs/engenharia/VERIFICACAO-FASE-1.md')
+  })
+})
+
+describe('S-26 default test run', () => {
+  it('runs vitest without a project filter', () => {
+    expect(readJson<PackageJson>('package.json').scripts?.test).toBe('vitest run')
+  })
+
+  it('declares the core and cli projects', () => {
+    expect(projectNamed('core')).not.toBeNull()
+    expect(projectNamed('cli')).not.toBeNull()
   })
 })
 

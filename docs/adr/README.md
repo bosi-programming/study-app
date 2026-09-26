@@ -1,6 +1,6 @@
 # Registro de Decisões (ADRs)
 
-Data: 2026-09-09 | Atualizado: 2026-09-24 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
+Data: 2026-09-09 | Atualizado: 2026-09-25 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
 
 Cada decisão vive em um arquivo próprio. Número, título, data e status vêm do frontmatter do arquivo correspondente.
 
@@ -30,6 +30,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-022](adr-022-export-import-do-json-v1.md) | Export/import do JSON v1: isenções do contexto e merge por `updated_at` | aceito |
 | [ADR-023](adr-023-gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |
 | [ADR-024](adr-024-vocabulario-de-error-code-e-envelope-sem-comando.md) | Vocabulário fechado de `error.code` e envelope no `study` sem comando | aceito |
+| [ADR-025](adr-025-rastreabilidade-t-nn-do-cli-verificacao-manual-e-medicao-da-rnf-03.md) | Rastreabilidade `T-nn` do CLI, verificação manual e medição da RNF-03 | aceito |
 
 ## Supersessão
 

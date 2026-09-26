@@ -1,9 +1,9 @@
-import { type QueueOrderFixture, goldenFixtures } from '@study/golden'
 import { describe, expect, it } from 'vitest'
 import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
 import {
   errorOf,
+  fixtureOf,
   jsonOf,
   queueOf,
   rebaseDelta,
@@ -17,16 +17,6 @@ type QueueJsonItem = {
   readonly id: string
   readonly subject: string
   readonly days_late: number
-}
-
-const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
-
-function queueFixture(name: string): QueueOrderFixture {
-  const fixture = fixturesByCase.get(name)
-  if (fixture === undefined || fixture.kind !== 'queue-order') {
-    throw new Error(`fixture ausente: ${name}`)
-  }
-  return fixture
 }
 
 function overdueOf(result: Parameters<typeof queueOf>[0]): QueueJsonItem[] {
@@ -46,7 +36,7 @@ const QUEUE_FIXTURE = 'fila-atrasados-primeiro'
 describe('AC1 — due mostra a fila do dia (RF-05, CA-12, T-11)', () => {
   it('due-atrasados-primeiro: o vetor T-11 rebaseado mantém ordem, split e o futuro fora', () => {
     withDb((dbPath) => {
-      const fixture = queueFixture(QUEUE_FIXTURE)
+      const fixture = fixtureOf('queue-order', QUEUE_FIXTURE)
       const delta = rebaseDelta(fixture.today)
       seed(dbPath, {
         items: fixture.items.map((item) =>
@@ -82,7 +72,7 @@ describe('AC1 — due mostra a fila do dia (RF-05, CA-12, T-11)', () => {
 
   it('due-days-late: cada atrasado traz o days_late do vetor', () => {
     withDb((dbPath) => {
-      const fixture = queueFixture(QUEUE_FIXTURE)
+      const fixture = fixtureOf('queue-order', QUEUE_FIXTURE)
       const delta = rebaseDelta(fixture.today)
       seed(dbPath, {
         items: fixture.items.map((item) =>

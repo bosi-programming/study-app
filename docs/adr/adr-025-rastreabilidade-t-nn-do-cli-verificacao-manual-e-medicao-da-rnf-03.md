@@ -1,0 +1,23 @@
+---
+numero: 25
+titulo: 'Rastreabilidade T-nn do CLI, verificação manual e medição da RNF-03'
+data: '2026-09-25'
+status: 'aceito'
+---
+
+# ADR-025 — Rastreabilidade `T-nn` do CLI, verificação manual e medição da RNF-03
+
+- Contexto: a fase 1 fecha com a suíte do CLI ampla, mas nada ligava essa suíte à lista `T-01`..`T-27` do `docs/engenharia/PLANO-DE-TESTES.md`. Um `describe` podia perder o caso, ou um caso do plano podia ficar sem execução no CLI, e nenhuma varredura reprovava: a rastreabilidade vivia na prosa do plano. O `T-26` (benchmark da RNF-03) era o único caso marcado `(manual)` e não havia onde registrá-lo. E o `pnpm bench` era um stub que saía com 0, então a RNF-03 (`study due --json` abaixo de 200ms com 5.000 itens) nunca foi medida.
+- Decisão: **o vínculo `T-nn` → suíte do CLI é um token literal no arquivo de teste**, não uma lista de nomes em prosa. `apps/cli/test/traceability.test.ts` lê a tabela `## Casos obrigatórios` do próprio plano e exige que cada `T-nn` não `(manual)` apareça como token num arquivo de `apps/cli/test/**/*.test.ts` que dá spawn no binário (`runStudy(`). Trocar o plano passa a reprovar a suíte, e um `describe` que perde o token também. É o mesmo molde do `error-table.test.ts`, que lê a tabela de erros do `CLI.md` e asserta contra ela.
+- Decisão: **a faixa `RF-01`..`RF-20` vem da linha `CLI` da tabela `## Estratégia` do plano**, não de uma lista escrita no teste. O caso expande o intervalo documentado (`RF-01..RF-20`) e exige cada `RF-nn` num arquivo que importa `runStudy` e exercita o comando com `--json`, que é o que a meta da camada CLI declara.
+- Decisão: **a isenção `(manual)` é lida do plano**, não codificada. A varredura marca como isento exatamente o `T-nn` cuja coluna de caso traz `(manual)` — hoje só o `T-26` —, e a suíte falha se um caso isento não estiver nomeado no registro de verificação manual com o comando que o executa.
+- Decisão: **a evidência da fase 1 mora em documento próprio**, `docs/engenharia/VERIFICACAO-FASE-1.md`, indexado no `docs/README.md`. O `docs/engenharia/ROADMAP.md` declara o DoD da fase 1 (`instalar, criar itens, zerar a fila por 1 semana, exportar e reimportar sem perda`) mas não guarda evidência. O registro nomeia cada item do DoD com evidência, comando e data; a semana de fila zerada fica com o campo de data em aberto, porque uma semana não se simula e a evidência é humana.
+- Decisão: **o `pnpm bench` mede o caminho ponta a ponta**, não a consulta in-process do `sqlite-probe`. O script semeia 5.000 itens pela camada de persistência num banco temporário, dá spawn em `study due --json` com rodadas de aquecimento e de medida, reporta a **mediana** em ms, compara com o teto da RNF-03 lido do `REQUISITOS.md` (200ms) e sai 1 acima dele. É o que a RNF-03 promete: processo + abertura do banco + consulta + envelope. O `sqlite-probe` continua com a amostra única in-process do store, que é outra pergunta.
+- Consequência: adicionar um `T-nn` obrigatório exige um caso que dê spawn no CLI (ou a marca `(manual)` no plano); adicionar um `RF-nn` à faixa exige o token num arquivo que importa `runStudy`. O vínculo envelhece junto com o documento, não com uma lista paralela.
+- Consequência: o `pnpm test` e o `pnpm bench` continuam as duas portas da fase 1. O bench é verificação manual e fora do CI (ADR-017), como o plano já declara — rodar 5.000 itens a cada PR contraria a decisão, então o caminho de estouro do teto é pinado por leitura do script, não exercitado por teste.
+- Consequência: o `S-12`, `S-25` e `S-26` do scaffold pinam a forma: o bench mede de verdade (o stub não volta), o registro existe e nomeia o DoD e o `(manual)`, e a rodada padrão de `pnpm test` cobre `core` e `cli`.
+- Alternativa rejeitada: manter a rastreabilidade em prosa no plano — é exatamente o que deixou `T-01`, `T-02`, `T-03` e `T-12` sem execução no CLI e `T-04`, `T-05`, `T-07`, `T-19` e `RF-19` sem vínculo.
+- Alternativa rejeitada: escrever a lista de `T-nn`/`RF-nn` dentro do teste de rastreabilidade — a lista passaria a ser uma segunda cópia do plano e envelheceria em silêncio, que é o defeito que a varredura fecha.
+- Alternativa rejeitada: registrar o DoD numa seção do `ROADMAP.md` — o roadmap declara o que a fase entrega; evidência datada de execução é registro, não plano.
+- Alternativa rejeitada: medir a fila com uma amostra única de `performance.now()` — ruído de primeira execução (abertura do banco, cache frio) vira reprovação falsa. Aquecimento e mediana são o mínimo para o número significar algo.
+- Gatilho de revisão: o benchmark deixar de ser verificação manual e virar gate de CI, ou a fase 2 (web) querer o mesmo vínculo `T-nn` para outra camada.

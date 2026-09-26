@@ -8,12 +8,27 @@ import {
   daysBetween,
   initialDueDate,
 } from '@study/core'
+import { type FixtureKind, type GoldenFixture, goldenFixtures } from '@study/golden'
 import { systemDeps } from '../../src/deps.ts'
 import { type ItemJson, type ReviewLogJson } from '../../src/output/json.ts'
 import { type Store, openStore } from '../../src/persistence/index.ts'
 
 const repoRoot = resolve(import.meta.dirname, '../../../..')
 const binPath = resolve(repoRoot, 'node_modules/.bin/study')
+
+type FixtureByKind = {
+  readonly [K in FixtureKind]: Extract<GoldenFixture, { readonly kind: K }>
+}
+
+const fixturesByCase = new Map(goldenFixtures.map((fixture) => [fixture.case, fixture]))
+
+export function fixtureOf<K extends FixtureKind>(kind: K, name: string): FixtureByKind[K] {
+  const fixture = fixturesByCase.get(name)
+  if (fixture === undefined || fixture.kind !== kind) {
+    throw new Error(`fixture ausente: ${name}`)
+  }
+  return fixture as FixtureByKind[K]
+}
 
 export type RunOptions = {
   readonly cwd?: string
