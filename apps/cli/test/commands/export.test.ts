@@ -31,7 +31,7 @@ describe('AC1 — export escreve o contrato JSON v1 (RF-18)', () => {
       const dump = dumpOf(out)
       expect(Object.keys(dump).sort()).toEqual(TOP_LEVEL_KEYS)
       expect(dump.schema_version).toBe(1)
-      expect(dump.exported_at).toEqual(expect.any(String))
+      expect(dump.exported_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
       expect(dump.items).toHaveLength(1)
       expect(dump.review_logs).toHaveLength(1)
       expect(dump.cold_archive).toEqual([])

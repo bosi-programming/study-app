@@ -194,12 +194,13 @@ describe('AC1 — o envelope --json', () => {
 
   it('envelope-stdout-um-objeto: o stdout tem um objeto JSON e nenhuma linha extra', () => {
     withDb((dbPath) => {
-      seed(dbPath, { items: [makeItem()] })
+      seed(dbPath, { items: [makeItem({ id: 'a', title: 'Um item' })] })
 
       const result = runStudy(['list', '--db', dbPath, '--json'])
 
       expect(result.stdout.trim().split('\n')).toHaveLength(1)
-      expect(jsonOf(result)).toEqual({ schema_version: 1, list: { items: expect.any(Array) } })
+      expect(Object.keys(jsonOf(result))).toEqual(['schema_version', 'list'])
+      expect(itemsOf(result, 'list').map((item) => item.id)).toEqual(['a'])
     })
   })
 
