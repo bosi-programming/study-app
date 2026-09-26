@@ -253,7 +253,9 @@ describe('S-20 golden project runs the fixture vectors', () => {
   })
 })
 
-function planManualCases(): string[] {
+type PlanCase = { id: string; caseName: string }
+
+function planMandatoryCases(): PlanCase[] {
   const section =
     textAt('docs/engenharia/PLANO-DE-TESTES.md').split('\n## Casos obrigatórios\n')[1] ?? ''
 
@@ -264,16 +266,30 @@ function planManualCases(): string[] {
       id: (line.split('|')[1] ?? '').trim(),
       caseName: (line.split('|')[2] ?? '').trim(),
     }))
+}
+
+function planManualCases(): string[] {
+  return planMandatoryCases()
     .filter((entry) => entry.caseName.includes('(manual)'))
     .map((entry) => entry.id)
 }
 
-function phaseOneDefinitionOfDone(): string[] {
-  const section =
+function roadmapPhaseOneSection(): string {
+  return (
     textAt('docs/engenharia/ROADMAP.md')
       .split('\n## ')
       .find((part) => part.startsWith('Fase 1')) ?? ''
-  const line = section
+  )
+}
+
+function phaseOneChecklistLines(): string[] {
+  return roadmapPhaseOneSection()
+    .split('\n')
+    .filter((line) => line.startsWith('- ['))
+}
+
+function phaseOneDefinitionOfDone(): string[] {
+  const line = roadmapPhaseOneSection()
     .split('\n')
     .find((candidate) => candidate.startsWith('Definition of done:'))
 
@@ -282,6 +298,17 @@ function phaseOneDefinitionOfDone(): string[] {
     .split(',')
     .map((item) => item.trim().replace(/\.$/, ''))
     .filter((item) => item.length > 0)
+}
+
+function requirementIds(): string[] {
+  return textAt('docs/especificacao/REQUISITOS.md')
+    .split('\n')
+    .filter((line) => /^- RN-\d{2} /.test(line))
+    .map((line) => (line.split(' ')[1] ?? '').trim())
+}
+
+function idRange(ids: string[]): string {
+  return `${ids[0] ?? ''}..${ids[ids.length - 1] ?? ''}`
 }
 
 describe('S-25 phase 1 verification record', () => {
@@ -313,6 +340,34 @@ describe('S-26 default test run', () => {
   it('declares the core and cli projects', () => {
     expect(projectNamed('core')).not.toBeNull()
     expect(projectNamed('cli')).not.toBeNull()
+  })
+})
+
+describe('S-27 roadmap phase 1 ranges', () => {
+  const checklist = phaseOneChecklistLines()
+
+  it('cites the requirement range the specification defines', () => {
+    const range = idRange(requirementIds())
+    expect(range).toBe('RN-01..RN-15')
+    expect(checklist.some((line) => line.includes(`Implementar ${range} `))).toBe(true)
+    expect(checklist.some((line) => line.includes('RN-01..RN-12'))).toBe(false)
+  })
+
+  it('cites the plan-case range the test plan defines', () => {
+    const range = idRange(planMandatoryCases().map((entry) => entry.id))
+    expect(range).toBe('T-01..T-27')
+    expect(checklist.some((line) => line.includes(`Testes ${range} verdes`))).toBe(true)
+    expect(checklist.some((line) => line.includes('T-01..T-12'))).toBe(false)
+  })
+
+  it('cites a range nowhere but in the phase 1 checklist', () => {
+    const cited = textAt('docs/engenharia/ROADMAP.md')
+      .split('\n')
+      .filter((line) => /RN-\d{2}|T-\d{2}/.test(line))
+    const checklistCitingRanges = checklist.filter((line) => /RN-\d{2}|T-\d{2}/.test(line))
+
+    expect(checklistCitingRanges).toHaveLength(2)
+    expect(cited).toEqual(checklistCitingRanges)
   })
 })
 
