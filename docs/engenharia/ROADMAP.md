@@ -17,12 +17,12 @@ Versão: 2 | Data: 2026-09-12 | Ritmo: menos de 10h/semana
 
 - [x] Scaffold do monorepo pnpm com `packages/core` e `apps/cli`.
 - [x] CI de lint, typecheck e testes nas PRs para `main`.
-- [ ] Implementar RN-01..RN-12 no core com golden fixtures.
+- [ ] Implementar RN-01..RN-15 no core com golden fixtures.
 - [ ] Schema SQLite e camada de persistência.
 - [ ] Comandos de `docs/especificacao/CLI.md`.
 - [ ] Export/import JSON v1 idempotente.
 - [ ] Stats e arquivo morto.
-- [ ] Testes T-01..T-12 verdes.
+- [ ] Testes T-01..T-27 verdes.
 
 Definition of done: instalar, criar itens, zerar a fila por 1 semana, exportar e reimportar sem perda.
 
