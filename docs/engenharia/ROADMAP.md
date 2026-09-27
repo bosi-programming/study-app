@@ -1,6 +1,6 @@
 # Roadmap — App de Estudo Espaçado
 
-Versão: 2 | Data: 2026-09-12 | Ritmo: menos de 10h/semana
+Versão: 3 | Data: 2026-09-27 | Ritmo: menos de 10h/semana
 
 ## Fases e gates
 
@@ -17,11 +17,11 @@ Versão: 2 | Data: 2026-09-12 | Ritmo: menos de 10h/semana
 
 - [x] Scaffold do monorepo pnpm com `packages/core` e `apps/cli`.
 - [x] CI de lint, typecheck e testes nas PRs para `main`.
-- [ ] Implementar RN-01..RN-15 no core com golden fixtures.
-- [ ] Schema SQLite e camada de persistência.
-- [ ] Comandos de `docs/especificacao/CLI.md`.
-- [ ] Export/import JSON v1 idempotente.
-- [ ] Stats e arquivo morto.
+- [x] Implementar RN-01..RN-15 no core com golden fixtures (ENG-3, ENG-4).
+- [x] Schema SQLite e camada de persistência (ENG-5).
+- [x] Comandos de `docs/especificacao/CLI.md` (ENG-6, ENG-7, ENG-11).
+- [x] Export/import JSON v1 idempotente (ENG-9).
+- [x] Stats e arquivo morto (ENG-8, ENG-10).
 - [ ] Testes T-01..T-27 verdes.
 
 Definition of done: instalar, criar itens, zerar a fila por 1 semana, exportar e reimportar sem perda.
