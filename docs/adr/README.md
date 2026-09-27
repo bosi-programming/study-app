@@ -18,7 +18,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-010](adr-010-referencia-de-item-por-uuid-prefixo-ou-titulo.md) | Referência de item por UUID, prefixo ou título | aceito |
 | [ADR-011](adr-011-reavaliacao-de-dificuldade-a-cada-check-in.md) | Reavaliação de dificuldade a cada check-in | aceito |
 | [ADR-012](adr-012-init-destrutivo-com-backup-e-confirmacao-reforcada.md) | Init destrutivo com backup e confirmação reforçada | aceito |
-| [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) | Scaffold do monorepo pnpm sem build | aceito |
+| [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) | Scaffold do monorepo pnpm sem build | superado-parcialmente |
 | [ADR-014](adr-014-engine-sqlite-do-cli-node-sqlite.md) | Engine SQLite do CLI: `node:sqlite` | aceito |
 | [ADR-015](adr-015-golden-fixtures-formato-e-quem-valida.md) | Golden fixtures: formato do vetor e quem valida | aceito |
 | [ADR-016](adr-016-camada-de-persistencia-do-cli-schema-mapeamento-e-store.md) | Camada de persistência do CLI: schema, mapeamento e store | aceito |
@@ -31,12 +31,17 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-023](adr-023-gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |
 | [ADR-024](adr-024-vocabulario-de-error-code-e-envelope-sem-comando.md) | Vocabulário fechado de `error.code` e envelope no `study` sem comando | aceito |
 | [ADR-025](adr-025-rastreabilidade-t-nn-do-cli-verificacao-manual-e-medicao-da-rnf-03.md) | Rastreabilidade `T-nn` do CLI, verificação manual e medição da RNF-03 | aceito |
-| [ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md) | Instalação local do CLI por symlink do shim do pnpm no PATH | aceito |
+| [ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md) | Instalação local do CLI por symlink do shim do pnpm no PATH | superado |
+| [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) | Distribuição npm-global do CLI e artefato JS | aceito |
 
 ## Supersessão
 
 O ADR-011 supera parte do ADR-004: a reavaliação de dificuldade passou a ser pedida a cada check-in, e o `on_time_streak` deixou de alimentar sugestão.
 
+O ADR-027 supera o ADR-026 (a instalação passa a ser npm-global no lugar do symlink) e parte do ADR-013 (o artefato publicado ganha bundle JS).
+
 | ADR superado | Relação | ADR que supera |
 | --- | --- | --- |
 | [ADR-004](adr-004-regra-de-agendamento-sem-recall.md) | parcialmente, só a sugestão após 3 check-ins no prazo | [ADR-011](adr-011-reavaliacao-de-dificuldade-a-cada-check-in.md) |
+| [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) | parcialmente, o "sem build" e o `bin: ./src/main.ts` no artefato publicado | [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) |
+| [ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md) | integralmente, a instalação passa a ser npm-global | [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) |

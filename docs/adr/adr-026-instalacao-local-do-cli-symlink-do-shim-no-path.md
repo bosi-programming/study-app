@@ -2,7 +2,8 @@
 numero: 26
 titulo: 'Instalação local do CLI por symlink do shim do pnpm no PATH'
 data: '2026-09-27'
-status: 'aceito'
+status: 'superado'
+supersededBy: [27]
 ---
 
 # ADR-026 — Instalação local do CLI por symlink do shim do pnpm no PATH
