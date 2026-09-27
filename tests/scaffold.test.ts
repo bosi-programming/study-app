@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it, onTestFinished } from 'vitest'
@@ -22,7 +22,11 @@ function normalizeSql(sql: string): string {
     .trim()
 }
 
-type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string> }
+type PackageJson = {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+  scripts?: Record<string, string>
+}
 type TsConfig = { extends?: string; compilerOptions?: { strict?: boolean; types?: string[] } }
 
 describe('S-08 workspace members', () => {
@@ -35,7 +39,7 @@ describe('S-08 workspace members', () => {
 
   it.each([
     ['packages/core/package.json', '@study/core'],
-    ['apps/cli/package.json', '@study/cli'],
+    ['apps/cli/package.json', 'study-cli'],
     ['fixtures/golden/package.json', '@study/golden'],
   ])('%s exists as %s', (path, name) => {
     expect(readJson<PackageJson>(path)).toMatchObject({ name })
@@ -69,10 +73,10 @@ describe('S-10 no runtime dependencies', () => {
     expect(deps.filter((dep) => dep !== '@study/core')).toEqual([])
   })
 
-  it('apps/cli depends on the workspace core', () => {
-    expect(readJson<PackageJson>('apps/cli/package.json').dependencies?.['@study/core']).toBe(
-      'workspace:*',
-    )
+  it('apps/cli keeps the workspace core as a dev dependency, not a runtime one', () => {
+    const manifest = readJson<PackageJson>('apps/cli/package.json')
+    expect(manifest.devDependencies?.['@study/core']).toBe('workspace:*')
+    expect(Object.keys(manifest.dependencies ?? {})).toEqual([])
   })
 })
 
@@ -206,14 +210,27 @@ describe('S-17 ADR index', () => {
     }
   })
 
-  it('scaffold-adr-026: o índice linka o ADR-026 e o docs/README.md conta 26', () => {
+  it('scaffold-adr-027: o índice linka o ADR-027 e o docs/README.md conta 27', () => {
     const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
-    const adr26 = files.filter((name) => name.startsWith('adr-026'))
+    const adr27 = files.filter((name) => name.startsWith('adr-027'))
+    const adr26Name = files.find((name) => name.startsWith('adr-026')) ?? ''
 
-    expect(adr26.length).toBe(1)
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr26[0] ?? '')
-    expect(files.length).toBe(26)
-    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('26 ADRs')
+    expect(adr27.length).toBe(1)
+    expect(adr26Name).not.toBe('')
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr27[0] ?? '')
+    expect(files.length).toBe(27)
+    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('27 ADRs')
+    expect(readFileSync(resolve(adrDir, adr26Name), 'utf8')).toContain("status: 'superado'")
+  })
+
+  it('adr-supersessao: o índice liga o ADR-013 e o ADR-026 ao ADR-027', () => {
+    const section =
+      readFileSync(resolve(adrDir, 'README.md'), 'utf8').split('## Supersessão')[1] ?? ''
+    const rows = section.split('\n').filter((line) => line.startsWith('|') && line.includes('adr-'))
+    const rowFor = (name: string) => rows.find((line) => line.includes(name)) ?? ''
+
+    expect(rowFor('adr-013')).toContain('adr-027')
+    expect(rowFor('adr-026')).toContain('adr-027')
   })
 })
 
@@ -373,39 +390,116 @@ describe('S-27 roadmap phase 1 ranges', () => {
 })
 
 const studyShim = resolve(root, 'node_modules/.bin/study')
+const cliDir = resolve(root, 'apps/cli')
 const cliManifestPath = 'apps/cli/package.json'
-const cliMainPath = 'apps/cli/src/main.ts'
+const cliBundlePath = 'apps/cli/dist/main.js'
+const publishTimeoutMs = 60_000
 
-describe('S-28 bin wiring', () => {
-  it('bin-fiacao: o shebang, o bin.study e o alvo andam juntos', () => {
-    const main = readFileSync(resolve(root, cliMainPath), 'utf8')
-    const bin = readJson<{ bin?: Record<string, string> }>(cliManifestPath).bin?.study ?? ''
+type PublishManifest = {
+  name?: string
+  private?: boolean
+  engines?: { node?: string }
+  files?: string[]
+  bin?: Record<string, string>
+  scripts?: Record<string, string>
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
 
-    expect(main.startsWith('#!/usr/bin/env node\n')).toBe(true)
-    expect(bin).toBe('./src/main.ts')
-    expect(existsSync(resolve(root, 'apps/cli', bin))).toBe(true)
+describe('S-28 publish wiring', () => {
+  it('publish-manifest: o manifesto é publicável, com bin JS e zero runtime deps', () => {
+    const manifest = readJson<PublishManifest>(cliManifestPath)
+
+    expect(manifest.name).toBe('study-cli')
+    expect(manifest.private).toBeUndefined()
+    expect(manifest.engines?.node).toBe('>=24')
+    expect(manifest.files).toEqual(['dist'])
+    expect(manifest.bin?.study).toBe('./dist/main.js')
+    expect(Object.keys(manifest.dependencies ?? {})).toEqual([])
+    expect(manifest.devDependencies?.['@study/core']).toBe('workspace:*')
+    expect(manifest.scripts?.build).toBe('node build.mjs')
+    expect(manifest.scripts?.prepare).toBe('node build.mjs')
   })
 
-  it('readme-instalar-desinstalar: o README documenta o symlink e o rm', () => {
-    const lines = textAt('README.md').split('\n')
+  it('bundle-shebang: o bundle do prepare começa com shebang e inlina o core', () => {
+    const bundle = readFileSync(resolve(root, cliBundlePath), 'utf8')
 
-    expect(lines).toContain('mkdir -p ~/.local/bin')
-    expect(lines).toContain('ln -sf "$PWD/node_modules/.bin/study" ~/.local/bin/study')
-    expect(lines).toContain('rm ~/.local/bin/study')
+    expect(bundle.startsWith('#!/usr/bin/env node\n')).toBe(true)
+    expect(bundle).not.toMatch(/from ['"]@study\/core['"]/)
+    expect(bundle).not.toContain("from './cli.ts'")
   })
 
-  it('instala-e-roda-no-path: o shim linkado num diretório do PATH roda de cwd estranho', () => {
-    const binDir = mkdtempSync(join(tmpdir(), 'study-bin-'))
-    onTestFinished(() => rmSync(binDir, { recursive: true, force: true }))
-    symlinkSync(studyShim, join(binDir, 'study'))
-    const result = spawnSync('study', ['--help'], {
-      cwd: tmpdir(),
+  it('pack-contem-o-bin: o npm pack --dry-run lista o dist/main.js', () => {
+    const result = spawnSync('npm', ['pack', '--dry-run', '--json'], {
+      cwd: cliDir,
       encoding: 'utf8',
-      env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
     })
 
     expect(result.status).toBe(0)
+    const report = JSON.parse(result.stdout) as { files?: { path: string }[] }[]
+    const paths = report[0]?.files?.map((file) => file.path) ?? []
+    expect(paths).toContain('dist/main.js')
+    expect(paths.some((path) => path.endsWith('.ts'))).toBe(false)
+  })
+
+  it(
+    'instala-do-tarball: o pacote instala num prefixo global e roda de um cwd estranho',
+    () => {
+      const packDir = mkdtempSync(join(tmpdir(), 'study-pack-'))
+      const prefix = mkdtempSync(join(tmpdir(), 'study-prefix-'))
+      const foreignCwd = mkdtempSync(join(tmpdir(), 'study-cwd-'))
+      onTestFinished(() => {
+        rmSync(packDir, { recursive: true, force: true })
+        rmSync(prefix, { recursive: true, force: true })
+        rmSync(foreignCwd, { recursive: true, force: true })
+      })
+
+      const packed = spawnSync('npm', ['pack', '--pack-destination', packDir], {
+        cwd: cliDir,
+        encoding: 'utf8',
+      })
+      expect(packed.status).toBe(0)
+      const tarball = join(packDir, packed.stdout.trim().split('\n').at(-1) ?? '')
+      expect(existsSync(tarball)).toBe(true)
+
+      const listing = spawnSync('tar', ['-tzf', tarball], { encoding: 'utf8' }).stdout
+      expect(listing).toContain('package/dist/main.js')
+      expect(listing.split('\n').filter((name) => name.endsWith('.ts'))).toEqual([])
+      const packedManifest = JSON.parse(
+        spawnSync('tar', ['-xzOf', tarball, 'package/package.json'], { encoding: 'utf8' }).stdout,
+      ) as PublishManifest
+      expect(packedManifest.bin?.study).toBe('./dist/main.js')
+      expect(Object.keys(packedManifest.dependencies ?? {})).toEqual([])
+
+      const installed = spawnSync('npm', ['install', '-g', '--prefix', prefix, tarball], {
+        encoding: 'utf8',
+      })
+      expect(installed.status).toBe(0)
+
+      const result = spawnSync('study', ['--help'], {
+        cwd: foreignCwd,
+        encoding: 'utf8',
+        env: { ...process.env, PATH: `${join(prefix, 'bin')}:${process.env.PATH ?? ''}` },
+      })
+      expect(result.status).toBe(0)
+      expect(result.stdout).toContain('Uso:')
+    },
+    publishTimeoutMs,
+  )
+
+  it('shim-local: o node_modules/.bin/study roda o bundle construído pelo prepare', () => {
+    const result = spawnSync(studyShim, ['--help'], { cwd: tmpdir(), encoding: 'utf8' })
+
+    expect(result.status).toBe(0)
     expect(result.stdout).toContain('Uso:')
+  })
+
+  it('readme-instalar-global: o README documenta instalar e desinstalar pelo npm', () => {
+    const readme = textAt('README.md')
+
+    expect(readme.split('\n')).toContain('npm install -g study-cli')
+    expect(readme.split('\n')).toContain('npm uninstall -g study-cli')
+    expect(readme).not.toContain('ln -sf')
   })
 })
 
@@ -422,7 +516,7 @@ const lintDependencies = {
 }
 
 const lintedRoots = ['packages', 'apps', 'fixtures', 'tests', 'scripts']
-const lintIgnoredDirs = new Set(['node_modules', 'coverage', 'recipes', '.scratch'])
+const lintIgnoredDirs = new Set(['node_modules', 'coverage', 'recipes', '.scratch', 'dist'])
 const sourceFilePattern = /\.(ts|mts|cts|js|mjs|cjs)$/
 
 function textAt(relativePath: string): string {
@@ -543,10 +637,10 @@ describe('S-22 lint gate', () => {
     }
   })
 
-  it('ignores node_modules, coverage, recipes and .scratch', () => {
+  it('ignores node_modules, coverage, recipes, .scratch and the generated dist', () => {
     const config = textAt('eslint.config.js')
     expect(config.trim().length).toBeGreaterThan(0)
-    for (const ignored of ['node_modules', 'coverage', 'recipes', '.scratch']) {
+    for (const ignored of ['node_modules', 'coverage', 'recipes', '.scratch', 'dist']) {
       expect(config).toContain(ignored)
     }
   })
