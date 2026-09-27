@@ -24,32 +24,29 @@ pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)
 
 ## Instalar o comando `study`
 
-O `pnpm install` deixa o CLI em `node_modules/.bin/study`, mas só dentro do repo. Para rodar `study` de qualquer diretório, linke esse shim num diretório que já esteja no `PATH` — o exemplo usa `~/.local/bin`, troque pelo seu:
+O CLI é publicado como `study-cli` e instala global pelo npm:
 
 ```bash
-mkdir -p ~/.local/bin
-ln -sf "$PWD/node_modules/.bin/study" ~/.local/bin/study
+npm install -g study-cli
 ```
 
-Rode os dois comandos a partir da raiz do repo. Abra um shell novo para ele recarregar o `PATH` e confirme com `study --help`.
-
-O alvo é o shim do pnpm, não `apps/cli/src/main.ts`: o `pnpm install` recria o shim no mesmo caminho, então o link continua válido. O link guarda um caminho absoluto da máquina, então mover ou renomear o repo quebra o comando — re-rodar o passo de instalação conserta.
-
-Para desinstalar, remova o link:
+Depois disso `study --help` roda de qualquer diretório. Para desinstalar:
 
 ```bash
-rm ~/.local/bin/study
+npm uninstall -g study-cli
 ```
+
+O `pnpm install` continua criando `node_modules/.bin/study` para rodar o CLI de dentro do repo; isso é o dev loop, não a instalação global.
 
 ## Layout do workspace
 
 | Membro | Pacote | O que é |
 | --- | --- | --- |
 | `packages/core` | `@study/core` | Domínio e regra de agendamento, em TS puro, sem API de Node ou browser. |
-| `apps/cli` | `@study/cli` | Superfície da fase 1; declara o bin `study`. |
+| `apps/cli` | `study-cli` | Superfície da fase 1; declara o bin `study`. |
 | `fixtures/golden` | `@study/golden` | Golden fixtures importáveis, vetores de regressão de todos os apps. |
 
-Não existe `dist/`: `core` e `golden` exportam `./src/index.ts` e o Node 24 consome o TypeScript direto.
+Não existe `dist/` para `core` e `golden`: eles exportam `./src/index.ts` e o Node 24 consome o TypeScript direto. O `study-cli` gera um bundle em `apps/cli/dist/` no `prepare`, para o artefato publicado.
 
 ## Documentos
 
