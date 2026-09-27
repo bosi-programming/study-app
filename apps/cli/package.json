@@ -1,21 +1,24 @@
 {
-  "name": "@study/cli",
+  "name": "study-cli",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "bin": {
-    "study": "./src/main.ts"
+    "study": "./dist/main.js"
   },
-  "exports": {
-    ".": "./src/main.ts"
-  },
-  "dependencies": {
-    "@study/core": "workspace:*"
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=24"
   },
   "scripts": {
+    "build": "node build.mjs",
+    "prepare": "node build.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
-    "@study/golden": "workspace:*"
+    "@study/core": "workspace:*",
+    "@study/golden": "workspace:*",
+    "esbuild": "0.28.2"
   }
 }

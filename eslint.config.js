@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', 'coverage/**', 'recipes/**', '.scratch/**'],
+    ignores: ['node_modules/**', 'coverage/**', 'recipes/**', '.scratch/**', '**/dist/**'],
   },
   js.configs.recommended,
   tseslint.configs.recommended,
