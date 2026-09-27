@@ -22,6 +22,19 @@ function normalizeSql(sql: string): string {
     .trim()
 }
 
+function yamlBlockEntries(source: string, key: string): string[] {
+  const lines = source.split('\n')
+  const start = lines.findIndex((line) => line.trimEnd() === `${key}:`)
+  if (start < 0) return []
+  const entries: string[] = []
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim().length === 0) continue
+    if (!/^\s/.test(line)) break
+    entries.push(line.trim())
+  }
+  return entries
+}
+
 type PackageJson = {
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
@@ -35,6 +48,12 @@ describe('S-08 workspace members', () => {
     for (const glob of ['packages/*', 'apps/*', 'fixtures/*']) {
       expect(workspace).toContain(glob)
     }
+  })
+
+  it('allows the esbuild build script pnpm would otherwise block', () => {
+    const workspace = readFileSync(resolve(root, 'pnpm-workspace.yaml'), 'utf8')
+
+    expect(yamlBlockEntries(workspace, 'allowBuilds')).toEqual(['esbuild: true'])
   })
 
   it.each([
@@ -395,15 +414,12 @@ const cliManifestPath = 'apps/cli/package.json'
 const cliBundlePath = 'apps/cli/dist/main.js'
 const publishTimeoutMs = 60_000
 
-type PublishManifest = {
+type PublishManifest = PackageJson & {
   name?: string
   private?: boolean
   engines?: { node?: string }
   files?: string[]
   bin?: Record<string, string>
-  scripts?: Record<string, string>
-  dependencies?: Record<string, string>
-  devDependencies?: Record<string, string>
 }
 
 describe('S-28 publish wiring', () => {
@@ -426,7 +442,7 @@ describe('S-28 publish wiring', () => {
 
     expect(bundle.startsWith('#!/usr/bin/env node\n')).toBe(true)
     expect(bundle).not.toMatch(/from ['"]@study\/core['"]/)
-    expect(bundle).not.toContain("from './cli.ts'")
+    expect(bundle).not.toMatch(/from ['"]\.\/cli\.ts['"]/)
   })
 
   it('pack-contem-o-bin: o npm pack --dry-run lista o dist/main.js', () => {

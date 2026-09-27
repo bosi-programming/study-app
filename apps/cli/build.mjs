@@ -1,11 +1,11 @@
 import { join } from 'node:path'
 import { build } from 'esbuild'
 
-const dir = import.meta.dirname
+const cliDir = import.meta.dirname
 
 await build({
-  entryPoints: [join(dir, 'src/main.ts')],
-  outfile: join(dir, 'dist/main.js'),
+  entryPoints: [join(cliDir, 'src/main.ts')],
+  outfile: join(cliDir, 'dist/main.js'),
   bundle: true,
   platform: 'node',
   format: 'esm',
