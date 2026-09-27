@@ -206,14 +206,14 @@ describe('S-17 ADR index', () => {
     }
   })
 
-  it('scaffold-adr-025: o índice linka o ADR-025 e o docs/README.md conta 25', () => {
+  it('scaffold-adr-026: o índice linka o ADR-026 e o docs/README.md conta 26', () => {
     const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
-    const adr25 = files.filter((name) => name.startsWith('adr-025'))
+    const adr26 = files.filter((name) => name.startsWith('adr-026'))
 
-    expect(adr25.length).toBe(1)
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr25[0] ?? '')
-    expect(files.length).toBe(25)
-    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('25 ADRs')
+    expect(adr26.length).toBe(1)
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr26[0] ?? '')
+    expect(files.length).toBe(26)
+    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('26 ADRs')
   })
 })
 
