@@ -13,6 +13,8 @@ Registro datado do que fecha a fase 1. O Definition of done vem do `ROADMAP.md`;
 | zerar a fila por 1 semana | uso diário do CLI (`study due`, `study review`) | em aberto — preenchimento humano | (a preencher) | (a preencher) |
 | exportar e reimportar sem perda | `study export --json` + `study import <arquivo> --json` | `apps/cli/test/commands/import.test.ts` (`AC2/AC11 — round-trip completo`, T-09) e `apps/cli/test/output/json.test.ts` | 2026-09-25 | export → import num banco vazio → export reproduz o conteúdo; a segunda rodada é idempotente (`written: 0`) |
 
+Nota (2026-09-27): o [ADR-027](../adr/adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) supera parcialmente o "sem build" da linha `instalar` — a instalação do CLI passa a ser npm-global e o membro `apps/cli` ganha um `prepare` que gera o bundle publicado; `packages/core` e `fixtures/golden` seguem consumidos direto do `src`.
+
 ## Verificação manual
 
 | Caso | Comando | O que mede | Data | Resultado |
