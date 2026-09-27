@@ -22,6 +22,25 @@ pnpm bench         # stub: declara o bloqueio da RNF-03, ainda não mede
 pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)
 ```
 
+## Instalar o comando `study`
+
+O `pnpm install` deixa o CLI em `node_modules/.bin/study`, mas só dentro do repo. Para rodar `study` de qualquer diretório, linke esse shim num diretório que já esteja no `PATH` — o exemplo usa `~/.local/bin`, troque pelo seu:
+
+```bash
+mkdir -p ~/.local/bin
+ln -sf "$PWD/node_modules/.bin/study" ~/.local/bin/study
+```
+
+Rode os dois comandos a partir da raiz do repo. Abra um shell novo para ele recarregar o `PATH` e confirme com `study --help`.
+
+O alvo é o shim do pnpm, não `apps/cli/src/main.ts`: o `pnpm install` recria o shim no mesmo caminho, então o link continua válido. O link guarda um caminho absoluto da máquina, então mover ou renomear o repo quebra o comando — re-rodar o passo de instalação conserta.
+
+Para desinstalar, remova o link:
+
+```bash
+rm ~/.local/bin/study
+```
+
 ## Layout do workspace
 
 | Membro | Pacote | O que é |
