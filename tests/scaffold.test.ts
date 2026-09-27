@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import { DEFAULT_QUEUE_BUDGET_MS, DEFAULT_QUEUE_SIZE, bench } from '../scripts/bench.ts'
 import { SCHEMA_SQL } from '../scripts/sqlite-probe.ts'
 import vitestConfig from '../vitest.config.ts'
@@ -373,13 +373,13 @@ describe('S-27 roadmap phase 1 ranges', () => {
 })
 
 const studyShim = resolve(root, 'node_modules/.bin/study')
-const cliManifest = 'apps/cli/package.json'
-const cliMain = 'apps/cli/src/main.ts'
+const cliManifestPath = 'apps/cli/package.json'
+const cliMainPath = 'apps/cli/src/main.ts'
 
 describe('S-28 bin wiring', () => {
   it('bin-fiacao: o shebang, o bin.study e o alvo andam juntos', () => {
-    const main = readFileSync(resolve(root, cliMain), 'utf8')
-    const bin = readJson<{ bin?: Record<string, string> }>(cliManifest).bin?.study ?? ''
+    const main = readFileSync(resolve(root, cliMainPath), 'utf8')
+    const bin = readJson<{ bin?: Record<string, string> }>(cliManifestPath).bin?.study ?? ''
 
     expect(main.startsWith('#!/usr/bin/env node\n')).toBe(true)
     expect(bin).toBe('./src/main.ts')
@@ -387,29 +387,25 @@ describe('S-28 bin wiring', () => {
   })
 
   it('readme-instalar-desinstalar: o README documenta o symlink e o rm', () => {
-    const readme = textAt('README.md')
+    const lines = textAt('README.md').split('\n')
 
-    expect(readme).toContain('node_modules/.bin/study')
-    expect(readme).toContain('mkdir -p ~/.local/bin')
-    expect(readme).toContain('ln -sf "$PWD/node_modules/.bin/study" ~/.local/bin/study')
-    expect(readme).toContain('rm ~/.local/bin/study')
+    expect(lines).toContain('mkdir -p ~/.local/bin')
+    expect(lines).toContain('ln -sf "$PWD/node_modules/.bin/study" ~/.local/bin/study')
+    expect(lines).toContain('rm ~/.local/bin/study')
   })
 
   it('instala-e-roda-no-path: o shim linkado num diretório do PATH roda de cwd estranho', () => {
     const binDir = mkdtempSync(join(tmpdir(), 'study-bin-'))
-    try {
-      symlinkSync(studyShim, join(binDir, 'study'))
-      const result = spawnSync('study', ['--help'], {
-        cwd: tmpdir(),
-        encoding: 'utf8',
-        env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
-      })
+    onTestFinished(() => rmSync(binDir, { recursive: true, force: true }))
+    symlinkSync(studyShim, join(binDir, 'study'))
+    const result = spawnSync('study', ['--help'], {
+      cwd: tmpdir(),
+      encoding: 'utf8',
+      env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
+    })
 
-      expect(result.status).toBe(0)
-      expect(result.stdout).toContain('Uso:')
-    } finally {
-      rmSync(binDir, { recursive: true, force: true })
-    }
+    expect(result.status).toBe(0)
+    expect(result.stdout).toContain('Uso:')
   })
 })
 
