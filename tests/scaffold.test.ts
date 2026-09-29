@@ -797,6 +797,12 @@ describe('S-30 web-molde-rf', () => {
     for (const id of ids) expect(web, id).toContain(id)
   })
 
+  it('mapeia cada RF de UI na tabela de cobertura de telas', () => {
+    const table = sectionBetween(web, '## Telas e fluxos', '\n### ')
+
+    for (const id of functionalRequirementIds()) expect(table, id).toContain(id)
+  })
+
   it('descreve os quatro estados de tela', () => {
     const states = web.toLowerCase()
     for (const state of ['vazio', 'carregando', 'offline', 'erro']) {

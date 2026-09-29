@@ -21,7 +21,7 @@ Tabela de cobertura: cada `RF-nn` da UI aponta a tela onde aparece.
 | --- | --- | --- |
 | Adicionar | `#/add` | RF-01 |
 | Lista | `#/items` | RF-02, RF-24 |
-| Detalhe | `#/items/:id` | RF-03, RF-06, RF-10, RF-11 |
+| Detalhe | `#/items/:id` | RF-03, RF-04, RF-06, RF-10, RF-11 |
 | Fila | `#/` | RF-05, RF-07 |
 | Check-in | `#/review/:id` | RF-08, RF-09, RF-12, RF-13 |
 | Ciclo de vida | `#/items/:id` (ações) | RF-14, RF-15 |
@@ -56,7 +56,7 @@ Toda tela sem `RF-nn` (config, estados de erro, confirmações) segue as regras 
 - O resumo da fila traz o total de hoje, o total de atrasados e o recorte por matéria (RF-07).
 - A fila responde em menos de 200ms com 5.000 itens (RNF-03); o carregamento tem o estado carregando e nunca bloqueia a navegação.
 
-### Check-in e reavaliação (RF-08`..`RF-13)
+### Check-in e reavaliação (RF-08..RF-13)
 
 - Check-in "estudei agora" só existe para item ativo; recalcula o vencimento pelo core (RF-08).
 - Item arquivado é recusado com o caminho para desarquivar (RF-09); item no arquivo morto é recusado com o caminho para restaurar.
@@ -66,7 +66,7 @@ Toda tela sem `RF-nn` (config, estados de erro, confirmações) segue as regras 
 - O `on_time_streak` aparece no detalhe e nos stats como check-ins consecutivos no prazo; um check-in atrasado zera o contador (RF-13, RN-08).
 - Dois check-ins no mesmo dia são permitidos e cada um incrementa `n` e dobra o intervalo (RN-13).
 
-### Ciclo de vida e arquivo morto (RF-14`..`RF-17)
+### Ciclo de vida e arquivo morto (RF-14..RF-17)
 
 - Arquivar tira o item da fila e das contagens de ativos; desarquivar o traz de volta (RF-14, RF-15, RN-09).
 - Arquivar e desarquivar são ações do detalhe, reversíveis e sem confirmação.
@@ -75,7 +75,7 @@ Toda tela sem `RF-nn` (config, estados de erro, confirmações) segue as regras 
 - Purgar do arquivo morto é definitivo e exige confirmação que nomeia o item (RF-17).
 - O arquivo morto é uma visão própria, com `cold_archived_at` por item e o agrupamento de restaurar/purgar.
 
-### Export e import (RF-18`..`RF-20)
+### Export e import (RF-18..RF-20)
 
 - Export baixa um único JSON v1 com ativos, arquivados, arquivo morto e histórico, com `schema_version` (RF-18, RNF-04).
 - Import lê um JSON v1 e mescla por UUID: item existente é mesclado pelo `updated_at` mais recente, nunca duplicado (RF-19, ADR-022).
@@ -83,7 +83,7 @@ Toda tela sem `RF-nn` (config, estados de erro, confirmações) segue as regras 
 - O export automático dispara a cada migração para o arquivo morto e fica disponível mesmo com o banco corrompido, quando o arquivo existir (RF-20, RNF-07).
 - O arquivo exportado pelo web abre no import do CLI, e o do CLI abre no import do web.
 
-### Stats (RF-21`..`RF-23)
+### Stats (RF-21..RF-23)
 
 - Streak de dias com fila zerada, recalculado a cada abertura (RF-21, RN-14).
 - Contagem de ativos, arquivados e no arquivo morto (RF-22).
