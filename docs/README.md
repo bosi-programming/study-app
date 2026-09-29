@@ -13,6 +13,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/REQUISITOS.md` | Requisitos funcionais, regras e critérios de aceite | Rascunho v3 |
 | `docs/especificacao/MODELO-DE-DADOS.md` | Entidades, schema e contrato JSON | Rascunho v1 |
 | `docs/especificacao/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v6 |
+| `docs/especificacao/TUI.md` | Superfície interativa: telas, teclas, sessão e estados | Rascunho v1 |
 | `docs/especificacao/CORE.md` | API do domínio: portas, item, regra de agendamento, erros | Rascunho v1 |
 | `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v3 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
@@ -26,7 +27,8 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 3. `docs/especificacao/REQUISITOS.md` — o que o sistema faz, com critérios de aceite.
 4. `docs/especificacao/MODELO-DE-DADOS.md` — como os dados existem.
 5. `docs/especificacao/CLI.md` — a interface da fase 1.
-6. `docs/especificacao/CORE.md` — como o domínio e a regra de agendamento funcionam por dentro.
-7. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
-8. `docs/engenharia/ROADMAP.md` — em que ordem construir.
-9. `docs/adr/README.md` — por que as escolhas técnicas foram feitas.
+6. `docs/especificacao/TUI.md` — a superfície interativa sobre o mesmo CLI.
+7. `docs/especificacao/CORE.md` — como o domínio e a regra de agendamento funcionam por dentro.
+8. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
+9. `docs/engenharia/ROADMAP.md` — em que ordem construir.
+10. `docs/adr/README.md` — por que as escolhas técnicas foram feitas.
