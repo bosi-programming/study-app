@@ -1,6 +1,6 @@
 # Plano de Testes — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 4 | Data: 2026-09-28 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Estratégia
 
@@ -15,6 +15,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 | Web | Vitest + Testing Library | adicionar, fila, check-in, arquivar |
 | Mobile | Jest + React Native Testing Library | mesmos fluxos, lendo `fixtures/golden` via core |
 | Desktop | Playwright sobre Electron + testes do web | abertura e fluxos principais |
+| Piloto | Sentry + entrevistas semanais | 3–5 estudantes por 2+ semanas, >= 50% na 2ª semana |
 
 ## Golden fixtures
 
@@ -80,7 +81,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 | T-26 | Benchmark: 5.000 itens e `study due --json` abaixo de 200ms (manual) | RNF-03 |
 | T-27 | `study list` filtra por matéria e status e ordena por vencimento | RF-02 |
 
-### Suíte de scaffold (S-01..S-28)
+### Suíte de scaffold (S-01..S-33)
 
 - IDs `S-nn` cobrem a fiação do repo, não a regra: pureza e resolução do core (`S-01`, `S-02`, `S-16`), forma, unicidade e cobertura da fixture (`S-03`..`S-05`, `S-18`), bin do CLI (`S-06`, `S-07`, `S-28`: fiação e publicação no npm), membros, tsconfig, dependências e scripts do workspace (`S-08`..`S-12`), o engine SQLite (`S-13`..`S-15`: probe executável, DDL acoplado ao doc e recusa de dependência nativa), a organização dos docs (`S-17`: índice de ADRs) e a automação do repositório (`S-21`, `S-22`: workflow de CI e gate de lint).
 - `S-16` fecha o outro lado do `S-01`: além dos imports proibidos, nenhum arquivo de `packages/core/src` pode ler relógio ou aleatoriedade do ambiente (`Date.now`, `new Date()` sem argumentos, `Math.random`, `crypto`, `performance.now`) — tempo e ids vêm só de `deps`. Nasceu do Tasting do BOS-28; era `S-13` no ramo e ficou com o id livre depois que o probe do BOS-27 tomou `S-13`..`S-15`.
@@ -88,6 +89,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 - `S-18`..`S-20` nasceram do BOS-29: o `S-18` exige um fixture para cada `T-nn` obrigatório do plano, e exige que todo `kind` do union tenha caso; o `S-19` pina o script `test:coverage`, o provider v8 e o threshold de linhas do core; o `S-20` pina o runner dos vetores no projeto `golden` e fora do projeto `core`, que é o que mantém `pnpm test:golden` como gate de divergência.
 - `S-21` e `S-22` nasceram do BOS-39 (ENG-14). O `S-21` pina o workflow de CI: disparo em `pull_request` com base `main` (nunca `pull_request_target`), `actions/checkout`, `pnpm/action-setup` lendo o `packageManager`, Node 24 com cache de pnpm, `pnpm install --frozen-lockfile`, um passo por gate, permissão `contents` na forma de bloco e nenhum segredo — é o que deixa um PR de fork rodar. O `S-22` pina o gate de lint: `eslint .` na raiz, dependências só na raiz, ignore de `node_modules`, `coverage`, `recipes`, `.scratch` e `dist` (o bundle gerado), zero erro e zero aviso nos diretórios do workspace, nenhuma supressão deixada para trás, as dependências no lockfile, a menção no `README.md` e no `AGENTS.md`, e a contagem de ADRs do `docs/README.md` em sincronia com os arquivos do índice.
 - `S-28` nasceu do BOS-46 (ENG-21). Ele pina a publicação do CLI: o manifesto publicável (`@bosi-programming/study-cli`, sem `private`, `publishConfig.access: "public"`, `engines.node`, `files: ["dist"]`, `bin.study -> ./dist/main.js` e `dependencies` vazio), o bundle do `prepare` com shebang e o core inlinado, o `npm pack --dry-run` listando o `dist/main.js`, o `npm pack` mais `npm install -g --prefix` num prefixo temporário com `study --help` de um cwd estranho, o shim `node_modules/.bin/study` do dev loop e o `README.md` documentando `npm install -g`/`npm uninstall -g`. O nome escopado e o `publishConfig` vêm do ADR-028: o registry recusou o `study-cli` sem escopo como parecido demais com o `studycli` existente.
+- `S-29`..`S-33` nasceram do BOS-47 (ENG-22): pinam os documentos das fases 2 a 5 — o índice e a versão de `docs/README.md`, o molde e a cobertura de `RF-01`..`RF-25` do `WEB.md`, os requisitos do `PILOTO.md`, a reconciliação de BOS-41..BOS-45 no `INVENTARIO-DE-REQUISITOS.md` (com a herança de telas do desktop e o `expo-sqlite` do mobile) e as faixas `W`/`P`/`M`/`D` da seção `## Casos por camada`.
 - Reservados para não colidir com `T-01`..`T-27` (domínio) nem com `C-01`..`C-65` (a regra, no nível de unidade).
 - Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts` e `tests/scaffold.test.ts` — 240 testes no total (BOS-29).
 - BOS-30 (ENG-5) acrescentou a suíte de persistência em `apps/cli/test/persistence/{schema,mapping,store}.test.ts` — 269 testes no total; ela roda no projeto `cli` do `vitest.config.ts` contra um SQLite real em diretório temporário.
@@ -102,6 +104,48 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/especificacao/REQUISITOS.md`
 - `C-16` e `C-58`..`C-65` (BOS-29) são os casos que **leem os golden fixtures** em vez de repetir o vetor no teste: `C-16` (`T-02`), `C-58` (`T-01`), `C-59` (`T-03`), `C-60` (`T-04`), `C-61` (`T-05`), `C-62` (`T-11`), `C-63` (`T-12`), `C-64` (`T-20`) e `C-65` (`T-21`). Os outros `C-nn` seguem com o vetor escrito no próprio teste.
 - `T-11` não tem casa no core: ordenar a fila é do CLI (`CORE.md`). O `C-62` prova que a ordem documentada em `CA-12` é a que as definições do core produzem, com um comparador local ao teste — atrasados primeiro (`isLate`), depois por vencimento, e o `id` como desempate.
 - `C-56` e `C-57` nasceram do Tasting do BOS-28: datas malformadas falham igual em `compareDates`/`isLate`/`daysLate`/`isDue`, e `note`/`link` guardam o texto digitado (só o vazio vira `null`).
+
+## Casos por camada (W, P, M, D)
+
+As camadas novas usam faixas próprias de IDs, reservadas para não colidir com `T-nn` (domínio) nem com `C-nn` (a regra, no nível de unidade). Cada faixa é contígua e as specs das camadas referenciam `T` e `C` sem renumerar nenhum dos dois.
+
+| Camada | Faixa | Ferramenta |
+| --- | --- | --- |
+| Web | `W-01..W-14` | Vitest + Testing Library |
+| Piloto | `P-01..P-04` | Sentry + entrevistas semanais |
+| Mobile | `M-01..M-05` | Jest + React Native Testing Library |
+| Desktop | `D-01..D-03` | Playwright sobre Electron |
+
+| ID | Caso | Requisito |
+| --- | --- | --- |
+| W-01 | Adicionar item com título, matéria e dificuldade | RF-01 |
+| W-02 | Lista com filtro por matéria e status e busca por termo | RF-02, RF-24 |
+| W-03 | Fila do dia com atrasados primeiro e resumo por matéria | RF-05, RF-07 |
+| W-04 | Check-in recalcula o vencimento e pede a reavaliação | RF-08, RF-12 |
+| W-05 | Histórico de check-ins e próximo vencimento | RF-06, RF-10 |
+| W-06 | Arquivar e desarquivar tiram da fila e das contagens | RF-14, RF-15 |
+| W-07 | Arquivo morto: migrar, listar, restaurar e purgar | RF-16, RF-17 |
+| W-08 | Config da janela do arquivamento automático | RF-25 |
+| W-09 | Export e import pela interface, sem duplicar | RF-18, RF-19, RF-20 |
+| W-10 | Stats: streak, contagens e check-ins do dia | RF-21, RF-22, RF-23 |
+| W-11 | Persistência IndexedDB e fila com 5.000 itens abaixo de 200ms | RNF-03, RNF-04 |
+| W-12 | Estados das telas: vazio, carregando, offline e erro | RNF-01 |
+| W-13 | Strings pt-BR centralizadas num módulo único | RNF-06 |
+| W-14 | Editar e remover item, com confirmação | RF-03, RF-04 |
+| P-01 | Aviso LGPD e consentimento | RNF-05 |
+| P-02 | Eventos do Sentry sem PII | RNF-05 |
+| P-03 | Roteiro de entrevista semanal | PRD — piloto |
+| P-04 | Retenção >= 50% na 2ª semana | PRD — métricas |
+| M-01 | Spike de fila no emulador e no device | ROADMAP — Fase 4 |
+| M-02 | Persistência `expo-sqlite` no schema canônico | MODELO-DE-DADOS — SQLite |
+| M-03 | Telas do web no mobile | RF-01, RF-05, RF-08, RF-14 |
+| M-04 | Notificações locais de revisão | ROADMAP — Fase 4 |
+| M-05 | EAS Build, TestFlight e faixa interna | ADR-007 |
+| D-01 | Empacotamento dmg, nsis e AppImage | ROADMAP — Fase 5 |
+| D-02 | Smoke de abertura e dos fluxos principais | ROADMAP — Fase 5 |
+| D-03 | Paridade com as telas do web | ADR-009 |
+
+Os `RF-nn` de tela do web continuam com a fonte em `REQUISITOS.md` e o comportamento em `WEB.md`; as linhas acima são o vínculo do caso ao requisito, não uma segunda lista de requisitos.
 
 ## Rastreabilidade
 
