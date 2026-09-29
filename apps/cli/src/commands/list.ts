@@ -9,5 +9,6 @@ export const listCommand: Command = (args, ctx) => {
   assertPositionals(args, 0, 0, 'list')
 
   const items = ctx.store.listItems(itemFilter(args))
-  return { json: { items: items.map(toItemJson) }, human: itemTable(items) }
+  const human = itemTable(items, ctx.deps.clock.todayLocalDate())
+  return { json: { items: items.map(toItemJson) }, human }
 }

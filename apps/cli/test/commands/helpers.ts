@@ -40,7 +40,7 @@ export const SPAWN_SWEEP_TIMEOUT_MS = 30_000
 export function runStudy(args: readonly string[], options: RunOptions = {}): SpawnSyncReturns<string> {
   return spawnSync(binPath, [...args], {
     cwd: options.cwd ?? repoRoot,
-    env: { ...process.env, ...options.env },
+    env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '', ...options.env },
     encoding: 'utf8',
   })
 }
