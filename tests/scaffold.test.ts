@@ -803,50 +803,64 @@ describe('S-30 web-molde-rf', () => {
       expect(states, state).toContain(state)
     }
   })
+
+  it('mantém remover, migrar, purgar e a janela no molde destrutivo', () => {
+    const destructive = web
+      .split('\n')
+      .filter((line) => line.includes('confirmação'))
+      .join('\n')
+
+    for (const id of ['RF-04', 'RF-16', 'RF-17', 'RF-25']) expect(destructive, id).toContain(id)
+  })
+
+  it('centraliza as strings pt-BR num módulo único (RNF-06)', () => {
+    expect(web).toContain('RNF-06')
+    expect(web).toMatch(/módulo único de strings/i)
+  })
 })
 
 describe('S-31 piloto-requisitos', () => {
-  const piloto = textAt('docs/especificacao/PILOTO.md')
+  const pilot = textAt('docs/especificacao/PILOTO.md')
 
   it('fixa o aviso LGPD e o fluxo de consentimento', () => {
-    expect(piloto).toContain('LGPD')
-    expect(piloto).toContain('consentimento')
+    expect(pilot).toContain('LGPD')
+    expect(pilot).toContain('consentimento')
   })
 
   it('lista os eventos do Sentry com nome e campos', () => {
     for (const event of ['item_created', 'checkin', 'queue_viewed']) {
-      expect(piloto, event).toContain(event)
+      expect(pilot, event).toContain(event)
     }
-    expect(piloto).toContain('Campos')
+    expect(pilot).toContain('Campos')
   })
 
   it('proíbe dado pessoal nos eventos', () => {
-    expect(piloto).toContain('PII')
-    expect(piloto).toMatch(/nunca[^\n]*PII|não[^\n]*PII/i)
+    expect(pilot).toContain('PII')
+    expect(pilot).toMatch(/nunca[^\n]*PII|não[^\n]*PII/i)
   })
 
   it('define o roteiro de entrevista semanal', () => {
-    expect(piloto).toContain('entrevista')
-    expect(piloto).toContain('semanal')
+    expect(pilot).toContain('entrevista')
+    expect(pilot).toContain('semanal')
   })
 })
 
 describe('S-32 inventario-reconciliacao', () => {
-  const inventario = textAt('docs/engenharia/INVENTARIO-DE-REQUISITOS.md')
+  const inventory = textAt('docs/engenharia/INVENTARIO-DE-REQUISITOS.md')
 
   it('inventaria as fases 2 a 5', () => {
     for (const phase of ['Fase 2', 'Fase 3', 'Fase 4', 'Fase 5']) {
-      expect(inventario, phase).toContain(phase)
+      expect(inventory, phase).toContain(phase)
     }
   })
 
   it('declara a casa dos documentos novos', () => {
-    for (const path of layerDocuments) expect(inventario, path).toContain(path)
+    for (const path of layerDocuments) expect(inventory, path).toContain(path)
   })
 
   it('reconcilia BOS-41 a BOS-45', () => {
     for (const ticket of ['BOS-41', 'BOS-42', 'BOS-43', 'BOS-44', 'BOS-45']) {
-      expect(inventario, ticket).toContain(ticket)
+      expect(inventory, ticket).toContain(ticket)
     }
   })
 
