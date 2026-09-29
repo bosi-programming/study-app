@@ -14,7 +14,12 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/MODELO-DE-DADOS.md` | Entidades, schema e contrato JSON | Rascunho v1 |
 | `docs/especificacao/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v5 |
 | `docs/especificacao/CORE.md` | API do domínio: portas, item, regra de agendamento, erros | Rascunho v1 |
-| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v3 |
+| `docs/especificacao/WEB.md` | Telas, estados e contrato com o core do app web | Rascunho v1 |
+| `docs/especificacao/PILOTO.md` | Aviso LGPD, eventos do Sentry e roteiro de entrevista do piloto | Rascunho v1 |
+| `docs/especificacao/MOBILE.md` | Expo, `expo-sqlite`, telas e lojas do app mobile | Rascunho v1 |
+| `docs/especificacao/DESKTOP.md` | Electron sobre o renderer do web, empacotamento e smoke | Rascunho v1 |
+| `docs/engenharia/INVENTARIO-DE-REQUISITOS.md` | Onde faltam requisitos, por fase, e onde cada documento mora | Rascunho v1 |
+| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v4 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
 | `docs/adr/README.md` | ADRs numerados com contexto e consequências | 28 ADRs |
@@ -27,6 +32,11 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 4. `docs/especificacao/MODELO-DE-DADOS.md` — como os dados existem.
 5. `docs/especificacao/CLI.md` — a interface da fase 1.
 6. `docs/especificacao/CORE.md` — como o domínio e a regra de agendamento funcionam por dentro.
-7. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
-8. `docs/engenharia/ROADMAP.md` — em que ordem construir.
-9. `docs/adr/README.md` — por que as escolhas técnicas foram feitas.
+7. `docs/engenharia/INVENTARIO-DE-REQUISITOS.md` — onde faltam requisitos, por fase, e onde cada documento mora.
+8. `docs/especificacao/WEB.md` — a interface da fase 2.
+9. `docs/especificacao/PILOTO.md` — LGPD, eventos e entrevista da fase 3.
+10. `docs/especificacao/MOBILE.md` — o app Expo da fase 4.
+11. `docs/especificacao/DESKTOP.md` — o app Electron da fase 5.
+12. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
+13. `docs/engenharia/ROADMAP.md` — em que ordem construir.
+14. `docs/adr/README.md` — por que as escolhas técnicas foram feitas.
