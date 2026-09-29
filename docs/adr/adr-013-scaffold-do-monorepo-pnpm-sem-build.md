@@ -2,7 +2,8 @@
 numero: 13
 titulo: 'Scaffold do monorepo pnpm sem build'
 data: '2026-09-12'
-status: 'aceito'
+status: 'superado-parcialmente'
+supersededBy: [27]
 ---
 
 # ADR-013 — Scaffold do monorepo pnpm sem build
