@@ -350,10 +350,10 @@ function phaseOneDefinitionOfDone(): string[] {
     .filter((item) => item.length > 0)
 }
 
-function requirementIds(): string[] {
+function requirementIds(prefix: 'RN' | 'RF'): string[] {
   return textAt('docs/especificacao/REQUISITOS.md')
     .split('\n')
-    .filter((line) => /^- RN-\d{2} /.test(line))
+    .filter((line) => new RegExp(`^- ${prefix}-\\d{2} `).test(line))
     .map((line) => (line.split(' ')[1] ?? '').trim())
 }
 
@@ -397,7 +397,7 @@ describe('S-27 roadmap phase 1 ranges', () => {
   const checklist = phaseOneChecklistLines()
 
   it('cites the requirement range the specification defines', () => {
-    const range = idRange(requirementIds())
+    const range = idRange(requirementIds('RN'))
     expect(range).toBe('RN-01..RN-15')
     expect(checklist.some((line) => line.includes(`Implementar ${range} `))).toBe(true)
     expect(checklist.some((line) => line.includes('RN-01..RN-12'))).toBe(false)
@@ -725,13 +725,6 @@ describe('S-22 lint gate', () => {
   })
 })
 
-function functionalRequirementIds(): string[] {
-  return textAt('docs/especificacao/REQUISITOS.md')
-    .split('\n')
-    .filter((line) => /^- RF-\d{2} /.test(line))
-    .map((line) => (line.split(' ')[1] ?? '').trim())
-}
-
 function indexRows(): string[] {
   return textAt('docs/README.md')
     .split('\n')
@@ -788,7 +781,7 @@ describe('S-30 web-molde-rf', () => {
   })
 
   it('cobre cada RF-01..RF-25 derivado dos requisitos', () => {
-    const ids = functionalRequirementIds()
+    const ids = requirementIds('RF')
     expect(idRange(ids)).toBe('RF-01..RF-25')
     for (const id of ids) expect(web, id).toContain(id)
   })
@@ -796,23 +789,35 @@ describe('S-30 web-molde-rf', () => {
   it('mapeia cada RF de UI na tabela de cobertura de telas', () => {
     const table = sectionBetween(web, '## Telas e fluxos', '\n### ')
 
-    for (const id of functionalRequirementIds()) expect(table, id).toContain(id)
+    for (const id of requirementIds('RF')) expect(table, id).toContain(id)
   })
 
   it('descreve os quatro estados de tela', () => {
-    const states = web.toLowerCase()
+    const states = sectionBetween(web, '\n## Estados\n', '\n## ').toLowerCase()
     for (const state of ['vazio', 'carregando', 'offline', 'erro']) {
       expect(states, state).toContain(state)
     }
   })
 
   it('mantém remover, migrar, purgar e a janela no molde destrutivo', () => {
-    const destructive = web
-      .split('\n')
-      .filter((line) => line.includes('confirmação'))
-      .join('\n')
+    const screens = sectionBetween(web, '\n## Telas e fluxos\n', '\n## ')
+    const destructive: Record<string, RegExp> = {
+      'RF-04': /remover/i,
+      'RF-16': /migrar/i,
+      'RF-17': /purgar/i,
+      'RF-25': /janela/i,
+    }
 
-    for (const id of ['RF-04', 'RF-16', 'RF-17', 'RF-25']) expect(destructive, id).toContain(id)
+    for (const [id, action] of Object.entries(destructive)) {
+      const line = screens
+        .split('\n')
+        .find((candidate) => candidate.includes(id) && action.test(candidate))
+      expect(line, id).toBeDefined()
+    }
+
+    const mould = web.split('\n').find((line) => /confirmação explícita/i.test(line))
+    expect(mould, 'molde destrutivo').toBeDefined()
+    for (const id of Object.keys(destructive)) expect(mould, id).toContain(id)
   })
 
   it('centraliza as strings pt-BR num módulo único (RNF-06)', () => {
@@ -861,8 +866,17 @@ describe('S-32 inventario-reconciliacao', () => {
   })
 
   it('reconcilia BOS-41 a BOS-45', () => {
+    const rows = inventory
+      .split('\n')
+      .filter((line) => /^\| BOS-\d{2} \|/.test(line))
+      .map((line) => line.split('|').map((cell) => cell.trim()).filter((cell) => cell.length > 0))
+
     for (const ticket of ['BOS-41', 'BOS-42', 'BOS-43', 'BOS-44', 'BOS-45']) {
-      expect(inventory, ticket).toContain(ticket)
+      expect(rows.filter((cells) => cells[0] === ticket).length, ticket).toBeGreaterThan(0)
+    }
+    for (const cells of rows) {
+      expect(cells.length, cells.join(' | ')).toBe(4)
+      expect(['documentado', 'implementação/deploy', 'ajustado'], cells.join(' | ')).toContain(cells[2])
     }
   })
 

@@ -126,7 +126,7 @@ As camadas novas usam faixas próprias de IDs, reservadas para não colidir com 
 | W-06 | Arquivar e desarquivar tiram da fila e das contagens | RF-14, RF-15 |
 | W-07 | Arquivo morto: migrar, listar, restaurar e purgar | RF-16, RF-17 |
 | W-08 | Config da janela do arquivamento automático | RF-25 |
-| W-09 | Export e import pela interface, sem duplicar | RF-18, RF-19, RF-20 |
+| W-09 | Export e import pela interface, sem duplicar (duas importações do mesmo arquivo) | RF-18, RF-19, RF-20 |
 | W-10 | Stats: streak, contagens e check-ins do dia | RF-21, RF-22, RF-23 |
 | W-11 | Persistência IndexedDB e fila com 5.000 itens abaixo de 200ms | RNF-03, RNF-04 |
 | W-12 | Estados das telas: vazio, carregando, offline e erro | RNF-01 |

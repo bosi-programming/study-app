@@ -40,7 +40,7 @@ Cada critério de aceite desses tickets cai numa de três classes:
 | --- | --- | --- | --- |
 | BOS-41 | `apps/web` é membro do workspace e passa em `pnpm lint` e `pnpm typecheck` | implementação/deploy | — |
 | BOS-41 | A regra vem de `@study/core` pelo `src`, sem cópia e sem `dist/` | documentado | `WEB.md` — Contrato com o core; ADR-001, ADR-013 |
-| BOS-41 | O `vitest.config.ts` ganha o projeto `web` | implementação/deploy | — |
+| BOS-41 | O `vitest.config.ts` ganha o projeto `web`, com Vitest e Testing Library | implementação/deploy | — |
 | BOS-41 | Um caso do web lê um vetor de `fixtures/golden` e o computa pelo core | documentado | `WEB.md` — Contrato com o core; `PLANO-DE-TESTES.md` — Estratégia; ADR-015 |
 | BOS-41 | O `PLANO-DE-TESTES.md` define os IDs dos casos do web | documentado | `PLANO-DE-TESTES.md` — Casos por camada (`W-01`..`W-14`) |
 | BOS-41 | ADR do scaffold do web aceito e indexado | implementação/deploy | — |
@@ -58,7 +58,7 @@ Cada critério de aceite desses tickets cai numa de três classes:
 | BOS-43 | As strings em pt-BR ficam centralizadas em um único módulo | documentado | `REQUISITOS.md` — RNF-06; `WEB.md` — Convenções |
 | BOS-43 | Testes de Testing Library para adicionar, fila, check-in e arquivar | documentado | `PLANO-DE-TESTES.md` — Estratégia e Casos por camada |
 | BOS-44 | Export baixa um arquivo com `schema_version` e todos os dados, inclusive histórico e arquivo morto | documentado | `REQUISITOS.md` — RF-18; `MODELO-DE-DADOS.md` — Contrato JSON v1; `WEB.md` — Telas e fluxos |
-| BOS-44 | Import mescla por UUID e não duplica | documentado | `REQUISITOS.md` — RF-19; ADR-022; `WEB.md` |
+| BOS-44 | Import mescla por UUID e não duplica, provado por duas importações do mesmo arquivo | documentado | `REQUISITOS.md` — RF-19; ADR-022; `WEB.md` |
 | BOS-44 | O merge segue o `updated_at` | documentado | ADR-022; `MODELO-DE-DADOS.md` — Contrato JSON v1 |
 | BOS-44 | A interface confirma a operação e informa as contagens do que foi mesclado | documentado | `WEB.md` — Telas e fluxos |
 | BOS-44 | Um teste cruzado prova que o arquivo do web abre no import do CLI, e vice-versa | documentado | `WEB.md` — Critérios de aceite; `PLANO-DE-TESTES.md` — `W-09` |
@@ -66,7 +66,7 @@ Cada critério de aceite desses tickets cai numa de três classes:
 | BOS-45 | A URL pública serve a versão de `main` e o app abre em um navegador limpo | implementação/deploy | — |
 | BOS-45 | Depois do primeiro carregamento o app funciona offline, com os dados no IndexedDB | documentado | `REQUISITOS.md` — RNF-01; `WEB.md` — Convenções |
 | BOS-45 | Nenhum segredo ou chave no repositório ou no bundle | implementação/deploy | — |
-| BOS-45 | O passo de deploy está documentado no `README.md`, e um ADR registra o host | implementação/deploy | — |
+| BOS-45 | O passo de deploy está documentado no `README.md`, e um ADR registra o host escolhido e o motivo | implementação/deploy | — |
 | BOS-45 | A linha do deploy no `ROADMAP.md` fica `[x]` quando a URL estiver no ar | implementação/deploy | — |
 
 Nenhum critério caiu na classe **ajustado**: todos ou têm fonte documental agora, ou são de implementação/deploy e seguem válidos como estão. Um critério só é ajustado no Linear quando contradiz o documento-fonte.
