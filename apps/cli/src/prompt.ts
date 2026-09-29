@@ -1,6 +1,7 @@
 import { closeSync, openSync, readSync } from 'node:fs'
 import { DIFFICULTY_LABELS, type Difficulty, toDifficulty } from '@study/core'
 import { CliError } from './errors.ts'
+import { muted } from './output/color.ts'
 
 const MAX_LINE_BYTES = 64
 const STDIN = 0
@@ -19,7 +20,7 @@ export function difficultyPromptLabel(current?: Difficulty): string {
 }
 
 export function promptDifficulty(current?: Difficulty): Difficulty {
-  process.stderr.write(`${difficultyPromptLabel(current)}\n`)
+  process.stderr.write(`${muted(difficultyPromptLabel(current))}\n`)
   return difficultyFromLine(readLine(), current)
 }
 

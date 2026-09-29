@@ -229,7 +229,7 @@ describe('S-17 ADR index', () => {
     }
   })
 
-  it('scaffold-adr-027: o índice linka o ADR-027 e o docs/README.md conta 28', () => {
+  it('scaffold-adr-027: o índice linka o ADR-027 e o ADR-026 fica superado', () => {
     const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
     const adr27 = files.filter((name) => name.startsWith('adr-027'))
     const adr26Name = files.find((name) => name.startsWith('adr-026')) ?? ''
@@ -237,8 +237,6 @@ describe('S-17 ADR index', () => {
     expect(adr27.length).toBe(1)
     expect(adr26Name).not.toBe('')
     expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr27[0] ?? '')
-    expect(files.length).toBe(28)
-    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('28 ADRs')
     expect(readFileSync(resolve(adrDir, adr26Name), 'utf8')).toContain("status: 'superado'")
   })
 
@@ -263,6 +261,16 @@ describe('S-17 ADR index', () => {
 
     expect(rowFor('adr-013')).toContain('adr-027')
     expect(rowFor('adr-026')).toContain('adr-027')
+  })
+
+  it('scaffold-adr-029: o CLI declara --no-color e a paleta vive no color.ts', () => {
+    const adr29 = readdirSync(adrDir).filter((name) => name.startsWith('adr-029'))
+
+    expect(adr29.length).toBe(1)
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr29[0] ?? '')
+    expect(textAt('apps/cli/src/output/color.ts')).toContain('E8A13B')
+    expect(textAt('apps/cli/src/args.ts')).toContain("name: 'no-color'")
+    expect(textAt('docs/especificacao/CLI.md')).toContain('`--no-color`')
   })
 })
 

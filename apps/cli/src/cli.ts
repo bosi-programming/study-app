@@ -19,6 +19,7 @@ import { unarchiveCommand } from './commands/unarchive.ts'
 import { type Command } from './commands/types.ts'
 import { withContext } from './context.ts'
 import { CliError, exitCodeFor } from './errors.ts'
+import { resolveColorEnabled, setColorEnabled } from './output/color.ts'
 import { printError, printSuccess } from './output/index.ts'
 
 const COMMANDS: Record<string, Command> = {
@@ -98,11 +99,19 @@ Opções:
   --yes                      confirma operação destrutiva
   --db <path>                caminho do banco (vence STUDY_DB)
   --json                     saída JSON estável
+  --no-color                 desliga as cores da saída humana
   --no-input                 nunca pergunta
   --export-dir <path>        destino do export do arquivo morto
   -h, --help                 mostra este uso`
 
 export function runCli(argv: readonly string[]): void {
+  setColorEnabled(
+    resolveColorEnabled(process.env, process.stdout.isTTY === true, {
+      json: argv.includes('--json'),
+      noColor: argv.includes('--no-color'),
+    }),
+  )
+
   const wantsJson = argv.includes('--json')
   let args: ParsedArgs
   try {

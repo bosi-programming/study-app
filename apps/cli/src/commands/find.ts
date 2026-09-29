@@ -13,5 +13,8 @@ export const findCommand: Command = (args, ctx) => {
   if (term.length === 0) throw CliError.usage('find exige um termo não vazio')
 
   const items = ctx.store.findItems(term, itemFilter(args))
-  return { json: { items: items.map(toItemJson) }, human: itemTable(items) }
+  return {
+    json: { items: items.map(toItemJson) },
+    human: itemTable(items, ctx.deps.clock.todayLocalDate()),
+  }
 }

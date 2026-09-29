@@ -1,11 +1,22 @@
 import {
   DIFFICULTY_LABELS,
   type Item,
+  type ItemStatus,
   type ReviewLog,
   daysLate,
   isLate,
 } from '@study/core'
 import { localDateOf } from '../deps.ts'
+import {
+  accent,
+  accentStrong,
+  danger,
+  dim,
+  heading,
+  muted,
+  success,
+  successStrong,
+} from './color.ts'
 
 const ID_WIDTH = 8
 const TITLE_WIDTH = 28
@@ -18,8 +29,8 @@ const EMPTY_COLD = 'Nenhum item no arquivo morto.'
 const COLD_DATE_WIDTH = 12
 const QUEUE_LABEL_WIDTH = 40
 const QUEUE_DUE_WIDTH = 22
-const CHECKIN_PREFIX = 'Check-in registrado: '
-const NEXT_DUE_PREFIX = 'Próximo vencimento: '
+const CHECKIN_PREFIX = 'Check-in registrado:'
+const NEXT_DUE_PREFIX = 'Próximo vencimento:'
 const QUEUE_HEADER = 'Fila de hoje'
 const OVERDUE_SECTION = 'Atrasados'
 const TODAY_SECTION = 'Hoje'
@@ -41,28 +52,28 @@ export function idPrefix(id: string): string {
   return id.slice(0, ID_WIDTH)
 }
 
-export function itemTable(items: readonly Item[]): string {
+export function itemTable(items: readonly Item[], today: string): string {
   if (items.length === 0) return EMPTY_RESULT
 
   const header = [
-    cell('ID', ID_WIDTH),
-    cell('Matéria', SUBJECT_WIDTH),
-    cell('Título', TITLE_WIDTH),
-    cell('Vence', DUE_WIDTH),
-    cell('Dificuldade', DIFFICULTY_WIDTH),
-    cell('Check-ins', REVIEWS_WIDTH),
-    'Status',
+    heading(cell('ID', ID_WIDTH)),
+    heading(cell('Matéria', SUBJECT_WIDTH)),
+    heading(cell('Título', TITLE_WIDTH)),
+    heading(cell('Vence', DUE_WIDTH)),
+    heading(cell('Dificuldade', DIFFICULTY_WIDTH)),
+    heading(cell('Check-ins', REVIEWS_WIDTH)),
+    heading('Status'),
   ].join('  ')
 
   const rows = items.map((item) =>
     [
-      cell(idPrefix(item.id), ID_WIDTH),
+      dim(cell(idPrefix(item.id), ID_WIDTH)),
       cell(item.subject, SUBJECT_WIDTH),
       cell(item.title, TITLE_WIDTH),
-      cell(item.due_date, DUE_WIDTH),
-      numberCell(item.difficulty, DIFFICULTY_WIDTH),
-      numberCell(item.review_count, REVIEWS_WIDTH),
-      item.status,
+      dueCell(item, today),
+      dim(numberCell(item.difficulty, DIFFICULTY_WIDTH)),
+      dim(numberCell(item.review_count, REVIEWS_WIDTH)),
+      statusCell(item.status),
     ].join('  '),
   )
 
@@ -71,92 +82,92 @@ export function itemTable(items: readonly Item[]): string {
 
 export function itemBlock(item: Item, today: string): string {
   const lines = [
-    `ID:          ${item.id}`,
-    `Título:      ${item.title}`,
-    `Matéria:     ${item.subject}`,
-    `Dificuldade: ${item.difficulty} — ${DIFFICULTY_LABELS[item.difficulty]}`,
-    `Nota:        ${item.note ?? ABSENT}`,
-    `Link:        ${item.link ?? ABSENT}`,
-    `Vencimento:  ${dueLine(item, today)}`,
-    `Intervalo:   ${item.interval_days}d`,
-    `Check-ins:   ${item.review_count}`,
-    `Status:      ${item.status}`,
+    `${muted('ID:')}          ${item.id}`,
+    `${muted('Título:')}      ${item.title}`,
+    `${muted('Matéria:')}     ${item.subject}`,
+    `${muted('Dificuldade:')} ${item.difficulty} — ${DIFFICULTY_LABELS[item.difficulty]}`,
+    `${muted('Nota:')}        ${optional(item.note)}`,
+    `${muted('Link:')}        ${optional(item.link)}`,
+    `${muted('Vencimento:')}  ${dueLine(item, today)}`,
+    `${muted('Intervalo:')}   ${item.interval_days}d`,
+    `${muted('Check-ins:')}   ${item.review_count}`,
+    `${muted('Status:')}      ${statusCell(item.status)}`,
   ]
   return lines.join('\n')
 }
 
 export function historySection(logs: readonly ReviewLog[]): string {
-  const header = `Histórico (${logs.length})`
-  if (logs.length === 0) return [header, EMPTY_HISTORY].join('\n')
+  const header = heading(`Histórico (${logs.length})`)
+  if (logs.length === 0) return [header, dim(EMPTY_HISTORY)].join('\n')
 
   const rows = logs.map((log) => {
-    const outcome = log.late ? 'atrasado' : 'no prazo'
+    const outcome = log.late ? accent('atrasado') : success('no prazo')
     const day = log.reviewed_at.slice(0, 10)
-    return `  ${day}  n=${log.review_count_after}  intervalo ${log.interval_after}d  ${outcome}`
+    return `  ${dim(day)}  n=${log.review_count_after}  intervalo ${log.interval_after}d  ${outcome}`
   })
   return [header, ...rows].join('\n')
 }
 
 export function createdLine(item: Item): string {
-  return `Item criado: ${item.title} (${idPrefix(item.id)})`
+  return itemLine('Item criado:', item, successStrong)
 }
 
 export function updatedLine(item: Item): string {
-  return `Item atualizado: ${item.title} (${idPrefix(item.id)})`
+  return itemLine('Item atualizado:', item, successStrong)
 }
 
 export function removedLine(item: Item): string {
-  return `Item removido: ${item.title} (${idPrefix(item.id)})`
+  return itemLine('Item removido:', item, accentStrong)
 }
 
 export function archivedLine(item: Item): string {
-  return `Item arquivado: ${item.title} (${idPrefix(item.id)})`
+  return itemLine('Item arquivado:', item, accentStrong)
 }
 
 export function unarchivedLine(item: Item): string {
-  return `Item desarquivado: ${item.title} (${idPrefix(item.id)})`
+  return itemLine('Item desarquivado:', item, successStrong)
 }
 
 export function restoredLine(item: Item): string {
-  return `Item restaurado: ${item.title} (${idPrefix(item.id)})`
+  return itemLine('Item restaurado:', item, successStrong)
 }
 
 export function purgedLine(item: Item): string {
-  return `Item removido do arquivo morto: ${item.title} (${idPrefix(item.id)})`
+  return itemLine('Item removido do arquivo morto:', item, accentStrong)
 }
 
 export function configLine(key: string, value: number): string {
-  return `${key}: ${value}`
+  return `${muted(`${key}:`)} ${value}`
 }
 
 export function migratedLine(count: number, path: string): string {
-  return `${count} itens migrados para o arquivo morto; export: ${path}`
+  return accent(`${count} itens migrados para o arquivo morto; export: ${path}`)
 }
 
 export function migrationFailedLine(path: string): string {
-  return `falha ao exportar o arquivo morto (${path}); nenhum item foi migrado`
+  return danger(`falha ao exportar o arquivo morto (${path}); nenhum item foi migrado`)
 }
 
 export function coldTable(items: readonly Item[]): string {
   if (items.length === 0) return EMPTY_COLD
 
   const header = [
-    cell('ID', ID_WIDTH),
-    cell('Matéria', SUBJECT_WIDTH),
-    cell('Título', TITLE_WIDTH),
-    cell('Migrado em', COLD_DATE_WIDTH),
-    cell('Dificuldade', DIFFICULTY_WIDTH),
-    cell('Check-ins', REVIEWS_WIDTH),
+    heading(cell('ID', ID_WIDTH)),
+    heading(cell('Matéria', SUBJECT_WIDTH)),
+    heading(cell('Título', TITLE_WIDTH)),
+    heading(cell('Migrado em', COLD_DATE_WIDTH)),
+    heading(cell('Dificuldade', DIFFICULTY_WIDTH)),
+    heading(cell('Check-ins', REVIEWS_WIDTH)),
   ].join('  ')
 
   const rows = items.map((item) =>
     [
-      cell(idPrefix(item.id), ID_WIDTH),
+      dim(cell(idPrefix(item.id), ID_WIDTH)),
       cell(item.subject, SUBJECT_WIDTH),
       cell(item.title, TITLE_WIDTH),
-      cell(coldDate(item), COLD_DATE_WIDTH),
-      numberCell(item.difficulty, DIFFICULTY_WIDTH),
-      numberCell(item.review_count, REVIEWS_WIDTH),
+      muted(cell(coldDate(item), COLD_DATE_WIDTH)),
+      dim(numberCell(item.difficulty, DIFFICULTY_WIDTH)),
+      dim(numberCell(item.review_count, REVIEWS_WIDTH)),
     ].join('  '),
   )
 
@@ -168,24 +179,43 @@ function coldDate(item: Item): string {
 }
 
 export function createdDbLine(dbPath: string): string {
-  return `Banco criado em ${dbPath}`
+  return `${muted('Banco criado em')} ${dbPath}`
 }
 
 export function resetDbLine(dbPath: string, backupPath: string): string {
-  return `Banco recriado em ${dbPath}\nBackup: ${backupPath}`
+  return `${muted('Banco recriado em')} ${dbPath}\n${muted('Backup:')} ${backupPath}`
 }
 
 export function exportedLine(path: string): string {
-  return `Export: ${path}`
+  return `${muted('Export:')} ${path}`
 }
 
 export function importedLine(items: number, checkins: number): string {
-  return `Import: ${items} itens, ${checkins} check-ins`
+  return `${muted('Import:')} ${items} itens, ${checkins} check-ins`
 }
 
 function dueLine(item: Item, today: string): string {
   if (!isLate(item, today)) return item.due_date
-  return `${item.due_date} (atrasado ${daysLate(item, today)}d)`
+  return `${accent(item.due_date)} ${accent(`(atrasado ${daysLate(item, today)}d)`)}`
+}
+
+function dueCell(item: Item, today: string): string {
+  const text = cell(item.due_date, DUE_WIDTH)
+  if (isLate(item, today)) return accent(text)
+  return item.due_date === today ? success(text) : text
+}
+
+function statusCell(status: ItemStatus): string {
+  if (status === 'active') return success(status)
+  return dim(status)
+}
+
+function optional(value: string | null): string {
+  return value === null ? dim(ABSENT) : value
+}
+
+function itemLine(label: string, item: Item, style: (text: string) => string): string {
+  return `${style(label)} ${item.title} ${dim(`(${idPrefix(item.id)})`)}`
 }
 
 function cell(value: string, width: number): string {
@@ -222,11 +252,11 @@ export function dueQueue(
   today: string,
   bySubject: Readonly<Record<string, number>>,
 ): string {
-  const lines = [`${QUEUE_HEADER} — ${today}`]
+  const lines = [muted(`${QUEUE_HEADER} — ${today}`)]
   let index = 1
 
   if (overdue.length > 0) {
-    lines.push('', `${OVERDUE_SECTION} (${overdue.length})`)
+    lines.push('', accentStrong(`${OVERDUE_SECTION} (${overdue.length})`))
     for (const item of overdue) {
       lines.push(queueLine(index, item, today))
       index += 1
@@ -234,7 +264,7 @@ export function dueQueue(
   }
 
   if (dueToday.length > 0) {
-    lines.push('', `${TODAY_SECTION} (${dueToday.length})`)
+    lines.push('', successStrong(`${TODAY_SECTION} (${dueToday.length})`))
     for (const item of dueToday) {
       lines.push(queueLine(index, item, today))
       index += 1
@@ -248,7 +278,7 @@ export function dueQueue(
 
 export function dueSummary(bySubject: Readonly<Record<string, number>>): string | null {
   if (Object.keys(bySubject).length === 0) return null
-  return `${SUBJECT_SUMMARY_PREFIX} ${subjectCountsText(bySubject)}`
+  return `${muted(SUBJECT_SUMMARY_PREFIX)} ${subjectCountsText(bySubject)}`
 }
 
 function subjectCountsText(bySubject: Readonly<Record<string, number>>): string {
@@ -258,7 +288,7 @@ function subjectCountsText(bySubject: Readonly<Record<string, number>>): string 
 }
 
 export function dueTotals(overdueCount: number, todayCount: number): string {
-  return `${overdueCount} atrasados, ${todayCount} para hoje.`
+  return muted(`${overdueCount} atrasados, ${todayCount} para hoje.`)
 }
 
 export type StatsCounts = {
@@ -274,31 +304,42 @@ export function statsLines(
   bySubject: Readonly<Record<string, number>>,
 ): string {
   const total = Object.keys(bySubject).length === 0 ? ABSENT : subjectCountsText(bySubject)
-  const counts = `${ACTIVE_PREFIX}${items.active}${STATS_SEPARATOR}${ARCHIVED_PREFIX}${items.archived}${STATS_SEPARATOR}${COLD_PREFIX}${items.cold}`
-  const checkins = `${CHECKINS_TODAY_PREFIX}${checkinsToday}${STATS_SEPARATOR}${TOTAL_BY_SUBJECT_PREFIX}${total}`
+  const streak = currentStreak > 0 ? successStrong(String(currentStreak)) : dim(String(currentStreak))
+  const counts = `${muted(ACTIVE_PREFIX)}${items.active}${STATS_SEPARATOR}${muted(ARCHIVED_PREFIX)}${items.archived}${STATS_SEPARATOR}${muted(COLD_PREFIX)}${items.cold}`
+  const checkins = `${muted(CHECKINS_TODAY_PREFIX)}${checkinsToday}${STATS_SEPARATOR}${muted(TOTAL_BY_SUBJECT_PREFIX)}${total}`
 
   return [
-    `${STREAK_PREFIX}${currentStreak}${STREAK_SUFFIX}`,
+    `${muted(STREAK_PREFIX)}${streak}${muted(STREAK_SUFFIX)}`,
     counts,
     checkins,
   ].join('\n')
 }
 
 export function checkinLine(item: Item): string {
-  return `${CHECKIN_PREFIX}${item.title}`
+  return `${successStrong(CHECKIN_PREFIX)} ${item.title}`
 }
 
 export function nextDueLine(item: Item): string {
-  return `${NEXT_DUE_PREFIX}${item.due_date} (intervalo ${item.interval_days}d, n=${item.review_count})`
+  const interval = accent(`(intervalo ${item.interval_days}d, n=${item.review_count})`)
+  return `${muted(NEXT_DUE_PREFIX)} ${item.due_date} ${interval}`
 }
 
 function queueLine(index: number, item: Item, today: string): string {
-  const label = cell(`${index}. [${item.subject}] ${item.title}`, QUEUE_LABEL_WIDTH)
+  const label = queueLabel(index, item)
   const due = dueText(item, today).padEnd(QUEUE_DUE_WIDTH, ' ')
-  return `  ${label}  ${due}  d${item.difficulty}  n=${item.review_count}`
+  const dueStyle = isLate(item, today) ? accent(due) : success(due)
+  const meta = `${dim(`d${item.difficulty}`)}  ${dim(`n=${item.review_count}`)}`
+  return `  ${label}  ${dueStyle}  ${meta}`
 }
 
 function dueText(item: Item, today: string): string {
   if (!isLate(item, today)) return TODAY_DUE_TEXT
   return `venceu ${item.due_date} (${daysLate(item, today)}d)`
+}
+
+function queueLabel(index: number, item: Item): string {
+  const plain = `${index}. [${item.subject}] ${item.title}`
+  if (plain.length > QUEUE_LABEL_WIDTH) return cell(plain, QUEUE_LABEL_WIDTH)
+  const padding = ' '.repeat(QUEUE_LABEL_WIDTH - plain.length)
+  return `${dim(`${index}.`)} [${item.subject}] ${item.title}${padding}`
 }
