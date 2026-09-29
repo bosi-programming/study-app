@@ -5,7 +5,7 @@ Instruções para agentes que trabalham neste repositório. Valem para os três 
 ## Layout
 
 - `packages/core` (`@study/core`) — domínio e regra de agendamento, TS puro, sem API de Node ou browser.
-- `apps/cli` (`study-cli`) — superfície da fase 1, bin `study`, publicável no npm.
+- `apps/cli` (`@bosi-programming/study-cli`) — superfície da fase 1, bin `study`, publicável no npm.
 - `fixtures/golden` (`@study/golden`) — golden fixtures importáveis, vetores de regressão.
 - `docs/` — documentos de engenharia; o índice é `docs/README.md`.
 - `scripts/` — `bench.ts` e `sqlite-probe.ts`, provas executáveis.
@@ -13,7 +13,7 @@ Instruções para agentes que trabalham neste repositório. Valem para os três 
 
 ## Toolchain
 
-Node >= 24 e pnpm 12.4.1. `core` e `golden` são consumidos direto do `src`, sem `dist/`; o `study-cli` roda `build.mjs` no `prepare` e gera o bundle publicado em `apps/cli/dist/`.
+Node >= 24 e pnpm 12.4.1. `core` e `golden` são consumidos direto do `src`, sem `dist/`; o `@bosi-programming/study-cli` roda `build.mjs` no `prepare` e gera o bundle publicado em `apps/cli/dist/`.
 
 ## Comandos
 
@@ -21,7 +21,7 @@ Node >= 24 e pnpm 12.4.1. `core` e `golden` são consumidos direto do `src`, sem
 
 ## Convenções
 
-- Não escreva comentários em código. O `study-cli` é publicado no npm; `core` e `golden` seguem privados e consumidos só do `src`, então não há doc-comment a manter.
+- Não escreva comentários em código. O `@bosi-programming/study-cli` é publicado no npm; `core` e `golden` seguem privados e consumidos só do `src`, então não há doc-comment a manter.
 - Documentos em pt-BR; identificadores em inglês. Assunto de commit em inglês, corpo em pt-BR.
 - Pastas em minúsculas e sem acento.
 - `packages/core` não importa API de Node nem de browser — há um teste que varre `packages/core/src`.

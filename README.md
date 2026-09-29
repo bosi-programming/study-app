@@ -24,16 +24,16 @@ pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)
 
 ## Instalar o comando `study`
 
-O CLI é publicado como `study-cli` e instala global pelo npm:
+O CLI é publicado como `@bosi-programming/study-cli` e instala global pelo npm:
 
 ```bash
-npm install -g study-cli
+npm install -g @bosi-programming/study-cli
 ```
 
 Depois disso `study --help` roda de qualquer diretório. Para desinstalar:
 
 ```bash
-npm uninstall -g study-cli
+npm uninstall -g @bosi-programming/study-cli
 ```
 
 O `pnpm install` continua criando `node_modules/.bin/study` para rodar o CLI de dentro do repo; isso é o dev loop, não a instalação global.
@@ -43,10 +43,10 @@ O `pnpm install` continua criando `node_modules/.bin/study` para rodar o CLI de 
 | Membro | Pacote | O que é |
 | --- | --- | --- |
 | `packages/core` | `@study/core` | Domínio e regra de agendamento, em TS puro, sem API de Node ou browser. |
-| `apps/cli` | `study-cli` | Superfície da fase 1; declara o bin `study`. |
+| `apps/cli` | `@bosi-programming/study-cli` | Superfície da fase 1; declara o bin `study`. |
 | `fixtures/golden` | `@study/golden` | Golden fixtures importáveis, vetores de regressão de todos os apps. |
 
-Não existe `dist/` para `core` e `golden`: eles exportam `./src/index.ts` e o Node 24 consome o TypeScript direto. O `study-cli` gera um bundle em `apps/cli/dist/` no `prepare`, para o artefato publicado.
+Não existe `dist/` para `core` e `golden`: eles exportam `./src/index.ts` e o Node 24 consome o TypeScript direto. O `@bosi-programming/study-cli` gera um bundle em `apps/cli/dist/` no `prepare`, para o artefato publicado.
 
 ## Documentos
 

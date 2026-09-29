@@ -1,7 +1,10 @@
 {
-  "name": "study-cli",
+  "name": "@bosi-programming/study-cli",
   "version": "0.1.0",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "study": "./dist/main.js"
   },

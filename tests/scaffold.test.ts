@@ -58,7 +58,7 @@ describe('S-08 workspace members', () => {
 
   it.each([
     ['packages/core/package.json', '@study/core'],
-    ['apps/cli/package.json', 'study-cli'],
+    ['apps/cli/package.json', '@bosi-programming/study-cli'],
     ['fixtures/golden/package.json', '@study/golden'],
   ])('%s exists as %s', (path, name) => {
     expect(readJson<PackageJson>(path)).toMatchObject({ name })
@@ -229,7 +229,7 @@ describe('S-17 ADR index', () => {
     }
   })
 
-  it('scaffold-adr-027: o índice linka o ADR-027 e o docs/README.md conta 27', () => {
+  it('scaffold-adr-027: o índice linka o ADR-027 e o docs/README.md conta 28', () => {
     const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
     const adr27 = files.filter((name) => name.startsWith('adr-027'))
     const adr26Name = files.find((name) => name.startsWith('adr-026')) ?? ''
@@ -237,9 +237,22 @@ describe('S-17 ADR index', () => {
     expect(adr27.length).toBe(1)
     expect(adr26Name).not.toBe('')
     expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr27[0] ?? '')
-    expect(files.length).toBe(27)
-    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('27 ADRs')
+    expect(files.length).toBe(28)
+    expect(readFileSync(resolve(root, 'docs/README.md'), 'utf8')).toContain('28 ADRs')
     expect(readFileSync(resolve(adrDir, adr26Name), 'utf8')).toContain("status: 'superado'")
+  })
+
+  it('scaffold-adr-028: o índice linka o ADR-028 e o ADR-027 fica parcialmente superado', () => {
+    const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
+    const adr28 = files.filter((name) => name.startsWith('adr-028'))
+    const adr27Name = files.find((name) => name.startsWith('adr-027')) ?? ''
+
+    expect(adr28.length).toBe(1)
+    expect(adr27Name).not.toBe('')
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr28[0] ?? '')
+    expect(readFileSync(resolve(adrDir, adr27Name), 'utf8')).toContain(
+      "status: 'superado-parcialmente'",
+    )
   })
 
   it('adr-supersessao: o índice liga o ADR-013 e o ADR-026 ao ADR-027', () => {
@@ -420,17 +433,19 @@ type PublishManifest = PackageJson & {
   engines?: { node?: string }
   files?: string[]
   bin?: Record<string, string>
+  publishConfig?: { access?: string }
 }
 
 describe('S-28 publish wiring', () => {
   it('publish-manifest: o manifesto é publicável, com bin JS e zero runtime deps', () => {
     const manifest = readJson<PublishManifest>(cliManifestPath)
 
-    expect(manifest.name).toBe('study-cli')
+    expect(manifest.name).toBe('@bosi-programming/study-cli')
     expect(manifest.private).toBeUndefined()
     expect(manifest.engines?.node).toBe('>=24')
     expect(manifest.files).toEqual(['dist'])
     expect(manifest.bin?.study).toBe('./dist/main.js')
+    expect(manifest.publishConfig?.access).toBe('public')
     expect(Object.keys(manifest.dependencies ?? {})).toEqual([])
     expect(manifest.devDependencies?.['@study/core']).toBe('workspace:*')
     expect(manifest.scripts?.build).toBe('node build.mjs')
@@ -513,8 +528,8 @@ describe('S-28 publish wiring', () => {
   it('readme-instalar-global: o README documenta instalar e desinstalar pelo npm', () => {
     const readme = textAt('README.md')
 
-    expect(readme.split('\n')).toContain('npm install -g study-cli')
-    expect(readme.split('\n')).toContain('npm uninstall -g study-cli')
+    expect(readme.split('\n')).toContain('npm install -g @bosi-programming/study-cli')
+    expect(readme.split('\n')).toContain('npm uninstall -g @bosi-programming/study-cli')
     expect(readme).not.toContain('ln -sf')
   })
 })

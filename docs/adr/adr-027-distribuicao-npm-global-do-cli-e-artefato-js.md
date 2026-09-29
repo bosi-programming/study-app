@@ -2,7 +2,7 @@
 numero: 27
 titulo: 'Distribuição npm-global do CLI e artefato JS'
 data: '2026-09-27'
-status: 'aceito'
+status: 'superado-parcialmente'
 ---
 
 # ADR-027 — Distribuição npm-global do CLI e artefato JS
@@ -18,3 +18,4 @@ status: 'aceito'
 - Consequência: a instalação documentada passa a ser registry, não caminho de máquina; o `node_modules/.bin/study` continua existindo para o uso dentro do repo, sem ser a instalação. `core` e `golden` seguem privados e consumidos direto do `src`; só o CLI ganha artefato.
 - Supera o [ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md) integralmente e o [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) parcialmente: o "sem build" e o `bin: ./src/main.ts` deixam de valer para o artefato publicado.
 - Alternativas rejeitadas: manter o symlink local ([ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md)) — não deixa um comando instalado de verdade; publicar também o core — dois artefatos, coordenação de versão e dois publishes para um CLI de uso próprio; commitar uma entrada JS — o `src` continua sendo a fonte e o artefato comita divergência; só `prepack` — quebra o shim local do `pnpm install` limpo.
+- Revisão (2026-09-29): o nome publicado sem escopo foi recusado pelo registry como parecido demais com o `studycli` existente. O pacote passa a `@bosi-programming/study-cli` no [ADR-028](adr-028-nome-publicado-do-cli-sob-o-escopo-bosi-programming.md); o artefato JS, o `bin` e o resto desta decisão seguem valendo.
