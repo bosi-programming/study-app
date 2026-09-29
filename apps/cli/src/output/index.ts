@@ -1,4 +1,5 @@
 import { errorPayload } from '../errors.ts'
+import { danger } from './color.ts'
 import { envelope } from './json.ts'
 
 export type PrintOptions = {
@@ -17,5 +18,6 @@ export function printSuccess(command: string, result: PrintableResult, options: 
 
 export function printError(error: unknown, options: PrintOptions): void {
   const payload = errorPayload(error)
-  process.stderr.write(`${options.json ? JSON.stringify(payload) : payload.error.message}\n`)
+  const text = options.json ? JSON.stringify(payload) : danger(payload.error.message)
+  process.stderr.write(`${text}\n`)
 }

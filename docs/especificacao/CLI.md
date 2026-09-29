@@ -1,6 +1,6 @@
 # CLI — App de Estudo Espaçado
 
-Versão: 5 | Data: 2026-09-24 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 6 | Data: 2026-09-28 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -11,6 +11,7 @@ Versão: 5 | Data: 2026-09-24 | Base: `docs/especificacao/REQUISITOS.md`
   - Windows: `%APPDATA%\study-app\study.db`
 - Sobrescrita por `--db <path>` ou variável `STUDY_DB`; diretórios-pai são criados quando faltarem.
 - Saída humana por padrão; `--json` para script e testes de snapshot.
+- Cor na saída humana é decoração: o texto sem os escapes é o mesmo. A paleta (ADR-029) liga só quando o stdout é um terminal; desligam `--json`, `--no-color` e `NO_COLOR`, liga `FORCE_COLOR`, e `TERM=dumb` desliga.
 - Prompts vão para o stderr; resultado vai para o stdout.
 - Comandos destrutivos exigem a flag de confirmação: `--yes` em `remove`, `cold purge`, `init --reset` e `export` (esse só quando o arquivo de destino já existe).
 
@@ -85,6 +86,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 | `--reset` | init | autoriza recriar o banco existente |
 | `--yes` | remove, cold purge, init --reset, export | confirma a operação destrutiva; no export, sobrescreve o arquivo de destino |
 | `--no-input` | todos | nunca pergunta |
+| `--no-color` | todos | desliga as cores da saída humana |
 | `--export-dir <path>` | todos | destino do export automático do arquivo morto |
 | `--json` | todos | saída JSON estável para testes |
 | `--db <path>` | todos | caminho do banco |
@@ -214,6 +216,8 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 
 ## Saídas esperadas
 
+Os blocos abaixo mostram o texto sem os escapes de cor; a decoração segue a paleta do ADR-029.
+
 ### `study due`
 
 ```
@@ -300,7 +304,7 @@ O `code` é o valor estável por onde o consumidor de `schema_version: 1` ramifi
 ## Notas de implementação
 
 - Engine: `node:sqlite` (built-in no Node 24) — ADR-014. `foreign_keys = ON`, `journal_mode = WAL` e `busy_timeout = 5000`; o schema canônico aplica verbatim (`pnpm sqlite:probe`).
-- Formatação de tabela com largura fixa na V1; sem cores obrigatórias.
+- Largura fixa na V1 e paleta do ADR-029 na saída humana: âmbar `#E8A13B` para atraso, verde `#64C889` para hoje e check-in, cinza `#909BA6` para rótulos, cinza-escuro `#5F6977` para metadados e vermelho `#E06C75` para erro. A cor nunca entra no `--json`.
 - `--json` é o contrato usado pelos testes de snapshot do CLI.
 - A resolução por título usa `title_key` (normalizado) e o índice `idx_items_title`.
 - O parser lê todo token iniciado por `-` como flag, então um valor negativo precisa vir depois de `--`: `study config set cold_archive_after_days -- -1` sai 2, enquanto o `-1` cru vira flag desconhecida e sai 1. O `--` precisa ser o último token; uma flag depois dele vira posicional, o comando perde o argumento e sai 1 por aridade.

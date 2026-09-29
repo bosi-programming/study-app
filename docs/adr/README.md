@@ -1,6 +1,6 @@
 # Registro de Decisões (ADRs)
 
-Data: 2026-09-09 | Atualizado: 2026-09-29 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
+Data: 2026-09-09 | Atualizado: 2026-09-28 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
 
 Cada decisão vive em um arquivo próprio. Número, título, data e status vêm do frontmatter do arquivo correspondente.
 
@@ -34,6 +34,7 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md) | Instalação local do CLI por symlink do shim do pnpm no PATH | superado |
 | [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) | Distribuição npm-global do CLI e artefato JS | superado-parcialmente |
 | [ADR-028](adr-028-nome-publicado-do-cli-sob-o-escopo-bosi-programming.md) | Nome publicado do CLI sob o escopo `@bosi-programming` | aceito |
+| [ADR-029](adr-029-cores-da-saida-humana-do-cli.md) | Cores da saída humana do CLI: paleta truecolor com detecção de terminal | aceito |
 
 ## Supersessão
 

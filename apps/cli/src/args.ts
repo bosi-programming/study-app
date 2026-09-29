@@ -13,6 +13,7 @@ export type ParsedArgs = {
 
 export const GLOBAL_FLAGS: readonly FlagSpec[] = [
   { name: 'json', short: null, takesValue: false },
+  { name: 'no-color', short: null, takesValue: false },
   { name: 'no-input', short: null, takesValue: false },
   { name: 'db', short: null, takesValue: true },
   { name: 'export-dir', short: null, takesValue: true },

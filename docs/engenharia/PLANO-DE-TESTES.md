@@ -154,6 +154,7 @@ Hoje (BOS-37, ENG-12 — a rastreabilidade dos casos, o bench real e o registro 
 - `pnpm sqlite:probe` prova o schema canônico no engine do CLI (ADR-014) e passou a re-exportar `SCHEMA_SQL` da camada (`apps/cli/src/persistence/schema.ts`, ADR-016): uma cópia canônica no código, e o `S-14` continua pinando a mesma ligação ao bloco SQL de `MODELO-DE-DADOS.md`.
 - `pnpm test:coverage` mede as linhas de `packages/core/src` com o provider v8 e falha abaixo de 90% (`thresholds.lines` no `vitest.config.ts`); em 2026-09-24 reporta 100% (128/128), inalterado pelas ENG-5 a ENG-11 (nenhuma delas acrescentou linha ao core).
 - O CI (`.github/workflows/ci.yml`, ADR-017) roda `pnpm lint`, `pnpm typecheck` e `pnpm test` em passos separados a cada PR para `main`, em `ubuntu-latest` com Node 24 e `pnpm install --frozen-lockfile`. São os mesmos comandos de raiz rodados local, então o resultado local é o do CI.
+- A paleta da saída humana (ADR-029) não muda o texto: os escapes são decoração. `apps/cli/test/output/color.test.ts` (novo) pina a decisão de ligar e desligar (`TTY`, `--json`, `--no-color`, `NO_COLOR`, `FORCE_COLOR`, `TERM=dumb`) e, com `FORCE_COLOR=1`, os tons do `due` (âmbar no atrasado, verde no hoje) e do `review`; o `runStudy` de `apps/cli/test/commands/helpers.ts` passa a fixar `NO_COLOR=1` e `FORCE_COLOR` vazio no env, para que o texto comparado pelos outros arquivos não dependa do terminal de quem roda `pnpm test`. O `tests/scaffold.test.ts` ganha o `scaffold-adr-029`, que liga o índice, o `--no-color` e a paleta do `color.ts`.
 
 Alvo da fase 1:
 
