@@ -358,10 +358,10 @@ function phaseOneDefinitionOfDone(): string[] {
     .filter((item) => item.length > 0)
 }
 
-function requirementIds(): string[] {
+function requirementIds(prefix: 'RN' | 'RF'): string[] {
   return textAt('docs/especificacao/REQUISITOS.md')
     .split('\n')
-    .filter((line) => /^- RN-\d{2} /.test(line))
+    .filter((line) => new RegExp(`^- ${prefix}-\\d{2} `).test(line))
     .map((line) => (line.split(' ')[1] ?? '').trim())
 }
 
@@ -405,7 +405,7 @@ describe('S-27 roadmap phase 1 ranges', () => {
   const checklist = phaseOneChecklistLines()
 
   it('cites the requirement range the specification defines', () => {
-    const range = idRange(requirementIds())
+    const range = idRange(requirementIds('RN'))
     expect(range).toBe('RN-01..RN-15')
     expect(checklist.some((line) => line.includes(`Implementar ${range} `))).toBe(true)
     expect(checklist.some((line) => line.includes('RN-01..RN-12'))).toBe(false)
@@ -730,5 +730,221 @@ describe('S-22 lint gate', () => {
     expect(textAt('docs/adr/README.md')).toContain(adr17[0] ?? '')
     const count = readdirSync(adrDir).filter((name) => name !== 'README.md').length
     expect(textAt('docs/README.md')).toContain(`${count} ADRs`)
+  })
+})
+
+function indexRows(): string[] {
+  return textAt('docs/README.md')
+    .split('\n')
+    .filter((line) => line.startsWith('|'))
+}
+
+const layerDocuments = [
+  'docs/engenharia/INVENTARIO-DE-REQUISITOS.md',
+  'docs/especificacao/WEB.md',
+  'docs/especificacao/PILOTO.md',
+  'docs/especificacao/MOBILE.md',
+  'docs/especificacao/DESKTOP.md',
+]
+
+describe('S-29 docs-index-novos', () => {
+  it.each(layerDocuments)('cria %s com conteúdo', (path) => {
+    expect(existsSync(resolve(root, path))).toBe(true)
+    expect(textAt(path).trim().length).toBeGreaterThan(0)
+  })
+
+  it.each(layerDocuments)('indexa %s com status e versão', (path) => {
+    const row = indexRows().find((line) => line.includes(path))
+    expect(row, path).toBeDefined()
+    expect(row).toContain('Rascunho v1')
+  })
+
+  it('cita os cinco documentos novos na ordem de leitura', () => {
+    const readme = textAt('docs/README.md')
+    const order = readme.slice(readme.indexOf('## Ordem de leitura'))
+
+    expect(readme).toContain('## Ordem de leitura')
+    for (const path of layerDocuments) expect(order, path).toContain(path)
+  })
+
+  it('sobe a linha do plano de testes para v4', () => {
+    const row = indexRows().find((line) => line.includes('docs/engenharia/PLANO-DE-TESTES.md'))
+    expect(row).toBeDefined()
+    expect(row).toContain('Rascunho v4')
+  })
+})
+
+describe('S-30 web-molde-rf', () => {
+  const web = textAt('docs/especificacao/WEB.md')
+
+  it.each([
+    '## Convenções',
+    '## Telas e fluxos',
+    '## Estados',
+    '## Contrato com o core',
+    '## Erros',
+    '## Critérios de aceite',
+  ])('tem a seção %s do molde', (heading) => {
+    expect(web).toContain(heading)
+  })
+
+  it('cobre cada RF-01..RF-25 derivado dos requisitos', () => {
+    const ids = requirementIds('RF')
+    expect(idRange(ids)).toBe('RF-01..RF-25')
+    for (const id of ids) expect(web, id).toContain(id)
+  })
+
+  it('mapeia cada RF de UI na tabela de cobertura de telas', () => {
+    const table = sectionBetween(web, '## Telas e fluxos', '\n### ')
+
+    for (const id of requirementIds('RF')) expect(table, id).toContain(id)
+  })
+
+  it('descreve os quatro estados de tela', () => {
+    const states = sectionBetween(web, '\n## Estados\n', '\n## ').toLowerCase()
+    for (const state of ['vazio', 'carregando', 'offline', 'erro']) {
+      expect(states, state).toContain(state)
+    }
+  })
+
+  it('mantém remover, migrar, purgar e a janela no molde destrutivo', () => {
+    const screens = sectionBetween(web, '\n## Telas e fluxos\n', '\n## ')
+    const destructive: Record<string, RegExp> = {
+      'RF-04': /remover/i,
+      'RF-16': /migrar/i,
+      'RF-17': /purgar/i,
+      'RF-25': /janela/i,
+    }
+
+    for (const [id, action] of Object.entries(destructive)) {
+      const line = screens
+        .split('\n')
+        .find((candidate) => candidate.includes(id) && action.test(candidate))
+      expect(line, id).toBeDefined()
+    }
+
+    const mould = web.split('\n').find((line) => /confirmação explícita/i.test(line))
+    expect(mould, 'molde destrutivo').toBeDefined()
+    for (const id of Object.keys(destructive)) expect(mould, id).toContain(id)
+  })
+
+  it('centraliza as strings pt-BR num módulo único (RNF-06)', () => {
+    expect(web).toContain('RNF-06')
+    expect(web).toMatch(/módulo único de strings/i)
+  })
+})
+
+describe('S-31 piloto-requisitos', () => {
+  const pilot = textAt('docs/especificacao/PILOTO.md')
+
+  it('fixa o aviso LGPD e o fluxo de consentimento', () => {
+    expect(pilot).toContain('LGPD')
+    expect(pilot).toContain('consentimento')
+  })
+
+  it('lista os eventos do Sentry com nome e campos', () => {
+    for (const event of ['item_created', 'checkin', 'queue_viewed']) {
+      expect(pilot, event).toContain(event)
+    }
+    expect(pilot).toContain('Campos')
+  })
+
+  it('proíbe dado pessoal nos eventos', () => {
+    expect(pilot).toContain('PII')
+    expect(pilot).toMatch(/nunca[^\n]*PII|não[^\n]*PII/i)
+  })
+
+  it('define o roteiro de entrevista semanal', () => {
+    expect(pilot).toContain('entrevista')
+    expect(pilot).toContain('semanal')
+  })
+})
+
+describe('S-32 inventario-reconciliacao', () => {
+  const inventory = textAt('docs/engenharia/INVENTARIO-DE-REQUISITOS.md')
+
+  it('inventaria as fases 2 a 5', () => {
+    for (const phase of ['Fase 2', 'Fase 3', 'Fase 4', 'Fase 5']) {
+      expect(inventory, phase).toContain(phase)
+    }
+  })
+
+  it('declara a casa dos documentos novos', () => {
+    for (const path of layerDocuments) expect(inventory, path).toContain(path)
+  })
+
+  it('reconcilia BOS-41 a BOS-45', () => {
+    const rows = inventory
+      .split('\n')
+      .filter((line) => /^\| BOS-\d{2} \|/.test(line))
+      .map((line) => line.split('|').map((cell) => cell.trim()).filter((cell) => cell.length > 0))
+
+    for (const ticket of ['BOS-41', 'BOS-42', 'BOS-43', 'BOS-44', 'BOS-45']) {
+      expect(rows.filter((cells) => cells[0] === ticket).length, ticket).toBeGreaterThan(0)
+    }
+    for (const cells of rows) {
+      expect(cells.length, cells.join(' | ')).toBe(4)
+      expect(['documentado', 'implementação/deploy', 'ajustado'], cells.join(' | ')).toContain(cells[2])
+    }
+  })
+
+  it('mantém desktop herdando as telas do web', () => {
+    const desktop = textAt('docs/especificacao/DESKTOP.md')
+    expect(desktop).toContain('ADR-009')
+    expect(desktop).toMatch(/herda[^\n]*telas? do web/i)
+  })
+
+  it('mantém mobile no expo-sqlite', () => {
+    expect(textAt('docs/especificacao/MOBILE.md')).toContain('expo-sqlite')
+  })
+})
+
+function layerCaseSection(): string {
+  const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+  return sectionBetween(plan, '## Casos por camada (W, P, M, D)', '\n## ')
+}
+
+describe('S-33 plano-ids-camada', () => {
+  const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+
+  it('sobe o plano para v4 e a suíte de scaffold para S-01..S-33', () => {
+    expect(plan).toMatch(
+      /^Versão: 4 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
+    )
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-33)')
+  })
+
+  it('reserva as quatro faixas por camada', () => {
+    const ranges = [...layerCaseSection().matchAll(/([WPMD])-(\d{2})\.\.([WPMD])-(\d{2})/g)].map(
+      (match) => `${match[1]}-${match[2]}..${match[3]}-${match[4]}`,
+    )
+    expect(ranges).toEqual(['W-01..W-14', 'P-01..P-04', 'M-01..M-05', 'D-01..D-03'])
+  })
+
+  it('lista os casos de cada camada dentro da faixa, sem duplicar', () => {
+    const ids = layerCaseSection()
+      .split('\n')
+      .filter((line) => /^\| [WPMD]-\d{2} \|/.test(line))
+      .map((line) => (line.split('|')[1] ?? '').trim())
+    const count = (prefix: string) => ids.filter((id) => id.startsWith(`${prefix}-`)).length
+
+    expect(ids.length).toBeGreaterThan(0)
+    expect(count('W')).toBe(14)
+    expect(count('P')).toBe(4)
+    expect(count('M')).toBe(5)
+    expect(count('D')).toBe(3)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const id of ids) expect(id).toMatch(/^[WPMD]-\d{2}$/)
+  })
+
+  it('não colide com o domínio: T-01..T-27 seguem contíguos e só T-26 manual', () => {
+    const ids = planMandatoryCases().map((entry) => entry.id)
+    const expected = Array.from(
+      { length: 27 },
+      (_, index) => `T-${String(index + 1).padStart(2, '0')}`,
+    )
+
+    expect(ids).toEqual(expected)
+    expect(planManualCases()).toEqual(['T-26'])
   })
 })
