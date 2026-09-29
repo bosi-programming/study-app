@@ -1,6 +1,6 @@
 # Registro de Decisões (ADRs)
 
-Data: 2026-09-09 | Atualizado: 2026-09-27 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
+Data: 2026-09-09 | Atualizado: 2026-09-29 | Base: `docs/produto/FEASIBILITY.md` e sessão de grill
 
 Cada decisão vive em um arquivo próprio. Número, título, data e status vêm do frontmatter do arquivo correspondente.
 
@@ -32,7 +32,8 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-024](adr-024-vocabulario-de-error-code-e-envelope-sem-comando.md) | Vocabulário fechado de `error.code` e envelope no `study` sem comando | aceito |
 | [ADR-025](adr-025-rastreabilidade-t-nn-do-cli-verificacao-manual-e-medicao-da-rnf-03.md) | Rastreabilidade `T-nn` do CLI, verificação manual e medição da RNF-03 | aceito |
 | [ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md) | Instalação local do CLI por symlink do shim do pnpm no PATH | superado |
-| [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) | Distribuição npm-global do CLI e artefato JS | aceito |
+| [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) | Distribuição npm-global do CLI e artefato JS | superado-parcialmente |
+| [ADR-028](adr-028-nome-publicado-do-cli-sob-o-escopo-bosi-programming.md) | Nome publicado do CLI sob o escopo `@bosi-programming` | aceito |
 
 ## Supersessão
 
@@ -40,8 +41,11 @@ O ADR-011 supera parte do ADR-004: a reavaliação de dificuldade passou a ser p
 
 O ADR-027 supera o ADR-026 (a instalação passa a ser npm-global no lugar do symlink) e parte do ADR-013 (o artefato publicado ganha bundle JS).
 
+O ADR-028 revisa parte do ADR-027: o nome publicado deixa de ser sem escopo e passa a `@bosi-programming/study-cli`, porque o registry recusou o `study-cli` como parecido demais com o `studycli` existente.
+
 | ADR superado | Relação | ADR que supera |
 | --- | --- | --- |
 | [ADR-004](adr-004-regra-de-agendamento-sem-recall.md) | parcialmente, só a sugestão após 3 check-ins no prazo | [ADR-011](adr-011-reavaliacao-de-dificuldade-a-cada-check-in.md) |
 | [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) | parcialmente, o "sem build" e o `bin: ./src/main.ts` no artefato publicado | [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) |
 | [ADR-026](adr-026-instalacao-local-do-cli-symlink-do-shim-no-path.md) | integralmente, a instalação passa a ser npm-global | [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) |
+| [ADR-027](adr-027-distribuicao-npm-global-do-cli-e-artefato-js.md) | parcialmente, só o nome publicado (sem escopo para escopado) | [ADR-028](adr-028-nome-publicado-do-cli-sob-o-escopo-bosi-programming.md) |
