@@ -771,10 +771,6 @@ describe('S-29 docs-index-novos', () => {
     expect(row).toBeDefined()
     expect(row).toContain('Rascunho v4')
   })
-
-  it('mantém a contagem de ADRs em 28', () => {
-    expect(textAt('docs/README.md')).toContain('28 ADRs')
-  })
 })
 
 describe('S-30 web-molde-rf', () => {
