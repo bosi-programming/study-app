@@ -37,6 +37,14 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'web',
+          root: './apps/web',
+          environment: 'jsdom',
+          include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
+        },
+      },
+      {
+        test: {
           name: 'scaffold',
           root: '.',
           environment: 'node',

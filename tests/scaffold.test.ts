@@ -40,7 +40,17 @@ type PackageJson = {
   devDependencies?: Record<string, string>
   scripts?: Record<string, string>
 }
-type TsConfig = { extends?: string; compilerOptions?: { strict?: boolean; types?: string[] } }
+type TsConfig = {
+  extends?: string
+  compilerOptions?: {
+    strict?: boolean
+    types?: string[]
+    jsx?: string
+    lib?: string[]
+    module?: string
+    moduleResolution?: string
+  }
+}
 
 describe('S-08 workspace members', () => {
   it('declares the three workspace globs', () => {
@@ -916,11 +926,11 @@ function layerCaseSection(): string {
 describe('S-33 plano-ids-camada', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe o plano para v4 e a suíte de scaffold para S-01..S-33', () => {
+  it('sobe o plano para v4 e a suíte de scaffold para S-01..S-43', () => {
     expect(plan).toMatch(
       /^Versão: 4 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-33)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-43)')
   })
 
   it('reserva as quatro faixas por camada', () => {
@@ -955,5 +965,179 @@ describe('S-33 plano-ids-camada', () => {
 
     expect(ids).toEqual(expected)
     expect(planManualCases()).toEqual(['T-26'])
+  })
+})
+
+type WebManifest = PackageJson & {
+  private?: boolean
+  type?: string
+  engines?: { node?: string }
+}
+
+const CORE_RULE_SYMBOL = /initialDueDate|intervalFor|BASE_INTERVAL_DAYS|MAX_INTERVAL_DAYS/
+const WEB_SOURCE_PATTERN = /\.(ts|tsx)$/
+
+function webSourceFiles(): string[] {
+  const files: string[] = []
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = resolve(dir, entry.name)
+      if (entry.isDirectory()) walk(path)
+      else if (WEB_SOURCE_PATTERN.test(entry.name)) files.push(path)
+    }
+  }
+  walk(resolve(root, 'apps/web/src'))
+  return files
+}
+
+describe('S-34 web-member-manifest', () => {
+  const manifest = readJson<WebManifest>('apps/web/package.json')
+
+  it('declara @study/web como membro privado e módulo em node >= 24', () => {
+    expect(manifest).toMatchObject({
+      name: '@study/web',
+      private: true,
+      type: 'module',
+      engines: { node: '>=24' },
+    })
+  })
+
+  it('expõe o script typecheck que o pnpm -r typecheck alcança', () => {
+    expect(manifest.scripts?.typecheck).toBe('tsc --noEmit -p tsconfig.json')
+  })
+
+  it('fica coberto pelo glob apps/* sem mexer no pnpm-workspace', () => {
+    expect(readFileSync(resolve(root, 'pnpm-workspace.yaml'), 'utf8')).toContain('apps/*')
+  })
+})
+
+describe('S-35 web-core-from-src-no-copy', () => {
+  const manifest = readJson<PackageJson>('apps/web/package.json')
+
+  it('toma o core e as fixtures do workspace pelo src', () => {
+    expect(manifest.devDependencies?.['@study/core']).toBe('workspace:*')
+    expect(manifest.devDependencies?.['@study/golden']).toBe('workspace:*')
+  })
+
+  it('declara react e react-dom como as únicas dependências de runtime', () => {
+    expect(Object.keys(manifest.dependencies ?? {}).sort()).toEqual(['react', 'react-dom'])
+  })
+
+  it('não versiona dist nem copia a regra sob o src', () => {
+    expect(existsSync(resolve(root, 'apps/web/dist'))).toBe(false)
+
+    for (const file of webSourceFiles()) {
+      const source = readFileSync(file, 'utf8')
+      if (CORE_RULE_SYMBOL.test(source)) {
+        expect(source, file).toMatch(/from '@study\/core'/)
+      }
+    }
+  })
+})
+
+describe('S-36 web-tsconfig', () => {
+  const config = readJson<TsConfig>('apps/web/tsconfig.json')
+
+  it('herda o base com jsx, bundler e lib de browser', () => {
+    expect(String(config.extends)).toMatch(/tsconfig\.base\.json$/)
+    expect(config.compilerOptions).toMatchObject({
+      jsx: 'react-jsx',
+      module: 'esnext',
+      moduleResolution: 'bundler',
+      types: [],
+    })
+    expect(config.compilerOptions?.lib).toEqual(['es2023', 'DOM', 'DOM.Iterable'])
+  })
+})
+
+describe('S-37 web-vitest-project', () => {
+  const web = projectNamed('web')
+  const manifest = readJson<PackageJson>('apps/web/package.json')
+
+  it('roda os testes do web em jsdom a partir do apps/web', () => {
+    expect(web?.root).toBe('./apps/web')
+    expect(web?.environment).toBe('jsdom')
+    expect(web?.include).toContain('test/**/*.test.ts')
+    expect(web?.include).toContain('test/**/*.test.tsx')
+  })
+
+  it('leva o pnpm test a cinco projetos', () => {
+    expect(vitestConfig.test?.projects).toHaveLength(5)
+  })
+
+  it('carrega as dependências de teste no manifesto e no lockfile', () => {
+    const lockfile = readFileSync(resolve(root, 'pnpm-lock.yaml'), 'utf8')
+
+    for (const dependency of [
+      'vitest',
+      '@testing-library/react',
+      '@testing-library/jest-dom',
+      'jsdom',
+    ]) {
+      const version = manifest.devDependencies?.[dependency]
+      expect(version, dependency).toBeDefined()
+      expect(lockfile).toContain(`${dependency}@${version}`)
+    }
+  })
+})
+
+describe('S-40 web-adr', () => {
+  it('registra o scaffold do web num ADR aceito e indexado', () => {
+    const adrDir = resolve(root, 'docs/adr')
+    const files = readdirSync(adrDir).filter((name) => name.startsWith('adr-032'))
+
+    expect(files).toHaveLength(1)
+    expect(textAt('docs/adr/README.md')).toContain(files[0] ?? '')
+    expect(readFileSync(resolve(adrDir, files[0] ?? ''), 'utf8')).toContain("status: 'aceito'")
+  })
+})
+
+describe('S-41 web-doc-counters', () => {
+  it('mantém a contagem de ADRs do docs/README em sincronia com os arquivos', () => {
+    const count = readdirSync(resolve(root, 'docs/adr')).filter((name) => name !== 'README.md')
+      .length
+
+    expect(count).toBe(32)
+    expect(textAt('docs/README.md')).toContain(`${count} ADRs`)
+  })
+
+  it('lista apps/web no README com 4 pacotes e 5 projetos', () => {
+    const readme = textAt('README.md')
+
+    expect(readme).toContain('apps/web')
+    expect(readme).toContain('4 pacotes')
+    expect(readme).toContain('5 projetos')
+  })
+
+  it('lista apps/web no layout do AGENTS', () => {
+    expect(textAt('AGENTS.md')).toContain('apps/web')
+  })
+})
+
+const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40', 'S-41', 'S-42', 'S-43']
+
+describe('S-42 web-plan-ids', () => {
+  const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+
+  it('sobe a suíte de scaffold para S-01..S-43 e lista os casos do web', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-43)')
+    for (const id of webScaffoldCases) expect(plan, id).toContain(id)
+  })
+
+  it('deixa T, C e as faixas por camada intactos', () => {
+    expect(plan).toContain('### Suíte de regra no core (C-01..C-65)')
+    expect(planMandatoryCases()).toHaveLength(27)
+
+    const ranges = [...layerCaseSection().matchAll(/([WPMD])-(\d{2})\.\.([WPMD])-(\d{2})/g)].map(
+      (match) => `${match[1]}-${match[2]}..${match[3]}-${match[4]}`,
+    )
+    expect(ranges).toEqual(['W-01..W-14', 'P-01..P-04', 'M-01..M-05', 'D-01..D-03'])
+  })
+
+  it('atualiza o literal do S-33 para o título novo', () => {
+    const previousTitle = ['### Suíte de scaffold (S-01', 'S-33)'].join('..')
+
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-43')
+    expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 })
