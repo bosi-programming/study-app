@@ -548,6 +548,33 @@ describe('AC4 — cada ação relê o store', () => {
     })
   })
 
+  it('session-reavaliacao-cancelada-volta-para-a-fila: item que sai da fila cancela a reavaliação e volta para a fila', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, {
+        items: [
+          makeItem({ id: 'A', difficulty: 3, due_date: today }),
+          makeItem({ id: 'B', due_date: today }),
+        ],
+      })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'start-reevaluate' })
+        expect(session.state().reevaluation?.itemId).toBe('A')
+
+        archive(dbPath, 'A', today)
+        session.applyAction({ kind: 'focus-next' })
+
+        expect(session.state().reevaluation).toBeNull()
+        expect(session.state().screen).toBe('queue')
+      } finally {
+        session.close()
+      }
+    })
+  })
+
   it('session-detalhe-segue-o-foco: o detalhe re-aponta com o foco e fecha quando a fila esvazia', () => {
     withDb((dbPath) => {
       const today = '2026-09-20'

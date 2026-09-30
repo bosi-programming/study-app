@@ -75,21 +75,17 @@ export type Session = {
 type StoreTracker = {
   reset(): void
   hasFailure(): boolean
-  failureError(): unknown
   wrap(store: Store): Store
 }
 
 function createStoreTracker(): StoreTracker {
   let failed = false
-  let failure: unknown = null
 
   return {
     reset() {
       failed = false
-      failure = null
     },
     hasFailure: () => failed,
-    failureError: () => failure,
     wrap(store) {
       return {
         ...store,
@@ -98,7 +94,6 @@ function createStoreTracker(): StoreTracker {
             return store.transaction(run)
           } catch (error) {
             failed = true
-            failure = error
             throw error
           }
         },
@@ -336,7 +331,10 @@ function settle(state: SessionState, queue: readonly Item[], focusId: string | n
 
   if (reevaluation !== null) {
     const reevaluationId = reevaluation.itemId
-    if (!queue.some((item) => item.id === reevaluationId)) reevaluation = null
+    if (!queue.some((item) => item.id === reevaluationId)) {
+      reevaluation = null
+      if (screen === 'reevaluate') screen = 'queue'
+    }
   }
 
   return { ...state, queue, focusId, screen, detailItemId, reevaluation }
