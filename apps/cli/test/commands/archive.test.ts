@@ -175,7 +175,7 @@ describe('AC3 — a máquina de estados recusa (casos de borda do Phase 1)', () 
   })
 })
 
-describe('AC4 — o beco do ADR-019 fecha pela CLI (RF-09, CA-08)', () => {
+describe('AC4 — o beco do item não ativo fecha pela CLI (RF-09, CA-08)', () => {
   it('archive-depois-checkin-recusa: review sai 3, sem log novo e sem mudar n', () => {
     withDb((dbPath) => {
       const item = makeItem({ id: 'a-1', review_count: 2 })

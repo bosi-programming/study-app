@@ -26,7 +26,7 @@ Node >= 24 e pnpm 12.4.1. `core` e `golden` são consumidos direto do `src`, sem
 - Documentos em pt-BR; identificadores em inglês. Assunto de commit em inglês, corpo em pt-BR.
 - Pastas em minúsculas e sem acento.
 - `packages/core` não importa API de Node nem de browser — há um teste que varre `packages/core/src`.
-- Toda decisão de arquitetura vira um ADR em `docs/adr/`, um arquivo por decisão, indexado no `docs/adr/README.md`.
+- Toda decisão de arquitetura vira um ADR em `docs/adr/`, um arquivo por decisão, nomeado pelo assunto e sem número.
 
 ## Documentos
 

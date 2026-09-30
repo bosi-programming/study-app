@@ -4,11 +4,11 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/CLI.md` e `docs/especi
 
 ## Convenções
 
-- Comando: `study tui`. É a segunda superfície do mesmo CLI, sobre o mesmo `packages/core` e o mesmo banco (ADR-001, ADR-016).
+- Comando: `study tui`. É a segunda superfície do mesmo CLI, sobre o mesmo `packages/core` e o mesmo banco (Core TS compartilhado, Camada de persistência do CLI).
 - A TUI não cria contrato de dados: lê e escreve pelo `store` do CLI.
 - Abre só com terminal interativo (stdout e stdin TTY). Fora disso, exit 1 com `a TUI exige um terminal interativo`.
 - `--json` não tem envelope de TUI: o desenho é a saída. O erro continua honorando `--json` quando a flag vem junto (RNF-08).
-- O texto sem os escapes é a fonte; a paleta é a do ADR-029 e `--no-color`/`NO_COLOR` valem aqui.
+- O texto sem os escapes é a fonte; a paleta é a do ADR Cores da saída humana do CLI e `--no-color`/`NO_COLOR` valem aqui.
 - Os comandos de linha continuam sendo a porta de script e de leitor de tela: a TUI nunca é a única forma de fazer algo.
 - Esta spec não cria `RF-nn`. Ela descreve o comportamento da superfície para os requisitos que já existem.
 
@@ -16,16 +16,16 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/CLI.md` e `docs/especi
 
 - Escopo da v1: fila do dia (RF-05), check-in (RF-08) e reavaliação de dificuldade (RF-11, RF-12, RF-13), mais o detalhe somente-leitura (RF-06, RF-10).
 - Zero dependência de runtime: `node:readline`, `process.stdin.setRawMode`, `SIGWINCH` e escapes ANSI na mão. O `S-28` pina `dependencies` vazio no pacote publicado.
-- Nenhuma regra nova: `recordReview`, `reevaluateDifficulty` e as leituras do store são as mesmas funções do CLI (ADR-001).
+- Nenhuma regra nova: `recordReview`, `reevaluateDifficulty` e as leituras do store são as mesmas funções do CLI (Core TS compartilhado).
 - Teclado de uma linha: setas ou `j`/`k` movem; `Enter` faz check-in; `1`–`5` reavaliam; `i` abre o detalhe; `?` abre a ajuda; `q` sai.
 - `Ctrl-C` sai com 130, mantendo o significado de aborto da tabela do `CLI.md`. O check-in já gravado permanece.
-- Cor é decoração (ADR-029): sem cor, o atraso ganha marcador textual e nada deixa de ser legível.
+- Cor é decoração (Cores da saída humana do CLI): sem cor, o atraso ganha marcador textual e nada deixa de ser legível.
 
 ## Telas
 
 ### Fila
 
-- Cabeçalho: `Fila de hoje — <data local>`, no tom secundário do ADR-029.
+- Cabeçalho: `Fila de hoje — <data local>`, no tom secundário do ADR Cores da saída humana do CLI.
 - Seções na ordem do `CLI.md`: `Atrasados (n)` e `Hoje (n)`; a numeração é contínua entre as duas.
 - Cada linha: índice, `[matéria]`, título, vencimento, `d<dificuldade>` e `n=<check-ins>`.
 - O item em foco recebe um marcador na coluna da esquerda (`>`); a linha inteira nunca muda de largura.
@@ -109,7 +109,7 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 - A virada do dia local é detectada antes de cada desenho: `hoje` é recalculado e a fila é relida.
 - O store é relido antes de cada ação; nenhuma decisão usa linha em cache.
 - Uma escrita que falha não derruba a sessão: o aviso vai para a barra e o desenho anterior permanece.
-- Duas instâncias são permitidas (`journal_mode = WAL`, `busy_timeout = 5000`, ADR-014). A TUI mostra o estado do seu último read; mudança feita em outro processo aparece na próxima ação.
+- Duas instâncias são permitidas (`journal_mode = WAL`, `busy_timeout = 5000`, Engine SQLite do CLI). A TUI mostra o estado do seu último read; mudança feita em outro processo aparece na próxima ação.
 - O arquivo morto migrado durante a sessão sai da fila na releitura seguinte (RN-09).
 
 ## Renderização
@@ -162,7 +162,7 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 
 ## Em aberto
 
-- `study` sem argumento abrir a TUI em TTY: mexe no ADR-024 e no exit 1 atual; exige ADR.
+- `study` sem argumento abrir a TUI em TTY: mexe no ADR Vocabulário de `error.code` e envelope sem comando e no exit 1 atual; exige ADR.
 - Barra de status com streak e contagens do dia.
 - Filtro por matéria (`-s`) dentro da fila.
 - Onde a TUI entra no `ROADMAP.md`: item da Fase 1 ou fase própria antes do web.
@@ -171,7 +171,7 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 ## Notas de implementação
 
 - Módulos em `apps/cli/src/tui/`: `render.ts` (puro), `keys.ts` (puro), `session/` (store, ganchos e loop).
-- Reusa `apps/cli/src/output/color.ts` (ADR-029) e `apps/cli/src/context.ts` para abrir o store e rodar os ganchos.
+- Reusa `apps/cli/src/output/color.ts` (Cores da saída humana do CLI) e `apps/cli/src/context.ts` para abrir o store e rodar os ganchos.
 - `apps/cli/src/output/human.ts` continua a ser a saída dos comandos; a TUI não o reusa para desenhar.
 - Sem dependência nova de runtime: o bundle do `prepare` continua um arquivo só, com o core inlinado.
 - `study tui` entra em `COMMANDS` e no bloco de uso do `cli.ts`, com `--help` inalterado.

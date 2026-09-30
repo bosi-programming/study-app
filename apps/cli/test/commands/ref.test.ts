@@ -91,7 +91,7 @@ describe('AC8 — resolução de <ref> (T-18, CA-18, RN-15)', () => {
   })
 })
 
-describe('AC10 — guarda de schema futuro (ADR-016)', () => {
+describe('AC10 — guarda de schema futuro', () => {
   function seedFutureSchema(dbPath: string): void {
     withStore(dbPath, (store) => store.setMeta('schema_version', '2'))
   }

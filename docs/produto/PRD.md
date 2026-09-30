@@ -54,7 +54,7 @@ Versão: 3 | Data: 2026-09-12 | Base: `docs/produto/FEASIBILITY.md`
 
 - UX de mobile (React Native, iOS + Android) e desktop: telas, notificações, ícones, publicação nas lojas.
 - Monetização, nome do app, branding, i18n.
-- Backend/Postgres: só no gatilho definido no ADR-002.
+- Backend/Postgres: só no gatilho definido no ADR Local-first com backend adiado.
 
 ## Jornadas
 

@@ -71,7 +71,7 @@ Versão: 3 | Data: 2026-09-20 | Base: `docs/produto/PRD.md`
 - RN-11 Item restaurado do arquivo morto volta a ativo com o mesmo n e dificuldade.
 - RN-12 Matéria é string livre, sem hierarquia; comparação sem diferenciar maiúsculas e acentos.
 - RN-13 Check-in antes do vencimento conta como no prazo; múltiplos check-ins no mesmo dia são permitidos e cada um incrementa n. O próximo vencimento conta do dia do check-in, mesmo que o vencimento anterior fosse futuro.
-- RN-14 Streak de fila zerada: dias locais consecutivos, terminando hoje, em que a fila estava vazia ao fim do dia; recalculado a cada execução que abre o banco, exceto `export`, `import` e `init` (ver ADR-023).
+- RN-14 Streak de fila zerada: dias locais consecutivos, terminando hoje, em que a fila estava vazia ao fim do dia; recalculado a cada execução que abre o banco, exceto `export`, `import` e `init` (ver Gancho do streak de fila zerada).
 - RN-15 Referência de item aceita UUID, prefixo único de 4+ caracteres ou título exato normalizado; ambiguidade é erro e nunca é resolvida por escolha automática.
 
 ## Requisitos não funcionais
@@ -83,7 +83,7 @@ Versão: 3 | Data: 2026-09-20 | Base: `docs/produto/PRD.md`
 - RNF-05 Dados do piloto: eventos anônimos no Sentry + aviso LGPD de 1 parágrafo.
 - RNF-06 Idioma pt-BR na V1; strings centralizadas para i18n futura.
 - RNF-07 Export sempre disponível, mesmo com banco corrompido, quando o arquivo existir.
-- RNF-08 Toda saída tem um envelope `--json` estável e versionado, consumido pelos testes de snapshot; a exceção é o uso de `--help`, que fica no canal humano (ADR-024).
+- RNF-08 Toda saída tem um envelope `--json` estável e versionado, consumido pelos testes de snapshot; a exceção é o uso de `--help`, que fica no canal humano (Vocabulário de `error.code` e envelope sem comando).
 
 ## Critérios de aceite
 

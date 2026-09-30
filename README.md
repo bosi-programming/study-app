@@ -16,10 +16,10 @@ pnpm install
 pnpm test          # 5 projetos: core, golden, cli, web, scaffold
 pnpm test:golden   # só o projeto golden: forma dos fixtures + vetores
 pnpm test:coverage # linhas de packages/core/src (falha abaixo de 90%)
-pnpm lint          # ESLint em todo o TS do repo (ADR-017)
+pnpm lint          # ESLint em todo o TS do repo (CI com lint, typecheck e testes nas PRs)
 pnpm typecheck     # tsc --noEmit nos 4 pacotes + tsconfig da raiz
 pnpm bench         # stub: declara o bloqueio da RNF-03, ainda não mede
-pnpm sqlite:probe  # prova o schema canônico no engine do CLI (ADR-014)
+pnpm sqlite:probe  # prova o schema canônico no engine do CLI (Engine SQLite do CLI)
 ```
 
 ## Instalar o comando `study`

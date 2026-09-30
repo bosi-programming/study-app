@@ -24,7 +24,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v4 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
-| `docs/adr/README.md` | ADRs numerados com contexto e consequências | 32 ADRs |
+| `docs/adr/` | ADRs com contexto, decisão e consequências | Rascunho v1 |
 
 ## Ordem de leitura
 
@@ -43,4 +43,4 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 13. `docs/especificacao/DESKTOP.md` — o app Electron da fase 5.
 14. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
 15. `docs/engenharia/ROADMAP.md` — em que ordem construir.
-16. `docs/adr/README.md` — por que as escolhas técnicas foram feitas.
+16. `docs/adr/` — por que as escolhas técnicas foram feitas.

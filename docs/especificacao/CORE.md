@@ -5,12 +5,12 @@ Versão: 1 | Data: 2026-09-20 | Base: `docs/especificacao/REQUISITOS.md`
 `packages/core` (`@study/core`) é o domínio da fase 1: TypeScript puro, uma
 responsabilidade por módulo atrás de um barrel `index.ts`, sem dependências de
 runtime e sem importar API de Node ou de browser — para que CLI, web, mobile e
-desktop compartilhem uma única implementação da regra de agendamento (ADR-001).
+desktop compartilhem uma única implementação da regra de agendamento (Core TS compartilhado).
 Escrito pela ENG-3 / BOS-28; o PR foi o #3.
 
 ## O que o core não faz
 
-- Não persiste, não abre banco e não conhece SQLite — a camada é a ENG-5, em `apps/cli/src/persistence/` (ADR-016); o `packages/core` continua sem importar API de Node (S-01/S-16).
+- Não persiste, não abre banco e não conhece SQLite — a camada é a ENG-5, em `apps/cli/src/persistence/` (Camada de persistência do CLI); o `packages/core` continua sem importar API de Node (S-01/S-16).
 - Não ordena a fila nem formata saída. A ordem de exibição e todo o texto de
   prompt são do CLI (ENG-6).
 - Não lê relógio nem gera id por conta própria: as duas coisas chegam por `deps`.
@@ -101,7 +101,7 @@ Operações de item:
 - `intervalFor(difficulty, n) = min(365, base × 2ⁿ)`.
 - `initialDueDate(difficulty, from) = from + base`.
 - `nextDueDate(basis, interval) = basis + interval` — a materialização de
-  "muda a base na hora" (ADR-004).
+  "muda a base na hora" (Regra de agendamento sem recall).
 - `isDue(item, today)` — **é a definição da fila**: `status === 'active'` e
   `due_date <= today`.
 - `isLate(item, today)` / `daysLate(item, today)` — só data, não olham status.
@@ -127,7 +127,7 @@ e `late`, para o histórico ser auditável sem reler o item.
 Troca a dificuldade e reaplica o **mesmo n** (`intervalFor(next, review_count)`),
 rebaseando o vencimento em hoje. Se a dificuldade é a mesma, devolve o próprio
 item, sem tocar em `review_count`, `on_time_streak` ou `updated_at`. É uma
-operação separada de `recordReview` de propósito: o ADR-011 exige gravar o
+operação separada de `recordReview` de propósito: o Reavaliação de dificuldade a cada check-in exige gravar o
 check-in antes de perguntar a dificuldade.
 
 ## Fila e streak de dias
@@ -233,7 +233,7 @@ const streak = advanceQueueStreak({ streak_current: 3, streak_last_day: '2026-09
 - `golden.test.ts` é o runner dos golden fixtures: lê `@study/golden`, computa
   com o core e compara com o `expected` de cada caso (`C-16`, `C-58`..`C-65`).
   Ele executa no projeto `golden` do `vitest.config.ts`, não no projeto `core`,
-  para que `pnpm test:golden` seja o gate de divergência (ADR-015).
+  para que `pnpm test:golden` seja o gate de divergência (Golden fixtures: formato e quem valida).
 - Os nove `T-nn` da ENG-4 (`T-01`..`T-05`, `T-11`, `T-12`, `T-20` e `T-21`) são
   provados lendo os fixtures, a fonte única de verdade da regra para todos os
   apps TS. `T-11` é a ordem da fila, que é do CLI: o caso do core só prova que
