@@ -388,6 +388,30 @@ describe('AC3 — a virada do dia antes de cada desenho', () => {
     })
   })
 
+  it('session-acao-trata-a-virada: a ação detecta o dia novo sem beforeRender', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const next = addDays(today, 1)
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'a', due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        withStore(dbPath, (store) => {
+          store.saveItem(makeItem({ id: 'b', due_date: next }))
+        })
+        clock.setToday(next)
+
+        const state = session.applyAction({ kind: 'focus-next' })
+
+        expect(state.today).toBe(next)
+        expect(state.queue.map((item) => item.id)).toEqual(['a', 'b'])
+      } finally {
+        session.close()
+      }
+    })
+  })
+
   it('session-sem-virada-nao-rele: no mesmo dia o desenho mantém o último read', () => {
     withDb((dbPath) => {
       const today = '2026-09-20'
@@ -551,6 +575,98 @@ describe('AC4 — cada ação relê o store', () => {
         expect(session.state().focusId).toBeNull()
         expect(session.state().screen).toBe('queue')
         expect(session.state().detailItemId).toBeNull()
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('session-foco-anterior: prev anda para trás e clampa na primeira posição', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, {
+        items: [
+          makeItem({ id: 'A', due_date: today }),
+          makeItem({ id: 'B', due_date: today }),
+          makeItem({ id: 'C', due_date: today }),
+        ],
+      })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'focus-next' })
+        expect(session.state().focusId).toBe('B')
+        session.applyAction({ kind: 'focus-prev' })
+        expect(session.state().focusId).toBe('A')
+        session.applyAction({ kind: 'focus-prev' })
+        expect(session.state().focusId).toBe('A')
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('session-foco-limites: first e last vão às pontas da fila', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, {
+        items: [
+          makeItem({ id: 'A', due_date: today }),
+          makeItem({ id: 'B', due_date: today }),
+          makeItem({ id: 'C', due_date: today }),
+        ],
+      })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'focus-last' })
+        expect(session.state().focusId).toBe('C')
+        session.applyAction({ kind: 'focus-first' })
+        expect(session.state().focusId).toBe('A')
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('session-fecha-o-detalhe: close-detail volta para a fila e limpa o detalhe', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'open-detail' })
+        session.applyAction({ kind: 'close-detail' })
+
+        expect(session.state().screen).toBe('queue')
+        expect(session.state().detailItemId).toBeNull()
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('session-cancela-reavaliacao: cancel-reevaluate volta para a fila sem escrever', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', difficulty: 3, due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'start-reevaluate' })
+        session.applyAction({ kind: 'cancel-reevaluate' })
+
+        expect(session.state().screen).toBe('queue')
+        expect(session.state().reevaluation).toBeNull()
+        withStore(dbPath, (store) => {
+          expect(store.getItem('A')?.difficulty).toBe(3)
+          expect(store.listReviewLogs('A')).toEqual([])
+        })
       } finally {
         session.close()
       }
