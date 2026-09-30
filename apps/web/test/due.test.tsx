@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest'
+import { InvalidDifficultyError } from '@study/core'
 import { type InitialDueFixture, goldenFixtures } from '@study/golden'
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -43,6 +44,6 @@ describe('S-39 web-golden-vector', () => {
   )
 
   it.each([0, 6])('recusa a dificuldade %i fora do domínio', (difficulty) => {
-    expect(() => initialDueEstimate(difficulty, fixture.created_on)).toThrow()
+    expect(() => initialDueEstimate(difficulty, fixture.created_on)).toThrow(InvalidDifficultyError)
   })
 })

@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -32,21 +32,37 @@ function specifiersOf(path: string): string[] {
   return [...readFileSync(path, 'utf8').matchAll(/from\s+'([^']+)'/g)].map((match) => match[1] ?? '')
 }
 
-function targetOf(path: string, specifier: string): string | null {
+function resolveTarget(path: string, specifier: string): string | null {
   if (!specifier.startsWith('.')) return null
-  return resolve(dirname(path), specifier)
+  const target = resolve(dirname(path), specifier)
+  return target.startsWith(SRC) && existsSync(target) ? target : null
 }
 
 function filesInZone(zone: Zone): string[] {
   return sourceFiles(SRC).filter((path) => zoneOf(path) === zone)
 }
 
-function importsInto(zone: Zone): { file: string; specifier: string; target: string }[] {
+function zonesReached(target: string, seen: Set<string> = new Set<string>()): Zone[] {
+  if (seen.has(target)) return []
+  seen.add(target)
+
+  const zone = zoneOf(target)
+  if (zone !== 'root') return [zone]
+
+  return [
+    zone,
+    ...specifiersOf(target).flatMap((specifier) => {
+      const next = resolveTarget(target, specifier)
+      return next === null ? [] : zonesReached(next, seen)
+    }),
+  ]
+}
+
+function importsFrom(zone: Zone): { file: string; specifier: string; zones: Zone[] }[] {
   return filesInZone(zone).flatMap((file) =>
     specifiersOf(file).flatMap((specifier) => {
-      const target = targetOf(file, specifier)
-      if (target === null || !target.startsWith(SRC)) return []
-      return [{ file, specifier, target }]
+      const target = resolveTarget(file, specifier)
+      return target === null ? [] : [{ file, specifier, zones: zonesReached(target) }]
     }),
   )
 }
@@ -57,24 +73,24 @@ function rel(path: string): string {
 
 describe('S-38 web-layer-direction', () => {
   it('arch-controller-nao-importa-view: nenhum controller importa a view', () => {
-    const offenders = importsInto('controller')
-      .filter((entry) => zoneOf(entry.target) === 'view')
+    const offenders = importsFrom('controller')
+      .filter((entry) => entry.zones.includes('view'))
       .map((entry) => `${rel(entry.file)} -> ${entry.specifier}`)
 
     expect(offenders).toEqual([])
   })
 
   it('arch-view-nao-importa-controller: nenhuma view importa um controller', () => {
-    const offenders = importsInto('view')
-      .filter((entry) => zoneOf(entry.target) === 'controller')
+    const offenders = importsFrom('view')
+      .filter((entry) => entry.zones.includes('controller'))
       .map((entry) => `${rel(entry.file)} -> ${entry.specifier}`)
 
     expect(offenders).toEqual([])
   })
 
   it('arch-model-nao-importa-view-nem-controller: o model não importa view nem controller', () => {
-    const offenders = importsInto('model')
-      .filter((entry) => zoneOf(entry.target) === 'view' || zoneOf(entry.target) === 'controller')
+    const offenders = importsFrom('model')
+      .filter((entry) => entry.zones.includes('view') || entry.zones.includes('controller'))
       .map((entry) => `${rel(entry.file)} -> ${entry.specifier}`)
 
     expect(offenders).toEqual([])

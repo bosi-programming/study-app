@@ -926,11 +926,11 @@ function layerCaseSection(): string {
 describe('S-33 plano-ids-camada', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe o plano para v4 e a suíte de scaffold para S-01..S-42', () => {
+  it('sobe o plano para v4 e a suíte de scaffold para S-01..S-43', () => {
     expect(plan).toMatch(
       /^Versão: 4 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-42)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-43)')
   })
 
   it('reserva as quatro faixas por camada', () => {
@@ -1114,13 +1114,13 @@ describe('S-41 web-doc-counters', () => {
   })
 })
 
-const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40', 'S-41', 'S-42']
+const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40', 'S-41', 'S-42', 'S-43']
 
 describe('S-42 web-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-42 e lista os casos do web', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-42)')
+  it('sobe a suíte de scaffold para S-01..S-43 e lista os casos do web', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-43)')
     for (const id of webScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1137,7 +1137,7 @@ describe('S-42 web-plan-ids', () => {
   it('atualiza o literal do S-33 para o título novo', () => {
     const previousTitle = ['### Suíte de scaffold (S-01', 'S-33)'].join('..')
 
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-42')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-43')
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 })
