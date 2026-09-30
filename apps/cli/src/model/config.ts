@@ -1,4 +1,4 @@
-import { type Store } from './persistence/index.ts'
+import { type Store } from '../persistence/index.ts'
 
 export const COLD_ARCHIVE_AFTER_DAYS = 'cold_archive_after_days'
 export const DEFAULT_COLD_ARCHIVE_AFTER_DAYS = 180

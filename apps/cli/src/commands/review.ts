@@ -7,8 +7,7 @@ import {
 } from '@study/core'
 import { assertAllowedFlags, assertPositionals, valueOf } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { checkinLine, nextDueLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { toItemJson } from '../model/json.ts'
 import { promptDifficulty } from '../prompt.ts'
 import { type Command } from './types.ts'
 
@@ -28,13 +27,13 @@ export const reviewCommand: Command = (args, ctx) => {
     ctx.store.saveReviewLog(checkedIn.log)
   })
 
-  if (!ctx.json) process.stdout.write(`${checkinLine(checkedIn.item)}\n`)
+  ctx.emit?.checkin(checkedIn.item)
 
   const chosen = flagged ?? promptDifficulty(checkedIn.item.difficulty)
   const reviewed = reevaluateDifficulty(checkedIn.item, chosen, ctx.deps)
   if (reviewed !== checkedIn.item) ctx.store.saveItem(reviewed)
 
-  return { json: { item: toItemJson(reviewed) }, human: nextDueLine(reviewed) }
+  return { json: { item: toItemJson(reviewed) }, view: { kind: 'item-reviewed', item: reviewed } }
 }
 
 function difficultyFromFlag(value: string | undefined): Difficulty | undefined {

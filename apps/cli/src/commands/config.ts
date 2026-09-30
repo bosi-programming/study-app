@@ -1,11 +1,10 @@
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
+import { CliError } from '../errors.ts'
 import {
   COLD_ARCHIVE_AFTER_DAYS,
   parseColdArchiveWindow,
   readColdArchiveWindow,
-} from '../config.ts'
-import { CliError } from '../errors.ts'
-import { configLine } from '../output/human.ts'
+} from '../model/config.ts'
 import { type Command, type CommandArgs } from './types.ts'
 
 const NO_SUBCOMMAND = 'study config exige um subcomando: get ou set'
@@ -28,7 +27,7 @@ const configGet: Command = (args, ctx) => {
   assertKnownKey(key)
   const value = readColdArchiveWindow(ctx.store)
 
-  return { json: { action: 'get', key, value }, human: configLine(key, value) }
+  return { json: { action: 'get', key, value }, view: { kind: 'config-value', key, value } }
 }
 
 const configSet: Command = (args, ctx) => {
@@ -41,7 +40,7 @@ const configSet: Command = (args, ctx) => {
   if (value === null) throw CliError.invalidValue(`valor inválido para ${key}: ${raw}`)
 
   ctx.store.setMeta(key, String(value))
-  return { json: { action: 'set', key, value }, human: configLine(key, value) }
+  return { json: { action: 'set', key, value }, view: { kind: 'config-value', key, value } }
 }
 
 function assertKnownKey(key: string): void {

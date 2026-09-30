@@ -10,7 +10,7 @@ import {
 } from '@study/core'
 import { type FixtureKind, type GoldenFixture, goldenFixtures } from '@study/golden'
 import { systemDeps } from '../../src/deps.ts'
-import { type ItemJson, type ReviewLogJson } from '../../src/output/json.ts'
+import { type ItemJson, type ReviewLogJson } from '../../src/model/json.ts'
 import { type Store, openStore } from '../../src/persistence/index.ts'
 
 const repoRoot = resolve(import.meta.dirname, '../../../..')

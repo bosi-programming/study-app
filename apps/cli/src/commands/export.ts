@@ -2,9 +2,8 @@ import { existsSync, realpathSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { writeJsonAtomic } from '../output/file.ts'
-import { exportedLine } from '../output/human.ts'
-import { dumpJsonV1 } from '../output/json.ts'
+import { writeJsonAtomic } from '../model/file.ts'
+import { dumpJsonV1 } from '../model/json.ts'
 import { type Command } from './types.ts'
 
 export const exportCommand: Command = (args, ctx) => {
@@ -29,7 +28,7 @@ export const exportCommand: Command = (args, ctx) => {
       review_logs: dump.review_logs.length,
       cold_archive: dump.cold_archive.length,
     },
-    human: exportedLine(path),
+    view: { kind: 'exported', path },
   }
 }
 

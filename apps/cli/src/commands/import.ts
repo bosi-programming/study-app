@@ -1,6 +1,5 @@
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
-import { applyDump, readDumpFile, validateReferences } from '../import.ts'
-import { importedLine } from '../output/human.ts'
+import { applyDump, readDumpFile, validateReferences } from '../model/import.ts'
 import { type Store } from '../persistence/index.ts'
 import { type Command } from './types.ts'
 
@@ -15,7 +14,7 @@ export const importCommand: Command = (args, ctx) => {
 
   return {
     json: { path, ...counts },
-    human: importedLine(counts.items, counts.review_logs),
+    view: { kind: 'imported', items: counts.items, checkins: counts.review_logs },
   }
 }
 

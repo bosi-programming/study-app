@@ -3,9 +3,8 @@ import { dirname, join } from 'node:path'
 import { type Deps } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { writeJsonAtomic } from '../output/file.ts'
-import { createdDbLine, resetDbLine } from '../output/human.ts'
-import { dumpJsonV1 } from '../output/json.ts'
+import { writeJsonAtomic } from '../model/file.ts'
+import { dumpJsonV1 } from '../model/json.ts'
 import { type Store, openStore } from '../persistence/index.ts'
 import { type Command } from './types.ts'
 
@@ -20,7 +19,7 @@ export const initCommand: Command = (args, ctx) => {
   if (!ctx.dbExisted) {
     return {
       json: { action: 'created', db_path: ctx.dbPath },
-      human: createdDbLine(ctx.dbPath),
+      view: { kind: 'db-created', dbPath: ctx.dbPath },
     }
   }
 
@@ -35,7 +34,7 @@ export const initCommand: Command = (args, ctx) => {
 
   return {
     json: { action: 'reset', db_path: ctx.dbPath, backup_path: backupPath },
-    human: resetDbLine(ctx.dbPath, backupPath),
+    view: { kind: 'db-reset', dbPath: ctx.dbPath, backupPath },
   }
 }
 

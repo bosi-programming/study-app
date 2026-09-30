@@ -1,5 +1,5 @@
 import { advanceQueueStreak, hasDueItems, type QueueStreak } from '@study/core'
-import { type Store } from './persistence/index.ts'
+import { type Store } from '../persistence/index.ts'
 
 const STREAK_CURRENT = 'streak_current'
 const STREAK_LAST_DAY = 'streak_last_day'

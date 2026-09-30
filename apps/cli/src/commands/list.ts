@@ -1,6 +1,5 @@
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
-import { itemTable } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { toItemJson } from '../model/json.ts'
 import { itemFilter } from './filter.ts'
 import { type Command } from './types.ts'
 
@@ -9,6 +8,8 @@ export const listCommand: Command = (args, ctx) => {
   assertPositionals(args, 0, 0, 'list')
 
   const items = ctx.store.listItems(itemFilter(args))
-  const human = itemTable(items, ctx.deps.clock.todayLocalDate())
-  return { json: { items: items.map(toItemJson) }, human }
+  return {
+    json: { items: items.map(toItemJson) },
+    view: { kind: 'items', items, today: ctx.deps.clock.todayLocalDate() },
+  }
 }

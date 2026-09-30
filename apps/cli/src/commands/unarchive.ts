@@ -1,9 +1,8 @@
 import { resolveRef } from '@study/core'
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
-import { unarchiveItem } from '../coldArchive.ts'
 import { CliError } from '../errors.ts'
-import { unarchivedLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { unarchiveItem } from '../model/coldArchive.ts'
+import { toItemJson } from '../model/json.ts'
 import { type Command } from './types.ts'
 
 export const unarchiveCommand: Command = (args, ctx) => {
@@ -22,6 +21,6 @@ export const unarchiveCommand: Command = (args, ctx) => {
 
   return {
     json: { action: 'unarchive', item: toItemJson(unarchived) },
-    human: unarchivedLine(unarchived),
+    view: { kind: 'item-unarchived', item: unarchived },
   }
 }
