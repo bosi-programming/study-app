@@ -8,11 +8,11 @@ status: 'aceito'
 # ADR-031 — MVC no CLI: camadas explícitas e o controller que devolve view-model
 
 - Contexto: `apps/cli` cresceu ticket a ticket sem fronteiras. Cada `commands/*` valida flags, orquestra domínio e formata a saída, devolvendo `{ json, human }` e importando `output/human.ts` e `output/json.ts` direto. O `cli.ts` mistura dispatch, texto de uso e exceções de contexto, e a apresentação fica espalhada por 17 comandos.
-- Contexto: o [ADR-001](adr-001-core-ts-compartilhado-por-cli-web-mobile-e-desktop.md) já fixa o core como domínio; o [ADR-030](adr-030-porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md) já fixa `tui/session.ts` como contrato de estado sem I/O de terminal. Faltava a direção de imports entre as camadas do CLI.
+- Contexto: o [ADR-001](adr-001-core-ts-compartilhado-por-cli-web-mobile-e-desktop.md) já fixa o core como domínio; o [ADR-030](adr-030-porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md) já fixa `tui/session/` como contrato de estado sem I/O de terminal. Faltava a direção de imports entre as camadas do CLI.
 - Decisão: `apps/cli/src` passa a ter três camadas e uma raiz de composição, com direção de import fixada. O model não importa view nem controller; a view não importa controller; o root importa tudo.
 - Decisão: model = `persistence/**` + `model/**`. Para o model vão `config`, `queueStreak`, `coldArchive`, `import`, o contrato JSON v1 (`json.ts`), as migrações (`migrations.ts`), a escrita atômica (`file.ts`), as derivações de fila (`queue.ts`) e o contrato controller↔view (`results.ts`).
 - Decisão: view = `output/**`. `human.ts` mantém só formatação; `render.ts` é o único ponto que vira view-model em texto; `usage.ts` guarda o `USAGE`; `index.ts` renderiza os dois canais. `prompt.ts` é adaptador de entrada, não view.
-- Decisão: controller = `commands/**` + `tui/session.ts`. Zero import de `output/**` e zero I/O de processo.
+- Decisão: controller = `commands/**` + `tui/session/**`. Zero import de `output/**` e zero I/O de processo.
 - Decisão: o controller devolve `{ json, view }`. O `json` é byte-a-byte o payload atual; o `view` é um `CommandView` discriminado, com os objetos de domínio que o humano precisa.
 - Decisão: `CommandView` e `CommandResult` vivem em `model/results.ts`, neutro. A view importa o contrato sem depender do controller, e `commands/types.ts` reexporta `CommandResult` para os testes que já o importam.
 - Decisão: o check-in do `review` vira porta opcional `ctx.emit?.checkin(item)`. O controller declara a interface; o root injeta a implementação, que escreve a mesma linha no stdout. Preserva os bytes e a ordem em TTY.
