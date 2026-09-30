@@ -20,7 +20,7 @@ function sourceFiles(dir: string): string[] {
 
 function zoneOf(path: string): Zone {
   const rel = relative(SRC, path)
-  if (rel.startsWith('commands/') || rel === 'tui/session.ts') return 'controller'
+  if (rel.startsWith('commands/') || rel.startsWith('tui/session/')) return 'controller'
   if (rel.startsWith('output/')) return 'view'
   if (rel.startsWith('persistence/') || rel.startsWith('model/')) return 'model'
   return 'root'

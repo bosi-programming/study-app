@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { type Deps, addDays } from '@study/core'
 import { describe, expect, it } from 'vitest'
@@ -8,12 +8,12 @@ import {
   openContext,
 } from '../../src/context.ts'
 import { type Store } from '../../src/persistence/index.ts'
-import { type SessionOptions, openSession } from '../../src/tui/session.ts'
+import { type SessionOptions, openSession } from '../../src/tui/session/index.ts'
 import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
 import { seed, withStore } from '../commands/helpers.ts'
 
-const SESSION_SOURCE = resolve(import.meta.dirname, '../../src/tui/session.ts')
+const SESSION_DIR = resolve(import.meta.dirname, '../../src/tui/session')
 
 function fakeDeps(start: string): { deps: Deps; setToday: (today: string) => void } {
   let today = start
@@ -167,7 +167,10 @@ describe('AC1 — o estado da sessão', () => {
         session.close()
       }
 
-      const source = readFileSync(SESSION_SOURCE, 'utf8')
+      const source = readdirSync(SESSION_DIR)
+        .filter((name) => name.endsWith('.ts'))
+        .map((name) => readFileSync(join(SESSION_DIR, name), 'utf8'))
+        .join('\n')
       expect(source).not.toContain('process.stdin')
       expect(source).not.toContain('process.stdout')
       expect(source).not.toContain('setRawMode')

@@ -170,7 +170,7 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 
 ## Notas de implementação
 
-- Módulos em `apps/cli/src/tui/`: `render.ts` (puro), `keys.ts` (puro), `session.ts` (store, ganchos e loop).
+- Módulos em `apps/cli/src/tui/`: `render.ts` (puro), `keys.ts` (puro), `session/` (store, ganchos e loop).
 - Reusa `apps/cli/src/output/color.ts` (ADR-029) e `apps/cli/src/context.ts` para abrir o store e rodar os ganchos.
 - `apps/cli/src/output/human.ts` continua a ser a saída dos comandos; a TUI não o reusa para desenhar.
 - Sem dependência nova de runtime: o bundle do `prepare` continua um arquivo só, com o core inlinado.
