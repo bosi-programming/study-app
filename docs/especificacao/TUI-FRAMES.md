@@ -2,7 +2,7 @@
 
 Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/TUI.md`
 
-Blocos das telas da `study tui` para conferência visual. O texto sem os escapes é a fonte; a cor é decoração do ADR-029.
+Blocos das telas da `study tui` para conferência visual. O texto sem os escapes é a fonte; a cor é decoração do ADR Cores da saída humana do CLI.
 
 ## Paleta
 

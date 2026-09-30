@@ -8,10 +8,10 @@ O `ROADMAP.md` descreve as fases 2 a 5 por bullets. Este inventário registra, f
 
 | Fase | Já existe | Falta | Documento |
 | --- | --- | --- | --- |
-| Fase 2 — Web | `ROADMAP.md` (bullets), `REQUISITOS.md` (`RF-01`..`RF-25`), `MODELO-DE-DADOS.md` (IndexedDB), ADR-001, ADR-003 | telas, estados e contrato com o core | `docs/especificacao/WEB.md` |
-| Fase 3 — Piloto | `ROADMAP.md`, `RNF-05`, ADR-006, métricas do `PRD.md` | aviso LGPD, eventos do Sentry e roteiro de entrevista | `docs/especificacao/PILOTO.md` |
-| Fase 4 — Mobile | `ROADMAP.md`, ADR-003, ADR-008, `MODELO-DE-DADOS.md` (SQLite) | telas, `expo-sqlite`, notificações e lojas | `docs/especificacao/MOBILE.md` |
-| Fase 5 — Desktop | `ROADMAP.md`, ADR-003, ADR-009 | empacotamento e smoke; as telas vêm do web | `docs/especificacao/DESKTOP.md` |
+| Fase 2 — Web | `ROADMAP.md` (bullets), `REQUISITOS.md` (`RF-01`..`RF-25`), `MODELO-DE-DADOS.md` (IndexedDB), Core TS compartilhado, Engine de dados por plataforma | telas, estados e contrato com o core | `docs/especificacao/WEB.md` |
+| Fase 3 — Piloto | `ROADMAP.md`, `RNF-05`, Sentry no piloto, métricas do `PRD.md` | aviso LGPD, eventos do Sentry e roteiro de entrevista | `docs/especificacao/PILOTO.md` |
+| Fase 4 — Mobile | `ROADMAP.md`, Engine de dados por plataforma, Mobile com React Native (Expo), `MODELO-DE-DADOS.md` (SQLite) | telas, `expo-sqlite`, notificações e lojas | `docs/especificacao/MOBILE.md` |
+| Fase 5 — Desktop | `ROADMAP.md`, Engine de dados por plataforma, Desktop com Electron reaproveitando o web | empacotamento e smoke; as telas vêm do web | `docs/especificacao/DESKTOP.md` |
 
 A Fase 1 já tem spec própria (`CLI.md`, v5) e não muda aqui. As fases 2 a 5 passam a ter requisito escrito antes do código; implementar continua sendo dos tickets BOS-41 a BOS-45 e seguintes.
 
@@ -26,7 +26,7 @@ A Fase 1 já tem spec própria (`CLI.md`, v5) e não muda aqui. As fases 2 a 5 p
 | `docs/especificacao/DESKTOP.md` | 5 | Rascunho | v1 |
 | `docs/engenharia/PLANO-DE-TESTES.md` | 1–5 | Rascunho | v4 |
 
-Todos entram no índice e na ordem de leitura do `docs/README.md`. Nenhum ADR novo: as decisões de arquitetura das camadas já são ADR-001, ADR-003, ADR-006, ADR-007, ADR-008 e ADR-009. O ADR do scaffold do web continua sendo entregue pelo BOS-41.
+Todos entram no índice e na ordem de leitura do `docs/README.md`. Nenhum ADR novo: as decisões de arquitetura das camadas já são os ADRs Core TS compartilhado, Engine de dados por plataforma, Sentry no piloto, Ordem de construção com gates, Mobile com React Native (Expo) e Desktop com Electron reaproveitando o web. O ADR do scaffold do web continua sendo entregue pelo BOS-41.
 
 ## Reconciliação de BOS-41..BOS-45
 
@@ -39,9 +39,9 @@ Cada critério de aceite desses tickets cai numa de três classes:
 | Ticket | Critério | Classe | Fonte |
 | --- | --- | --- | --- |
 | BOS-41 | `apps/web` é membro do workspace e passa em `pnpm lint` e `pnpm typecheck` | implementação/deploy | — |
-| BOS-41 | A regra vem de `@study/core` pelo `src`, sem cópia e sem `dist/` | documentado | `WEB.md` — Contrato com o core; ADR-001, ADR-013 |
+| BOS-41 | A regra vem de `@study/core` pelo `src`, sem cópia e sem `dist/` | documentado | `WEB.md` — Contrato com o core; Core TS compartilhado, Scaffold do monorepo pnpm sem build |
 | BOS-41 | O `vitest.config.ts` ganha o projeto `web`, com Vitest e Testing Library | implementação/deploy | — |
-| BOS-41 | Um caso do web lê um vetor de `fixtures/golden` e o computa pelo core | documentado | `WEB.md` — Contrato com o core; `PLANO-DE-TESTES.md` — Estratégia; ADR-015 |
+| BOS-41 | Um caso do web lê um vetor de `fixtures/golden` e o computa pelo core | documentado | `WEB.md` — Contrato com o core; `PLANO-DE-TESTES.md` — Estratégia; Golden fixtures: formato e quem valida |
 | BOS-41 | O `PLANO-DE-TESTES.md` define os IDs dos casos do web | documentado | `PLANO-DE-TESTES.md` — Casos por camada (`W-01`..`W-14`) |
 | BOS-41 | ADR do scaffold do web aceito e indexado | implementação/deploy | — |
 | BOS-42 | Os quatro stores existem com os índices documentados | documentado | `MODELO-DE-DADOS.md` — IndexedDB; `WEB.md` — Contrato com o core |
@@ -58,8 +58,8 @@ Cada critério de aceite desses tickets cai numa de três classes:
 | BOS-43 | As strings em pt-BR ficam centralizadas em um único módulo | documentado | `REQUISITOS.md` — RNF-06; `WEB.md` — Convenções |
 | BOS-43 | Testes de Testing Library para adicionar, fila, check-in e arquivar | documentado | `PLANO-DE-TESTES.md` — Estratégia e Casos por camada |
 | BOS-44 | Export baixa um arquivo com `schema_version` e todos os dados, inclusive histórico e arquivo morto | documentado | `REQUISITOS.md` — RF-18; `MODELO-DE-DADOS.md` — Contrato JSON v1; `WEB.md` — Telas e fluxos |
-| BOS-44 | Import mescla por UUID e não duplica, provado por duas importações do mesmo arquivo | documentado | `REQUISITOS.md` — RF-19; ADR-022; `WEB.md` |
-| BOS-44 | O merge segue o `updated_at` | documentado | ADR-022; `MODELO-DE-DADOS.md` — Contrato JSON v1 |
+| BOS-44 | Import mescla por UUID e não duplica, provado por duas importações do mesmo arquivo | documentado | `REQUISITOS.md` — RF-19; Export/import do JSON v1; `WEB.md` |
+| BOS-44 | O merge segue o `updated_at` | documentado | Export/import do JSON v1; `MODELO-DE-DADOS.md` — Contrato JSON v1 |
 | BOS-44 | A interface confirma a operação e informa as contagens do que foi mesclado | documentado | `WEB.md` — Telas e fluxos |
 | BOS-44 | Um teste cruzado prova que o arquivo do web abre no import do CLI, e vice-versa | documentado | `WEB.md` — Critérios de aceite; `PLANO-DE-TESTES.md` — `W-09` |
 | BOS-44 | O export segue disponível mesmo com o banco corrompido, quando o arquivo existir | documentado | `REQUISITOS.md` — RNF-07; `WEB.md` — Estados |

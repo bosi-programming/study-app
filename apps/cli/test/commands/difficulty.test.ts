@@ -14,7 +14,7 @@ import {
   todayLocalDate,
 } from './helpers.ts'
 
-describe('AC9 — difficulty reavalia (RF-11, T-04, ADR-019)', () => {
+describe('AC9 — difficulty reavalia (RF-11, T-04)', () => {
   it('difficulty-reavalia: reusa o n e conta o vencimento novo de hoje', () => {
     withDb((dbPath) => {
       const today = todayLocalDate()
@@ -87,7 +87,7 @@ describe('AC9 — difficulty reavalia (RF-11, T-04, ADR-019)', () => {
     })
   })
 
-  it('difficulty-aceita-arquivado: item arquivado é reavaliado (ADR-019)', () => {
+  it('difficulty-aceita-arquivado: item arquivado é reavaliado', () => {
     withDb((dbPath) => {
       seed(dbPath, {
         items: [

@@ -317,7 +317,7 @@ describe('store meta and cold archive', () => {
     })
   })
 })
-describe('AC11 — a porta da fila (ADR-020)', () => {
+describe('AC11 — a porta da fila do dia', () => {
   it('store-dueItems-mantem-active: sem filtro, só active com due_date <= today, na ordem due_date, id', () => {
     withDb((dbPath) => {
       const store = openStore(dbPath)
