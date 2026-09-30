@@ -15,6 +15,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v6 |
 | `docs/especificacao/TUI.md` | Superfície interativa: telas, teclas, sessão e estados | Rascunho v1 |
 | `docs/especificacao/TUI-FRAMES.md` | Frames de referência das telas da TUI | Rascunho v1 |
+| `docs/especificacao/TUI-RENDER.md` | Contrato de entrada do renderizador puro e mapeamento de estado para frame | Rascunho v1 |
 | `docs/especificacao/CORE.md` | API do domínio: portas, item, regra de agendamento, erros | Rascunho v1 |
 | `docs/especificacao/WEB.md` | Telas, estados e contrato com o core do app web | Rascunho v1 |
 | `docs/especificacao/PILOTO.md` | Aviso LGPD, eventos do Sentry e roteiro de entrevista do piloto | Rascunho v1 |
@@ -35,12 +36,13 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 5. `docs/especificacao/CLI.md` — a interface da fase 1.
 6. `docs/especificacao/TUI.md` — a superfície interativa sobre o mesmo CLI.
 7. `docs/especificacao/TUI-FRAMES.md` — como as telas da TUI ficam desenhadas.
-8. `docs/especificacao/CORE.md` — como o domínio e a regra de agendamento funcionam por dentro.
-9. `docs/engenharia/INVENTARIO-DE-REQUISITOS.md` — onde faltam requisitos, por fase, e onde cada documento mora.
-10. `docs/especificacao/WEB.md` — a interface da fase 2.
-11. `docs/especificacao/PILOTO.md` — LGPD, eventos e entrevista da fase 3.
-12. `docs/especificacao/MOBILE.md` — o app Expo da fase 4.
-13. `docs/especificacao/DESKTOP.md` — o app Electron da fase 5.
-14. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
-15. `docs/engenharia/ROADMAP.md` — em que ordem construir.
-16. `docs/adr/README.md` — por que as escolhas técnicas foram feitas.
+8. `docs/especificacao/TUI-RENDER.md` — o contrato que o loop usa para desenhar a TUI.
+9. `docs/especificacao/CORE.md` — como o domínio e a regra de agendamento funcionam por dentro.
+10. `docs/engenharia/INVENTARIO-DE-REQUISITOS.md` — onde faltam requisitos, por fase, e onde cada documento mora.
+11. `docs/especificacao/WEB.md` — a interface da fase 2.
+12. `docs/especificacao/PILOTO.md` — LGPD, eventos e entrevista da fase 3.
+13. `docs/especificacao/MOBILE.md` — o app Expo da fase 4.
+14. `docs/especificacao/DESKTOP.md` — o app Electron da fase 5.
+15. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
+16. `docs/engenharia/ROADMAP.md` — em que ordem construir.
+17. `docs/adr/README.md` — por que as escolhas técnicas foram feitas.
