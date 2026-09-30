@@ -1,9 +1,8 @@
 import { resolveRef } from '@study/core'
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
-import { archiveItem } from '../coldArchive.ts'
 import { CliError } from '../errors.ts'
-import { archivedLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { archiveItem } from '../model/coldArchive.ts'
+import { toItemJson } from '../model/json.ts'
 import { type Command } from './types.ts'
 
 export const archiveCommand: Command = (args, ctx) => {
@@ -20,5 +19,8 @@ export const archiveCommand: Command = (args, ctx) => {
   const archived = archiveItem(item, ctx.deps.clock.nowUtc())
   ctx.store.saveItem(archived)
 
-  return { json: { action: 'archive', item: toItemJson(archived) }, human: archivedLine(archived) }
+  return {
+    json: { action: 'archive', item: toItemJson(archived) },
+    view: { kind: 'item-archived', item: archived },
+  }
 }

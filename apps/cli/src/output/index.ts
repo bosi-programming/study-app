@@ -1,18 +1,15 @@
 import { errorPayload } from '../errors.ts'
+import { envelope } from '../model/json.ts'
+import { type CommandResult } from '../model/results.ts'
 import { danger } from './color.ts'
-import { envelope } from './json.ts'
+import { render } from './render.ts'
 
 export type PrintOptions = {
   readonly json: boolean
 }
 
-export type PrintableResult = {
-  readonly json: unknown
-  readonly human: string
-}
-
-export function printSuccess(command: string, result: PrintableResult, options: PrintOptions): void {
-  const text = options.json ? JSON.stringify(envelope(command, result.json)) : result.human
+export function printSuccess(command: string, result: CommandResult, options: PrintOptions): void {
+  const text = options.json ? JSON.stringify(envelope(command, result.json)) : render(result.view)
   process.stdout.write(`${text}\n`)
 }
 

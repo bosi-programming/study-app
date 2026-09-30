@@ -1,8 +1,7 @@
 import { resolveRef } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { removedLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { toItemJson } from '../model/json.ts'
 import { type Command } from './types.ts'
 
 export const removeCommand: Command = (args, ctx) => {
@@ -14,5 +13,5 @@ export const removeCommand: Command = (args, ctx) => {
   const item = resolveRef(args.positionals[0] ?? '', ctx.store.listItems())
   ctx.store.transaction(() => ctx.store.deleteItem(item.id))
 
-  return { json: { removed: true, item: toItemJson(item) }, human: removedLine(item) }
+  return { json: { removed: true, item: toItemJson(item) }, view: { kind: 'item-removed', item } }
 }

@@ -7,6 +7,7 @@ import {
   isLate,
 } from '@study/core'
 import { localDateOf } from '../deps.ts'
+import { type StatsCounts } from '../model/results.ts'
 import {
   accent,
   accentStrong,
@@ -228,24 +229,6 @@ function numberCell(value: number, width: number): string {
   return String(value).padStart(width, ' ')
 }
 
-export type QueueSplit = {
-  readonly overdue: readonly Item[]
-  readonly dueToday: readonly Item[]
-}
-
-export function splitQueue(items: readonly Item[], today: string): QueueSplit {
-  return {
-    overdue: items.filter((item) => isLate(item, today)),
-    dueToday: items.filter((item) => !isLate(item, today)),
-  }
-}
-
-export function countBySubject(items: readonly Item[]): Record<string, number> {
-  const counts: Record<string, number> = {}
-  for (const item of items) counts[item.subject] = (counts[item.subject] ?? 0) + 1
-  return counts
-}
-
 export function dueQueue(
   overdue: readonly Item[],
   dueToday: readonly Item[],
@@ -289,12 +272,6 @@ function subjectCountsText(bySubject: Readonly<Record<string, number>>): string 
 
 export function dueTotals(overdueCount: number, todayCount: number): string {
   return muted(`${overdueCount} atrasados, ${todayCount} para hoje.`)
-}
-
-export type StatsCounts = {
-  readonly active: number
-  readonly archived: number
-  readonly cold: number
 }
 
 export function statsLines(

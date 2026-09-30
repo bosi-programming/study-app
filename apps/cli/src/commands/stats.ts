@@ -1,9 +1,9 @@
 import { type ReviewLog } from '@study/core'
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
 import { localDateOf } from '../deps.ts'
-import { type StatsCounts, statsLines } from '../output/human.ts'
+import { readQueueStreak } from '../model/queueStreak.ts'
+import { type StatsCounts } from '../model/results.ts'
 import { type ItemFilter, type Store } from '../persistence/index.ts'
-import { readQueueStreak } from '../queueStreak.ts'
 import { subjectFilter } from './filter.ts'
 import { type Command } from './types.ts'
 
@@ -29,7 +29,13 @@ export const statsCommand: Command = (args, ctx) => {
       checkins_today: checkins.today,
       checkins_by_subject: checkins.bySubject,
     },
-    human: statsLines(streak.streak_current, items, checkins.today, checkins.bySubject),
+    view: {
+      kind: 'stats',
+      currentStreak: streak.streak_current,
+      items,
+      checkinsToday: checkins.today,
+      bySubject: checkins.bySubject,
+    },
   }
 }
 

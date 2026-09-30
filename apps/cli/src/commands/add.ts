@@ -1,8 +1,7 @@
 import { createItem } from '@study/core'
 import { assertAllowedFlags, assertPositionals, requireValue, valueOf } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { createdLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { toItemJson } from '../model/json.ts'
 import { promptDifficulty } from '../prompt.ts'
 import { type Command, type CommandArgs } from './types.ts'
 import { type CommandContext } from '../context.ts'
@@ -23,7 +22,7 @@ export const addCommand: Command = (args, ctx) => {
   )
   ctx.store.saveItem(item)
 
-  return { json: { item: toItemJson(item) }, human: createdLine(item) }
+  return { json: { item: toItemJson(item) }, view: { kind: 'item-created', item } }
 }
 
 function resolveDifficulty(args: CommandArgs, ctx: CommandContext): number {

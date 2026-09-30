@@ -269,7 +269,7 @@ describe('S-17 ADR index', () => {
     expect(adr30.length).toBe(1)
     expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr30[0] ?? '')
     expect(readFileSync(resolve(adrDir, adr30[0] ?? ''), 'utf8')).toContain("status: 'aceito'")
-    expect(textAt('docs/README.md')).toContain('30 ADRs')
+    expect(textAt('docs/README.md')).toContain('31 ADRs')
   })
 
   it('scaffold-adr-029: o CLI declara --no-color e a paleta vive no color.ts', () => {

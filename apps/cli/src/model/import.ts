@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
-import { CliError } from './errors.ts'
-import { type ParsedDumpV1, parseDumpV1 } from './output/json.ts'
-import { type Store } from './persistence/index.ts'
+import { CliError } from '../errors.ts'
+import { type ParsedDumpV1, parseDumpV1 } from './json.ts'
+import { type Store } from '../persistence/index.ts'
 
 export type ImportCounts = {
   readonly items: number

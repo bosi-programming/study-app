@@ -1,7 +1,6 @@
 import { resolveRef } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
-import { historySection, itemBlock } from '../output/human.ts'
-import { toItemJson, toReviewLogJson } from '../output/json.ts'
+import { toItemJson, toReviewLogJson } from '../model/json.ts'
 import { type Command } from './types.ts'
 
 export const showCommand: Command = (args, ctx) => {
@@ -9,15 +8,18 @@ export const showCommand: Command = (args, ctx) => {
   assertPositionals(args, 1, 1, 'show')
 
   const item = resolveRef(args.positionals[0] ?? '', ctx.store.listItems())
+  const today = ctx.deps.clock.todayLocalDate()
 
-  const block = itemBlock(item, ctx.deps.clock.todayLocalDate())
   if (!hasFlag(args, 'history')) {
-    return { json: { item: toItemJson(item) }, human: block }
+    return {
+      json: { item: toItemJson(item) },
+      view: { kind: 'item-detail', item, today, history: null },
+    }
   }
 
   const logs = ctx.store.listReviewLogs(item.id)
   return {
     json: { item: toItemJson(item), history: logs.map(toReviewLogJson) },
-    human: `${block}\n\n${historySection(logs)}`,
+    view: { kind: 'item-detail', item, today, history: logs },
   }
 }

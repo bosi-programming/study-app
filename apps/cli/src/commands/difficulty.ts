@@ -1,7 +1,6 @@
 import { reevaluateDifficulty, resolveRef, toDifficulty } from '@study/core'
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
-import { nextDueLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { toItemJson } from '../model/json.ts'
 import { type Command } from './types.ts'
 
 export const difficultyCommand: Command = (args, ctx) => {
@@ -13,5 +12,5 @@ export const difficultyCommand: Command = (args, ctx) => {
   const reviewed = reevaluateDifficulty(item, value, ctx.deps)
   if (reviewed !== item) ctx.store.saveItem(reviewed)
 
-  return { json: { item: toItemJson(reviewed) }, human: nextDueLine(reviewed) }
+  return { json: { item: toItemJson(reviewed) }, view: { kind: 'item-reviewed', item: reviewed } }
 }

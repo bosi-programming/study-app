@@ -1,13 +1,13 @@
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { type Deps } from '@study/core'
-import { migrateColdArchive } from './coldArchive.ts'
-import { migrationFailedLine, migratedLine } from './output/human.ts'
-import { type Store, openStore } from './persistence/index.ts'
+import { type Deps, type Item } from '@study/core'
 import { systemDeps } from './deps.ts'
 import { CliError } from './errors.ts'
-import { rollQueueStreak } from './queueStreak.ts'
+import { migrateColdArchive } from './model/coldArchive.ts'
+import { rollQueueStreak } from './model/queueStreak.ts'
+import { checkinLine, migrationFailedLine, migratedLine } from './output/human.ts'
+import { type Store, openStore } from './persistence/index.ts'
 
 export type ContextHookTarget = {
   readonly store: Store
@@ -36,6 +36,10 @@ export type EntryHookOptions = {
   readonly skipStreakHook?: boolean
 }
 
+export type CommandEmitter = {
+  checkin(item: Item): void
+}
+
 export type CommandContext = {
   readonly dbPath: string
   readonly dbExisted: boolean
@@ -44,6 +48,7 @@ export type CommandContext = {
   readonly interactive: boolean
   readonly json: boolean
   readonly exportDir: string | null
+  readonly emit?: CommandEmitter
   close(): void
 }
 
@@ -146,6 +151,7 @@ export function withContext<T>(options: ContextOptions, run: (ctx: CommandContex
     json: options.json,
     exportDir: opened.exportDir,
     close: opened.close,
+    ...(options.json ? {} : { emit: createEmitter() }),
   }
 
   try {
@@ -164,6 +170,12 @@ export function withContext<T>(options: ContextOptions, run: (ctx: CommandContex
 function writeMigrationWarning(migrationLine: string | null): void {
   if (migrationLine === null) return
   process.stderr.write(`${migrationLine}\n`)
+}
+
+function createEmitter(): CommandEmitter {
+  return {
+    checkin: (item) => process.stdout.write(`${checkinLine(item)}\n`),
+  }
 }
 
 function openStoreOrCorrupt(dbPath: string, dbExisted: boolean): Store {

@@ -10,8 +10,7 @@ import {
 } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag, valueOf } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { updatedLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { toItemJson } from '../model/json.ts'
 import { type Command, type CommandArgs } from './types.ts'
 import { type CommandContext } from '../context.ts'
 
@@ -30,7 +29,7 @@ export const editCommand: Command = (args, ctx) => {
   const result = updatedItem(args, current, ctx)
   ctx.store.saveItem(result)
 
-  return { json: { item: toItemJson(result) }, human: updatedLine(result) }
+  return { json: { item: toItemJson(result) }, view: { kind: 'item-updated', item: result } }
 }
 
 function updatedItem(args: CommandArgs, current: Item, ctx: CommandContext): Item {

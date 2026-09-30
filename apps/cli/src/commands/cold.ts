@@ -1,9 +1,8 @@
 import { resolveRef } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag } from '../args.ts'
-import { purgeItem, restoreItem } from '../coldArchive.ts'
 import { CliError } from '../errors.ts'
-import { coldTable, purgedLine, restoredLine } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { purgeItem, restoreItem } from '../model/coldArchive.ts'
+import { toItemJson } from '../model/json.ts'
 import { type Command, type CommandArgs } from './types.ts'
 
 const NO_SUBCOMMAND = 'study cold exige um subcomando: list, restore ou purge'
@@ -23,7 +22,10 @@ const coldList: Command = (args, ctx) => {
   assertPositionals(args, 0, 0, 'cold list')
 
   const items = ctx.store.listItems({ status: 'cold' })
-  return { json: { action: 'list', items: items.map(toItemJson) }, human: coldTable(items) }
+  return {
+    json: { action: 'list', items: items.map(toItemJson) },
+    view: { kind: 'cold-items', items },
+  }
 }
 
 const coldRestore: Command = (args, ctx) => {
@@ -40,7 +42,10 @@ const coldRestore: Command = (args, ctx) => {
     ctx.store.deleteColdArchive(restored.id)
   })
 
-  return { json: { action: 'restore', item: toItemJson(restored) }, human: restoredLine(restored) }
+  return {
+    json: { action: 'restore', item: toItemJson(restored) },
+    view: { kind: 'item-restored', item: restored },
+  }
 }
 
 const coldPurge: Command = (args, ctx) => {
@@ -53,5 +58,5 @@ const coldPurge: Command = (args, ctx) => {
   if (item.status !== 'cold') throw CliError.invalidState(`item não está no arquivo morto: ${ref}`)
 
   purgeItem(ctx.store, item)
-  return { json: { action: 'purge', item: toItemJson(item) }, human: purgedLine(item) }
+  return { json: { action: 'purge', item: toItemJson(item) }, view: { kind: 'item-purged', item } }
 }
