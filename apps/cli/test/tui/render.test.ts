@@ -1,0 +1,402 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { type Item } from '@study/core'
+import { describe, expect, it } from 'vitest'
+import { type RenderState, render } from '../../src/tui/render/index.ts'
+import { makeItem, makeLog } from '../persistence/helpers.ts'
+
+const ESC = '\u001b['
+const ACCENT = `${ESC}38;2;232;161;59m`
+const TODAY = '2026-09-28'
+const RENDER_DIR = resolve(import.meta.dirname, '../../src/tui/render')
+
+const QUEUE: readonly Item[] = [
+  makeItem({ id: 'a1', title: 'Derivadas parciais', subject: 'Cálculo', difficulty: 4, review_count: 2, due_date: '2026-08-22' }),
+  makeItem({ id: 'a2', title: 'Árvores balanceadas AVL', subject: 'Estruturas de Dados', difficulty: 5, review_count: 0, due_date: '2026-09-07' }),
+  makeItem({ id: 'a3', title: 'Phrasal verbs', subject: 'Inglês', difficulty: 3, review_count: 1, due_date: '2026-09-14' }),
+  makeItem({ id: 'a4', title: 'Leis de Newton', subject: 'Física', difficulty: 2, review_count: 3, due_date: '2026-09-18' }),
+  makeItem({ id: 'a5', title: 'Revolução Industrial', subject: 'História', difficulty: 3, review_count: 2, due_date: '2026-09-22' }),
+  makeItem({ id: 'a6', title: 'Crase e regência verbal', subject: 'Português', difficulty: 2, review_count: 5, due_date: '2026-09-24' }),
+  makeItem({ id: 'a7', title: 'Ciclo de Krebs e fosforilação oxidativa', subject: 'Biologia', difficulty: 4, review_count: 4, due_date: '2026-09-27' }),
+  makeItem({ id: 'a8', title: 'Integrais por partes', subject: 'Cálculo', difficulty: 5, review_count: 1, due_date: '2026-09-25' }),
+  makeItem({ id: 'b1', title: 'Séries de Taylor', subject: 'Cálculo', difficulty: 4, review_count: 1, due_date: TODAY }),
+  makeItem({ id: 'b2', title: 'Estequiometria', subject: 'Química', difficulty: 3, review_count: 0, due_date: TODAY }),
+  makeItem({ id: 'b3', title: 'Grafos: caminho mínimo', subject: 'Estruturas de Dados', difficulty: 5, review_count: 2, due_date: TODAY }),
+  makeItem({ id: 'b4', title: 'Reported speech', subject: 'Inglês', difficulty: 2, review_count: 6, due_date: TODAY }),
+]
+
+const REFERENCE_FRAME = [
+  'Fila de hoje — 2026-09-28',
+  '────────────────────────────────────────────────────────────────────────────────────',
+  'Atrasados (8)',
+  '> 1.  [Cálculo]      Derivadas parciais         ! venceu 2026-08-22 (37d)    d4  n=2',
+  '  2.  [Estruturas …] Árvores balanceadas AVL    ! venceu 2026-09-07 (21d)    d5  n=0',
+  '  3.  [Inglês]       Phrasal verbs              ! venceu 2026-09-14 (14d)    d3  n=1',
+  '  4.  [Física]       Leis de Newton             ! venceu 2026-09-18 (10d)    d2  n=3',
+  '  5.  [História]     Revolução Industrial       ! venceu 2026-09-22 (6d)     d3  n=2',
+  '  6.  [Português]    Crase e regência verbal    ! venceu 2026-09-24 (4d)     d2  n=5',
+  '  7.  [Biologia]     Ciclo de Krebs e fosforila…! venceu 2026-09-27 (1d)     d4  n=4',
+  '  8.  [Cálculo]      Integrais por partes       ! venceu 2026-09-25 (3d)     d5  n=1',
+  '',
+  'Hoje (4)',
+  '  9.  [Cálculo]      Séries de Taylor           vence hoje                   d4  n=1',
+  '  10. [Química]      Estequiometria             vence hoje                   d3  n=0',
+  '  11. [Estruturas …] Grafos: caminho mínimo     vence hoje                   d5  n=2',
+  '  12. [Inglês]       Reported speech            vence hoje                   d2  n=6',
+  '────────────────────────────────────────────────────────────────────────────────────',
+  'Enter revisar · i detalhe · ? ajuda · q sair                8 atrasados, 4 para hoje',
+].join('\n')
+
+function state(overrides: Partial<RenderState> = {}): RenderState {
+  return {
+    today: TODAY,
+    screen: 'queue',
+    queue: QUEUE,
+    focusId: 'a1',
+    detail: null,
+    reevaluation: null,
+    confirmation: null,
+    streak: { streak_current: 4, streak_last_day: TODAY },
+    banner: null,
+    fatal: null,
+    viewport: { columns: 84, rows: 24 },
+    color: false,
+    utf8: true,
+    ...overrides,
+  }
+}
+
+function stripAnsi(text: string): string {
+  return text.replace(new RegExp(`${ESC}[0-9;]*m`, 'g'), '')
+}
+
+function linesOf(frame: string): string[] {
+  return frame.split('\n')
+}
+
+function visibleWidth(text: string): number {
+  return [...stripAnsi(text)].length
+}
+
+function isItemLine(line: string): boolean {
+  return /^[> ]{2}\s*\d+\./.test(line)
+}
+
+function numberOf(line: string): number {
+  return Number(/^[> ]{2}\s*(\d+)\./.exec(line)?.[1])
+}
+
+describe('AC1 — pureza', () => {
+  it('render-deterministico: o mesmo estado devolve a mesma string', () => {
+    expect(render(state())).toBe(render(state()))
+  })
+
+  it('render-sem-io: o fonte não toca em processo, relógio, ambiente nem no controller', () => {
+    const sources = readdirSync(RENDER_DIR)
+      .filter((name) => name.endsWith('.ts'))
+      .map((name) => readFileSync(resolve(RENDER_DIR, name), 'utf8'))
+      .join('\n')
+
+    expect(sources).not.toMatch(/process\./)
+    expect(sources).not.toMatch(/from 'node:/)
+    expect(sources).not.toMatch(/\bDate\b/)
+    expect(sources).not.toMatch(/colorEnabled/)
+    expect(sources).not.toMatch(/tui\/session/)
+  })
+})
+
+describe('AC2 — os frames', () => {
+  it('frame-fila: 84x24 desenha o retrato de referência', () => {
+    expect(render(state())).toBe(REFERENCE_FRAME)
+  })
+
+  it('frame-detalhe: a tela de detalhe desenha a caixa com campos e histórico', () => {
+    const frame = render(state({ screen: 'detail', detail: { item: QUEUE[6] as Item, history: [makeLog()] } }))
+
+    expect(frame).toContain('Detalhe')
+    expect(frame).toContain('Dificuldade')
+    expect(frame).toContain('Vencimento')
+    expect(frame).toContain('Histórico (1)')
+  })
+
+  it('frame-reavaliacao: a reavaliação desenha o corpo da fila e o rodapé de quatro linhas', () => {
+    const frame = render(state({
+      screen: 'reevaluate',
+      confirmation: 'Ciclo de Krebs e fosforilação oxidativa',
+      reevaluation: { item: QUEUE[6] as Item, currentDifficulty: 4 },
+    }))
+
+    expect(frame).toContain('Atrasados (8)')
+    expect(frame).toContain('✓ Check-in registrado: Ciclo de Krebs e fosforilação oxidativa')
+    expect(frame).toContain('Dificuldade atual: 4 — difícil')
+    expect(frame).toContain('1 trivial   2 fácil   3 médio   4 difícil   5 muito difícil')
+    expect(frame).toContain('Esc cancela · Enter mantém · 1–5 recalcula')
+  })
+
+  it('frame-ajuda: a ajuda desenha a caixa com os comandos de linha', () => {
+    const frame = render(state({ screen: 'help' }))
+
+    expect(frame).toContain('Ajuda')
+    expect(frame).toContain('Os comandos de linha fazem o resto: add, edit, archive, cold, stats.')
+    expect(frame).toContain('Esc · ? · q para fechar')
+  })
+
+  it.each(['↑ ↓  k j', 'PgUp PgDn', 'g  G', 'Enter', '1–5', 'i', 'Esc', '?', 'q', 'Ctrl-C'])(
+    'frame-ajuda: a tecla %s aparece',
+    (label) => {
+      expect(render(state({ screen: 'help' }))).toContain(label)
+    },
+  )
+
+  it('frame-vazia: fila vazia desenha o estado vazio explícito', () => {
+    const frame = render(state({ queue: [], focusId: null }))
+
+    expect(frame).toContain('Fila zerada')
+  })
+
+  it('frame-pequeno: abaixo de 60x15 só sai a mensagem de janela pequena', () => {
+    const small = 'Aumente a janela para pelo menos\n60 colunas e 15 linhas.'
+
+    expect(render(state({ viewport: { columns: 59, rows: 24 } }))).toBe(small)
+    expect(render(state({ viewport: { columns: 60, rows: 14 } }))).toBe(small)
+  })
+})
+
+describe('AC3 — a fila', () => {
+  it('fila-numeracao-continua: a numeração segue de Atrasados para Hoje', () => {
+    const frame = render(state())
+
+    expect(frame).toContain('> 1.  [Cálculo]')
+    expect(frame).toContain('  8.  [Cálculo]')
+    expect(frame).toContain('  9.  [Cálculo]')
+    expect(frame).toContain('  12. [Inglês]')
+  })
+
+  it('fila-rodape-totais: o rodapé traz a dica de teclas e os totais', () => {
+    const frame = render(state())
+
+    expect(frame).toContain('Enter revisar · i detalhe · ? ajuda · q sair')
+    expect(frame).toContain('8 atrasados, 4 para hoje')
+  })
+
+  it('fila-cabecalho-data: o cabeçalho traz a data do estado', () => {
+    expect(render(state())).toContain('Fila de hoje — 2026-09-28')
+  })
+
+  it('fila-so-uma-secao: só a seção com itens aparece e numera desde 1', () => {
+    const onlyToday = QUEUE.filter((item) => item.due_date === TODAY)
+    const frame = render(state({ queue: onlyToday, focusId: 'b1' }))
+
+    expect(frame).toContain('Hoje (4)')
+    expect(frame).not.toContain('Atrasados')
+    expect(frame).toContain('> 1.  [Cálculo]')
+  })
+
+  it('fila-marcador-foco: o > marca exatamente a linha em foco', () => {
+    const frame = render(state({ focusId: 'a5' }))
+    const marked = linesOf(frame).filter((line) => line.startsWith('> '))
+
+    expect(marked).toHaveLength(1)
+    expect(marked[0]).toContain('5.  [História]')
+  })
+})
+
+describe('AC4 — foco e largura', () => {
+  it('foco-mesma-largura: a linha em foco mede o mesmo que as demais', () => {
+    const focused = linesOf(render(state())).filter((line) => line.startsWith('> '))[0] as string
+    const other = linesOf(render(state())).filter(isItemLine)[1] as string
+
+    expect(visibleWidth(focused)).toBe(visibleWidth(other))
+  })
+
+  it('largura-linha: em 84 e em 60 toda linha cabe e as linhas de item medem columns', () => {
+    const wide = linesOf(render(state()))
+    const narrow = linesOf(render(state({ viewport: { columns: 60, rows: 24 } })))
+
+    const itemWidths = narrow.filter(isItemLine).map(visibleWidth)
+
+    expect(Math.max(...wide.map(visibleWidth))).toBeLessThanOrEqual(84)
+    expect(Math.max(...narrow.map(visibleWidth))).toBeLessThanOrEqual(60)
+    expect([Math.min(...itemWidths), Math.max(...itemWidths)]).toEqual([60, 60])
+  })
+
+  it('foco-primeiro-ultimo: o foco no primeiro e no último item continua na janela', () => {
+    const short = { columns: 84, rows: 15 }
+
+    expect(render(state({ focusId: 'a1', viewport: short }))).toContain('> 1.  [Cálculo]')
+    expect(render(state({ focusId: 'b4', viewport: short }))).toContain('> 12. [Inglês]')
+  })
+})
+
+describe('AC5 — truncamento', () => {
+  it('truncamento-materia: a matéria longa trunca dentro dos colchetes', () => {
+    expect(render(state())).toContain('[Estruturas …]')
+  })
+
+  it('truncamento-titulo: o título longo termina em reticências', () => {
+    expect(render(state())).toContain('Ciclo de Krebs e fosforila…')
+  })
+
+  it('truncamento-code-point: o corte não parte um code point', () => {
+    const emoji = makeItem({ id: 'c1', title: '👍'.repeat(40), subject: 'Cálculo', due_date: TODAY })
+    const frame = render(state({ queue: [emoji], focusId: 'c1' }))
+
+    expect(frame).toContain(`${'👍'.repeat(26)}…`)
+  })
+
+  it('sem-quebra: o título muito longo continua numa linha só', () => {
+    const long = makeItem({ id: 'c1', title: 'Ciclo de Krebs e fosforilação oxidativa', subject: 'Biologia', due_date: TODAY })
+    const frame = render(state({ queue: [long], focusId: 'c1' }))
+
+    expect(linesOf(frame).filter((line) => line.includes('Ciclo de Krebs'))).toHaveLength(1)
+  })
+})
+
+describe('AC6 — janela pequena', () => {
+  it('limite-60x15: 60x15 desenha; 59 colunas ou 14 linhas caem na mensagem', () => {
+    expect(render(state({ viewport: { columns: 60, rows: 15 } }))).toContain('Fila de hoje')
+    expect(render(state({ viewport: { columns: 59, rows: 15 } }))).not.toContain('Fila de hoje')
+    expect(render(state({ viewport: { columns: 60, rows: 14 } }))).not.toContain('Fila de hoje')
+  })
+})
+
+describe('AC7 — bordas', () => {
+  it('borda-utf8: a caixa usa os cantos e traços UTF-8', () => {
+    const frame = render(state({ screen: 'help' }))
+
+    expect(frame).toContain('╭─')
+    expect(frame).toContain('╮')
+    expect(frame).toContain('╰')
+    expect(frame).toContain('╯')
+    expect(frame).toContain('│')
+  })
+
+  it('borda-ascii: sem utf8 a caixa usa + - | com o mesmo texto', () => {
+    const frame = render(state({ screen: 'help', utf8: false }))
+
+    expect(frame).toContain('+- Ajuda')
+    expect(frame).toContain('| ↑ ↓  k j      mover o foco na fila')
+    expect(frame).not.toContain('╭')
+  })
+})
+
+describe('AC8 — cor', () => {
+  it('sem-cor-marcador: sem cor o atraso traz o marcador textual e nenhum escape', () => {
+    const frame = render(state({ color: false }))
+
+    expect(frame).toContain('! venceu 2026-08-22 (37d)')
+    expect(frame).not.toContain(ESC)
+  })
+
+  it('com-cor-paleta: com cor a paleta entra e o texto sem ANSI é igual ao sem cor', () => {
+    const colored = render(state({ color: true }))
+
+    expect(colored).toContain(ACCENT)
+    expect(stripAnsi(colored)).toBe(render(state({ color: false })))
+  })
+
+  it('cor-mesma-largura: com e sem cor as larguras batem depois de remover o ANSI', () => {
+    const colored = linesOf(render(state({ color: true }))).map(visibleWidth)
+    const plain = linesOf(render(state({ color: false }))).map(visibleWidth)
+
+    expect(colored).toEqual(plain)
+  })
+})
+
+describe('AC9 — contrato de estado', () => {
+  it('detalhe-campos: os campos e o histórico saem do estado', () => {
+    const item = makeItem({
+      id: 'd1',
+      title: 'Detalhe',
+      subject: 'Cálculo',
+      difficulty: 3,
+      interval_days: 12,
+      review_count: 2,
+      note: 'resumo do capítulo',
+      link: 'exemplo.com',
+      due_date: '2026-09-27',
+    })
+    const history = [makeLog({ review_count_after: 2, interval_after: 12, late: true })]
+    const frame = render(state({ screen: 'detail', detail: { item, history } }))
+
+    expect(frame).toContain('3 — médio')
+    expect(frame).toContain('12d')
+    expect(frame).toContain('resumo do capítulo')
+    expect(frame).toContain('exemplo.com')
+    expect(frame).toContain('n=2')
+    expect(frame).toContain('atrasado')
+  })
+
+  it('detalhe-sem-historico: sem histórico a seção mostra nenhum check-in', () => {
+    const frame = render(state({ screen: 'detail', detail: { item: QUEUE[6] as Item, history: [] } }))
+
+    expect(frame).toContain('Histórico (0)')
+    expect(frame).toContain('nenhum check-in')
+  })
+
+  it.each(['queue', 'detail', 'reevaluate', 'help'] as const)(
+    'fatal-vazio: com fatal a tela %s devolve string vazia',
+    (screen) => {
+      expect(render(state({ screen, fatal: 'banco corrompido' }))).toBe('')
+    },
+  )
+
+  it('banner-linha: o banner vira uma linha sem trocar de tela', () => {
+    const frame = render(state({ banner: 'aviso de escrita' }))
+
+    expect(linesOf(frame)[1]).toBe('aviso de escrita')
+    expect(frame).toContain('Fila de hoje')
+  })
+})
+
+describe('AC10 — rolagem', () => {
+  it('rolagem-indicadores: o recorte mostra os indicadores e o intervalo', () => {
+    const frame = render(state({ focusId: 'a8', viewport: { columns: 84, rows: 15 } }))
+
+    expect(frame).toContain('↑ 3 acima')
+    expect(frame).toContain('↓ 2 abaixo')
+    expect(frame).toContain('4–10 de 12')
+  })
+
+  it('rolagem-sem-recorte: tudo cabendo, não há indicador nem intervalo', () => {
+    const frame = render(state())
+
+    expect(frame).not.toContain('↑')
+    expect(frame).not.toContain('↓')
+    expect(frame).not.toContain(' de 12')
+  })
+
+  it.each(['a1', 'a2', 'a4', 'a8', 'b1', 'b4'])(
+    'rolagem-foco-visivel: o foco %s fica na janela quando ela recorta',
+    (focusId) => {
+      const frame = render(state({ focusId, viewport: { columns: 84, rows: 15 } }))
+
+      expect(linesOf(frame).filter((line) => line.startsWith('> '))).toHaveLength(1)
+    },
+  )
+
+  it('rolagem-contagem: o a–b de N bate com os itens visíveis', () => {
+    const frame = render(state({ focusId: 'a8', viewport: { columns: 84, rows: 15 } }))
+
+    expect(linesOf(frame).filter(isItemLine).map(numberOf)).toEqual([4, 5, 6, 7, 8, 9, 10])
+    expect(frame).toContain('4–10 de 12')
+  })
+})
+
+describe('AC11 — casos de borda', () => {
+  it.each([[0, '0 dias'], [1, '1 dia']])(
+    'streak-zero-e-um: streak de %i sai como %s',
+    (current, text) => {
+      const frame = render(state({ queue: [], focusId: null, streak: { streak_current: current, streak_last_day: TODAY } }))
+
+      expect(frame).toContain(`Fila zerada — streak de ${text}`)
+    },
+  )
+
+  it('vazia-teclas: a fila vazia só oferece ? e q', () => {
+    const frame = render(state({ queue: [], focusId: null }))
+
+    expect(frame).toContain('? ajuda · q sair')
+    expect(frame).not.toContain('Enter revisar')
+  })
+})
