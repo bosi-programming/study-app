@@ -263,6 +263,15 @@ describe('S-17 ADR index', () => {
     expect(rowFor('adr-026')).toContain('adr-027')
   })
 
+  it('scaffold-adr-030: o índice linka o ADR-030 e o arquivo fica aceito', () => {
+    const adr30 = readdirSync(adrDir).filter((name) => name.startsWith('adr-030'))
+
+    expect(adr30.length).toBe(1)
+    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr30[0] ?? '')
+    expect(readFileSync(resolve(adrDir, adr30[0] ?? ''), 'utf8')).toContain("status: 'aceito'")
+    expect(textAt('docs/README.md')).toContain('30 ADRs')
+  })
+
   it('scaffold-adr-029: o CLI declara --no-color e a paleta vive no color.ts', () => {
     const adr29 = readdirSync(adrDir).filter((name) => name.startsWith('adr-029'))
 
