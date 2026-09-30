@@ -47,6 +47,23 @@ const REFERENCE_FRAME = [
   'Enter revisar · i detalhe · ? ajuda · q sair                8 atrasados, 4 para hoje',
 ].join('\n')
 
+const NARROW_FRAME = [
+  'Fila de hoje — 2026-09-28',
+  '────────────────────────────────────────────────────────────',
+  'Atrasados (8)',
+  '> 1.  [Cálculo] Derivadas p…! venceu 2026-08-22 (37… d4  n=2',
+  '  2.  [Estrut…] Árvores bal…! venceu 2026-09-07 (21… d5  n=0',
+  '  3.  [Inglês]  Phrasal ver…! venceu 2026-09-14 (14… d3  n=1',
+  '  4.  [Física]  Leis de New…! venceu 2026-09-18 (10… d2  n=3',
+  '  5.  [História]Revolução I…! venceu 2026-09-22 (6d) d3  n=2',
+  '  6.  [Portug…] Crase e reg…! venceu 2026-09-24 (4d) d2  n=5',
+  '  7.  [Biologia]Ciclo de Kr…! venceu 2026-09-27 (1d) d4  n=4',
+  '  8.  [Cálculo] Integrais p…! venceu 2026-09-25 (3d) d5  n=1',
+  '↓ 4 abaixo',
+  '────────────────────────────────────────────────────────────',
+  'Enter revisar · i detalhe · ? ajuda · q sair 8 atrasados, 4…',
+].join('\n')
+
 function state(overrides: Partial<RenderState> = {}): RenderState {
   return {
     today: TODAY,
@@ -86,6 +103,10 @@ function numberOf(line: string): number {
   return Number(/^[> ]{2}\s*(\d+)\./.exec(line)?.[1])
 }
 
+function withoutBoxChars(line: string): string {
+  return line.replace(/[╭╮╰╯─│|+-]/g, ' ')
+}
+
 describe('AC1 — pureza', () => {
   it('render-deterministico: o mesmo estado devolve a mesma string', () => {
     expect(render(state())).toBe(render(state()))
@@ -108,6 +129,10 @@ describe('AC1 — pureza', () => {
 describe('AC2 — os frames', () => {
   it('frame-fila: 84x24 desenha o retrato de referência', () => {
     expect(render(state())).toBe(REFERENCE_FRAME)
+  })
+
+  it('frame-fila-60x15: a fronteira mínima também tem retrato de referência', () => {
+    expect(render(state({ viewport: { columns: 60, rows: 15 } }))).toBe(NARROW_FRAME)
   })
 
   it('frame-detalhe: a tela de detalhe desenha a caixa com campos e histórico', () => {
@@ -273,10 +298,12 @@ describe('AC7 — bordas', () => {
 
   it('borda-ascii: sem utf8 a caixa usa + - | com o mesmo texto', () => {
     const frame = render(state({ screen: 'help', utf8: false }))
+    const utf8Frame = render(state({ screen: 'help' }))
 
     expect(frame).toContain('+- Ajuda')
     expect(frame).toContain('| ↑ ↓  k j      mover o foco na fila')
     expect(frame).not.toContain('╭')
+    expect(linesOf(frame).map(withoutBoxChars)).toEqual(linesOf(utf8Frame).map(withoutBoxChars))
   })
 })
 
@@ -323,8 +350,28 @@ describe('AC9 — contrato de estado', () => {
     expect(frame).toContain('12d')
     expect(frame).toContain('resumo do capítulo')
     expect(frame).toContain('exemplo.com')
+    expect(frame).toContain('active')
     expect(frame).toContain('n=2')
     expect(frame).toContain('atrasado')
+  })
+
+  it('detalhe-corte-por-altura: o histórico excedente é cortado pela altura', () => {
+    const history = [
+      makeLog({ reviewed_at: '2026-09-01T10:00:00Z', review_count_after: 1 }),
+      makeLog({ reviewed_at: '2026-09-02T10:00:00Z', review_count_after: 2 }),
+      makeLog({ reviewed_at: '2026-09-03T10:00:00Z', review_count_after: 3 }),
+      makeLog({ reviewed_at: '2026-09-04T10:00:00Z', review_count_after: 4 }),
+      makeLog({ reviewed_at: '2026-09-05T10:00:00Z', review_count_after: 5 }),
+    ]
+    const frame = render(state({
+      screen: 'detail',
+      detail: { item: QUEUE[6] as Item, history },
+      viewport: { columns: 84, rows: 15 },
+    }))
+
+    expect(linesOf(frame)).toHaveLength(15)
+    expect(frame).toContain('Histórico (5)')
+    expect(frame).not.toContain('2026-09-05')
   })
 
   it('detalhe-sem-historico: sem histórico a seção mostra nenhum check-in', () => {
@@ -347,6 +394,18 @@ describe('AC9 — contrato de estado', () => {
     expect(linesOf(frame)[1]).toBe('aviso de escrita')
     expect(frame).toContain('Fila de hoje')
   })
+
+  it('banner-linha-caixa: o banner entra na caixa sem trocar de tela', () => {
+    const frame = render(state({
+      screen: 'detail',
+      banner: 'aviso de escrita',
+      detail: { item: QUEUE[6] as Item, history: [] },
+    }))
+
+    expect(linesOf(frame)[1]).toContain('aviso de escrita')
+    expect(linesOf(frame)).toHaveLength(24)
+    expect(linesOf(frame)[23]).toContain('╰')
+  })
 })
 
 describe('AC10 — rolagem', () => {
@@ -366,7 +425,7 @@ describe('AC10 — rolagem', () => {
     expect(frame).not.toContain(' de 12')
   })
 
-  it.each(['a1', 'a2', 'a4', 'a8', 'b1', 'b4'])(
+  it.each(['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'b1', 'b2', 'b3', 'b4'])(
     'rolagem-foco-visivel: o foco %s fica na janela quando ela recorta',
     (focusId) => {
       const frame = render(state({ focusId, viewport: { columns: 84, rows: 15 } }))
