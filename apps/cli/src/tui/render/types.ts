@@ -1,5 +1,10 @@
 import type { Difficulty, Item, QueueStreak, ReviewLog } from '@study/core'
 
+export type StyledText = {
+  readonly plain: string
+  readonly painted: string
+}
+
 export type RenderViewport = {
   readonly columns: number
   readonly rows: number
@@ -31,4 +36,50 @@ export type RenderState = {
   readonly viewport: RenderViewport
   readonly color: boolean
   readonly utf8: boolean
+}
+
+export type FrameWidths = {
+  readonly subject: number
+  readonly title: number
+  readonly due: number
+}
+
+export type QueueRow =
+  | { readonly kind: 'item'; readonly number: number; readonly item: Item; readonly line: string }
+  | { readonly kind: 'other'; readonly line: string }
+
+export type QueueWindow = {
+  readonly visible: readonly QueueRow[]
+  readonly from: number | null
+  readonly to: number | null
+  readonly above: number
+  readonly below: number
+  readonly clipped: boolean
+}
+
+export type ScrollBars = {
+  readonly above: readonly string[]
+  readonly below: readonly string[]
+}
+
+export type QueuePartition = {
+  readonly overdue: readonly Item[]
+  readonly today: readonly Item[]
+}
+
+export type BoxChars = {
+  readonly tl: string
+  readonly tr: string
+  readonly bl: string
+  readonly br: string
+  readonly h: string
+  readonly v: string
+}
+
+export type BoxOptions = {
+  readonly columns: number
+  readonly rows: number
+  readonly utf8: boolean
+  readonly color: boolean
+  readonly banner: string | null
 }

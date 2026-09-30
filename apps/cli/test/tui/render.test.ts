@@ -166,12 +166,20 @@ describe('AC2 — os frames', () => {
     expect(frame).toContain('Esc · ? · q para fechar')
   })
 
-  it.each(['↑ ↓  k j', 'PgUp PgDn', 'g  G', 'Enter', '1–5', 'i', 'Esc', '?', 'q', 'Ctrl-C'])(
-    'frame-ajuda: a tecla %s aparece',
-    (label) => {
-      expect(render(state({ screen: 'help' }))).toContain(label)
-    },
-  )
+  it.each([
+    ['↑ ↓  k j', 'mover o foco na fila'],
+    ['PgUp PgDn', 'rolar uma página'],
+    ['g  G', 'primeiro e último item'],
+    ['Enter', 'check-in do item em foco'],
+    ['1–5', 'reavaliar a dificuldade'],
+    ['i', 'abrir o detalhe'],
+    ['Esc', 'fechar painel ou cancelar'],
+    ['?', 'esta ajuda'],
+    ['q', 'sair'],
+    ['Ctrl-C', 'sair com 130'],
+  ])('frame-ajuda: a linha de %s está na ajuda', (label, description) => {
+    expect(render(state({ screen: 'help' }))).toContain(`│ ${label.padEnd(14)}${description}`)
+  })
 
   it('frame-vazia: fila vazia desenha o estado vazio explícito', () => {
     const frame = render(state({ queue: [], focusId: null }))
@@ -251,6 +259,22 @@ describe('AC4 — foco e largura', () => {
     expect(render(state({ focusId: 'a1', viewport: short }))).toContain('> 1.  [Cálculo]')
     expect(render(state({ focusId: 'b4', viewport: short }))).toContain('> 12. [Inglês]')
   })
+
+  it('largura-caixa: as caixas de detalhe e ajuda medem columns em 84 e em 60', () => {
+    const detail = { item: QUEUE[6] as Item, history: [] }
+
+    for (const columns of [84, 60]) {
+      const frames = [
+        render(state({ screen: 'detail', detail, viewport: { columns, rows: 24 } })),
+        render(state({ screen: 'help', viewport: { columns, rows: 24 } })),
+      ]
+      for (const frame of frames) {
+        const lines = linesOf(frame)
+        expect(Math.max(...lines.map(visibleWidth))).toBeLessThanOrEqual(columns)
+        expect(visibleWidth(lines[0] as string)).toBe(columns)
+      }
+    }
+  })
 })
 
 describe('AC5 — truncamento', () => {
@@ -282,6 +306,16 @@ describe('AC6 — janela pequena', () => {
     expect(render(state({ viewport: { columns: 60, rows: 15 } }))).toContain('Fila de hoje')
     expect(render(state({ viewport: { columns: 59, rows: 15 } }))).not.toContain('Fila de hoje')
     expect(render(state({ viewport: { columns: 60, rows: 14 } }))).not.toContain('Fila de hoje')
+  })
+
+  it('janela-minima-truncada: abaixo da mensagem as duas linhas truncam com …', () => {
+    const lines = linesOf(render(state({ viewport: { columns: 20, rows: 24 } })))
+
+    expect(lines).toHaveLength(2)
+    for (const line of lines) {
+      expect(visibleWidth(line)).toBeLessThanOrEqual(20)
+      expect(line).toContain('…')
+    }
   })
 })
 
@@ -315,11 +349,14 @@ describe('AC8 — cor', () => {
     expect(frame).not.toContain(ESC)
   })
 
-  it('com-cor-paleta: com cor a paleta entra e o texto sem ANSI é igual ao sem cor', () => {
-    const colored = render(state({ color: true }))
+  it('com-cor-paleta: com cor a paleta entra e o marcador textual sai', () => {
+    const colored = stripAnsi(render(state({ color: true })))
+    const plain = render(state({ color: false }))
 
-    expect(colored).toContain(ACCENT)
-    expect(stripAnsi(colored)).toBe(render(state({ color: false })))
+    expect(render(state({ color: true }))).toContain(ACCENT)
+    expect(colored).toContain('venceu 2026-08-22 (37d)')
+    expect(colored).not.toContain('! venceu')
+    expect(plain).toContain('! venceu 2026-08-22 (37d)')
   })
 
   it('cor-mesma-largura: com e sem cor as larguras batem depois de remover o ANSI', () => {
