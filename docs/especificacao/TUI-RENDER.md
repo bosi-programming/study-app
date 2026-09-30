@@ -82,7 +82,7 @@ Em 84 colunas dá 15/27/28, igual ao `TUI-FRAMES.md`; em 60 dá 10/12/24. Matér
 ## Cor e bordas
 
 - `output/color.ts` expõe `paint(hex, texto, enabled, bold)` e as constantes da paleta; as funções `muted`, `dim`, `heading`, `accent`, `accentStrong`, `success`, `successStrong` e `danger` seguem existindo para os comandos de linha, agora sobre `paint`.
-- Sem cor não há escape: o atraso mantém `! venceu <data> (<n>d)`, o texto e as posições não mudam e as larguras batem com o frame colorido.
+- Sem cor não há escape e o atraso ganha `!` no lugar do âmbar (`! venceu <data> (<n>d)`); com cor fica só o âmbar. A geometria, as posições e as larguras batem com o frame colorido, e o texto difere só pelo `! `.
 - Bordas com `utf8`: `╭ ╮ ╰ ╯ ─ │`. Sem `utf8`: `+ - |`. O texto não muda.
 
 ## Como usar
