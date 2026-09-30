@@ -20,6 +20,7 @@ function sourceFiles(dir: string): string[] {
 function zoneOf(path: string): Zone {
   const rel = relative(SRC, path)
   if (rel.startsWith('commands/') || rel.startsWith('tui/session/')) return 'controller'
+  if (rel.startsWith('tui/render/')) return 'view'
   if (rel.startsWith('output/')) return 'view'
   if (rel.startsWith('persistence/') || rel.startsWith('model/')) return 'model'
   return 'root'
@@ -86,6 +87,21 @@ describe('AC3 — a direção dos imports das camadas', () => {
       .map(rel)
 
     expect(offenders).toEqual([])
+  })
+
+  it('render-sem-controller: tui/render é view e não importa controller', () => {
+    const renderDir = resolve(SRC, 'tui/render')
+    const offenders = sourceFiles(renderDir)
+      .flatMap((file) =>
+        specifiersOf(file).flatMap((specifier) => {
+          const target = targetOf(file, specifier)
+          if (target === null || zoneOf(target) !== 'controller') return []
+          return [`${rel(file)} -> ${specifier}`]
+        }),
+      )
+
+    expect(offenders).toEqual([])
+    expect(zoneOf(resolve(renderDir, 'index.ts'))).toBe('view')
   })
 })
 

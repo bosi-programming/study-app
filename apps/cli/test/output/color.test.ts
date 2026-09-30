@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveColorEnabled } from '../../src/output/color.ts'
+import { ACCENT_HEX, SUCCESS_HEX, paint, resolveColorEnabled } from '../../src/output/color.ts'
 import { rebasedDate, runStudy, seed, todayLocalDate } from '../commands/helpers.ts'
 import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
@@ -110,5 +110,16 @@ describe('cor — a saída humana do bin', () => {
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain('--no-color')
+  })
+})
+
+describe('cor — o paint puro', () => {
+  it('paint-puro: desligado devolve o texto e ligado embrulha em truecolor', () => {
+    expect(paint(ACCENT_HEX, 'texto', false)).toBe('texto')
+    expect(paint(ACCENT_HEX, '', true)).toBe('')
+    expect(paint(ACCENT_HEX, 'texto', true)).toBe(`${ESC}38;2;232;161;59mtexto${RESET}`)
+    expect(paint(SUCCESS_HEX, 'texto', true, true)).toBe(
+      `${ESC}1m${ESC}38;2;100;200;137mtexto${RESET}`,
+    )
   })
 })
