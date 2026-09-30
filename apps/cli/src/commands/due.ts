@@ -1,6 +1,6 @@
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
-import { countBySubject, dueQueue, splitQueue } from '../output/human.ts'
-import { toQueueItemJson } from '../output/json.ts'
+import { toQueueItemJson } from '../model/json.ts'
+import { countBySubject, splitQueue } from '../model/queue.ts'
 import { itemFilter } from './filter.ts'
 import { type Command } from './types.ts'
 
@@ -20,6 +20,6 @@ export const dueCommand: Command = (args, ctx) => {
       today: dueToday.map((item) => toQueueItemJson(item, today)),
       by_subject: bySubject,
     },
-    human: dueQueue(overdue, dueToday, today, bySubject),
+    view: { kind: 'queue', overdue, dueToday, today, bySubject },
   }
 }

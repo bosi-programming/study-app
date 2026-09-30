@@ -1,13 +1,14 @@
 ---
-numero: 31
+numero: 32
 titulo: 'Scaffold do apps/web: React + Vite, core pelo src e MVC por feature'
 data: '2026-09-30'
 status: 'aceito'
 ---
 
-# ADR-031 — Scaffold do apps/web: React + Vite, core pelo src e MVC por feature
+# ADR-032 — Scaffold do apps/web: React + Vite, core pelo src e MVC por feature
 
 - Contexto: a fase 2 do `ROADMAP.md` abre com o scaffold do `apps/web`, sobre o mesmo `packages/core` do CLI ([ADR-001](adr-001-core-ts-compartilhado-por-cli-web-mobile-e-desktop.md)). O risco declarado da fase é o web virar uma reescrita da regra de agendamento; o scaffold existe para ligar a superfície ao core único antes de qualquer tela (BOS-42..BOS-45).
+- Contexto: o [ADR-031](adr-031-mvc-no-cli.md) fixou o MVC com camadas explícitas no `apps/cli` e declarou que as fases seguintes — web, mobile e desktop — herdam aquele mapa; este ADR aplica o mapa ao web, com uma MVC pequena por feature.
 - Contexto: o [ADR-013](adr-013-scaffold-do-monorepo-pnpm-sem-build.md) fixou o monorepo pnpm sem build: `@study/core` e `@study/golden` exportam `./src/index.ts` e são consumidos direto do `src`. O `apps/cli` já consome o core pelo symlink do workspace. Faltavam o mapa de camadas do web e a ligação da suíte do web ao `vitest.config.ts`.
 - Decisão: `apps/web` entra como quarto membro do workspace (`@study/web`, `private: true`, `type: module`, `engines.node >= 24`), sobre React 19 e Vite 8, com `react`/`react-dom` como únicas dependências de runtime. Nada é publicado: sem `bin`, sem `files` e sem `publishConfig`.
 - Decisão: a regra vem de `@study/core` pelo nome do pacote, em devDependency `workspace:*` (como no CLI), resolvido pelo symlink do workspace. Sem alias de path, sem pré-build e sem `dist/`: o Vite compila o TS do `src` (ADR-013). `@study/golden` entra do mesmo jeito, só para os testes lerem os vetores.

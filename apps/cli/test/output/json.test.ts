@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CliError } from '../../src/errors.ts'
-import { coldArchivePayload } from '../../src/coldArchive.ts'
-import { CURRENT_SCHEMA_VERSION, migrateDump, type MigrationTable } from '../../src/output/migrations.ts'
+import { coldArchivePayload } from '../../src/model/coldArchive.ts'
+import { CURRENT_SCHEMA_VERSION, migrateDump, type MigrationTable } from '../../src/model/migrations.ts'
 import {
   fromColdArchiveJson,
   fromItemJson,
@@ -9,7 +9,7 @@ import {
   parseDumpV1,
   toItemJson,
   toReviewLogJson,
-} from '../../src/output/json.ts'
+} from '../../src/model/json.ts'
 import { makeItem, makeLog } from '../persistence/helpers.ts'
 
 const FILE_PATH = '/tmp/backup.json'

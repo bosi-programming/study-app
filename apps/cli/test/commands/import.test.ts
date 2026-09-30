@@ -4,7 +4,7 @@ import { type Item, type ReviewLog, addDays } from '@study/core'
 import { describe, expect, it } from 'vitest'
 import { makeItem, makeLog } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
-import { toItemJson, toReviewLogJson } from '../../src/output/json.ts'
+import { toItemJson, toReviewLogJson } from '../../src/model/json.ts'
 import {
   errorOf,
   jsonOf,

@@ -36,7 +36,8 @@ Cada decisão vive em um arquivo próprio. Número, título, data e status vêm 
 | [ADR-028](adr-028-nome-publicado-do-cli-sob-o-escopo-bosi-programming.md) | Nome publicado do CLI sob o escopo `@bosi-programming` | aceito |
 | [ADR-029](adr-029-cores-da-saida-humana-do-cli.md) | Cores da saída humana do CLI: paleta truecolor com detecção de terminal | aceito |
 | [ADR-030](adr-030-porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md) | Porta de abertura do contexto e a sessão longa da TUI: limite de ação e contrato de estado | aceito |
-| [ADR-031](adr-031-scaffold-do-apps-web-react-vite-e-mvc-por-feature.md) | Scaffold do `apps/web`: React + Vite, core pelo `src` e MVC por feature | aceito |
+| [ADR-031](adr-031-mvc-no-cli.md) | MVC no CLI: camadas explícitas e o controller que devolve view-model | aceito |
+| [ADR-032](adr-032-scaffold-do-apps-web-react-vite-e-mvc-por-feature.md) | Scaffold do `apps/web`: React + Vite, core pelo `src` e MVC por feature | aceito |
 
 ## Supersessão
 

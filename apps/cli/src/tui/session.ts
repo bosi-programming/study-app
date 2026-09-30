@@ -15,7 +15,7 @@ import {
 } from '../context.ts'
 import { systemDeps } from '../deps.ts'
 import { type Store } from '../persistence/index.ts'
-import { readQueueStreak, rollQueueStreak } from '../queueStreak.ts'
+import { readQueueStreak, rollQueueStreak } from '../model/queueStreak.ts'
 
 export type SessionScreen = 'queue' | 'detail' | 'reevaluate' | 'help'
 

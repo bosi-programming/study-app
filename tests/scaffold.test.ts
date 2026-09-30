@@ -279,7 +279,7 @@ describe('S-17 ADR index', () => {
     expect(adr30.length).toBe(1)
     expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr30[0] ?? '')
     expect(readFileSync(resolve(adrDir, adr30[0] ?? ''), 'utf8')).toContain("status: 'aceito'")
-    expect(textAt('docs/README.md')).toContain('31 ADRs')
+    expect(textAt('docs/README.md')).toContain('32 ADRs')
   })
 
   it('scaffold-adr-029: o CLI declara --no-color e a paleta vive no color.ts', () => {
@@ -1084,7 +1084,7 @@ describe('S-37 web-vitest-project', () => {
 describe('S-40 web-adr', () => {
   it('registra o scaffold do web num ADR aceito e indexado', () => {
     const adrDir = resolve(root, 'docs/adr')
-    const files = readdirSync(adrDir).filter((name) => name.startsWith('adr-031'))
+    const files = readdirSync(adrDir).filter((name) => name.startsWith('adr-032'))
 
     expect(files).toHaveLength(1)
     expect(textAt('docs/adr/README.md')).toContain(files[0] ?? '')
@@ -1097,7 +1097,7 @@ describe('S-41 web-doc-counters', () => {
     const count = readdirSync(resolve(root, 'docs/adr')).filter((name) => name !== 'README.md')
       .length
 
-    expect(count).toBe(31)
+    expect(count).toBe(32)
     expect(textAt('docs/README.md')).toContain(`${count} ADRs`)
   })
 

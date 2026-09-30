@@ -1,7 +1,6 @@
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { itemTable } from '../output/human.ts'
-import { toItemJson } from '../output/json.ts'
+import { toItemJson } from '../model/json.ts'
 import { itemFilter } from './filter.ts'
 import { type Command } from './types.ts'
 
@@ -15,6 +14,6 @@ export const findCommand: Command = (args, ctx) => {
   const items = ctx.store.findItems(term, itemFilter(args))
   return {
     json: { items: items.map(toItemJson) },
-    human: itemTable(items, ctx.deps.clock.todayLocalDate()),
+    view: { kind: 'items', items, today: ctx.deps.clock.todayLocalDate() },
   }
 }

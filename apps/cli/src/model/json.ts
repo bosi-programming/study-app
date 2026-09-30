@@ -1,5 +1,5 @@
 import { type Deps, type Difficulty, type Item, type ItemStatus, type ReviewLog, daysLate, toDifficulty } from '@study/core'
-import { readColdArchiveWindow } from '../config.ts'
+import { readColdArchiveWindow } from './config.ts'
 import { CliError } from '../errors.ts'
 import { type ColdArchiveEntry, type Store } from '../persistence/index.ts'
 import { CURRENT_SCHEMA_VERSION, migrateDump } from './migrations.ts'
