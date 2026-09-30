@@ -4,8 +4,8 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
-- App em `apps/web`: React com Vite, TypeScript estrito, consumindo `@study/core` direto do `src`, sem cópia da regra e sem `dist/` (ADR-001, ADR-013).
-- Persistência em IndexedDB, no contrato do `MODELO-DE-DADOS.md` (ADR-003). Nenhum fluxo depende de rede (RNF-01) e não há conta, login nem telemetria fora do piloto (RNF-02).
+- App em `apps/web`: React com Vite, TypeScript estrito, consumindo `@study/core` direto do `src`, sem cópia da regra e sem `dist/` (Core TS compartilhado, Scaffold do monorepo pnpm sem build).
+- Persistência em IndexedDB, no contrato do `MODELO-DE-DADOS.md` (Engine de dados por plataforma). Nenhum fluxo depende de rede (RNF-01) e não há conta, login nem telemetria fora do piloto (RNF-02).
 - Idioma pt-BR na V1; nenhuma string de UI fora do módulo único de strings (RNF-06).
 - Datas de vencimento são datas locais (`YYYY-MM-DD`); timestamps UTC ficam só no dado persistido.
 - Uma tela por rota, navegação por hash; estados e comportamento de cada tela seguem o molde deste documento.
@@ -78,7 +78,7 @@ Toda tela sem `RF-nn` (config, estados de erro, confirmações) segue as regras 
 ### Export e import (RF-18..RF-20)
 
 - Export baixa um único JSON v1 com ativos, arquivados, arquivo morto e histórico, com `schema_version` (RF-18, RNF-04).
-- Import lê um JSON v1 e mescla por UUID: item existente é mesclado pelo `updated_at` mais recente, nunca duplicado (RF-19, ADR-022).
+- Import lê um JSON v1 e mescla por UUID: item existente é mesclado pelo `updated_at` mais recente, nunca duplicado (RF-19, Export/import do JSON v1).
 - Ao terminar, a interface confirma a operação e mostra as contagens do que foi mesclado.
 - O export automático dispara a cada migração para o arquivo morto e fica disponível mesmo com o banco corrompido, quando o arquivo existir (RF-20, RNF-07).
 - O arquivo exportado pelo web abre no import do CLI, e o do CLI abre no import do web.
@@ -111,13 +111,13 @@ Toda tela sem `RF-nn` (config, estados de erro, confirmações) segue as regras 
 
 ## Contrato com o core
 
-- Regra, tipos e erros vêm do barrel `@study/core`; o web não reimplementa `RN-nn` (ADR-001).
+- Regra, tipos e erros vêm do barrel `@study/core`; o web não reimplementa `RN-nn` (Core TS compartilhado).
 - Funções usadas pela UI: `createItem`, `recordReview`, `reevaluateDifficulty`, `resolveRef`, `hasDueItems` e `advanceQueueStreak`.
 - Tempo e ids são injetados por `deps` (`clock.nowUtc`, `clock.todayLocalDate`, `ids`); a UI nunca lê relógio direto.
 - `resolveRef` é usado nas telas que aceitam referência por título; ambiguidade nunca é resolvida pela UI (RN-15).
 - Os erros do core chegam como `CoreError` com `kind` discriminante e são traduzidos na seção `## Erros`.
 
-O store do web é uma porta com a mesma forma da porta do CLI (ADR-016), sobre os quatro stores de `MODELO-DE-DADOS.md`:
+O store do web é uma porta com a mesma forma da porta do CLI (Camada de persistência do CLI), sobre os quatro stores de `MODELO-DE-DADOS.md`:
 
 | Store IndexedDB | Chave | Índices | Operação na porta |
 | --- | --- | --- | --- |

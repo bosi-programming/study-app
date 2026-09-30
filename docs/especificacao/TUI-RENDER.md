@@ -6,8 +6,8 @@ O `TUI.md` descreve as telas e a `TUI-FRAMES.md` mostra os retratos. Este docume
 
 ## Onde mora
 
-- `apps/cli/src/tui/render/`, pasta-módulo pelo ADR-032 (o `render.ts` único passou do limite). A boca pública é `render(state)` e os tipos, reexportados pelo `index.ts`.
-- O desenho é puro: não importa `tui/session/**`, `process`, `node:*`, nem lê relógio ou ambiente. Importa só `@study/core` e `output/color.ts` (ADR-031: `tui/render/` é view).
+- `apps/cli/src/tui/render/`, pasta-módulo pela convenção de módulo do CLI (pasta com `index.ts` e uma função por arquivo; o `render.ts` único passou do limite). A boca pública é `render(state)` e os tipos, reexportados pelo `index.ts`.
+- O desenho é puro: não importa `tui/session/**`, `process`, `node:*`, nem lê relógio ou ambiente. Importa só `@study/core` e `output/color.ts` (MVC no CLI: `tui/render/` é view).
 - `render` é total: mesmo estado devolve a mesma string, com `\n` entre as linhas e sem `\n` no fim. Quem escreve no terminal numa única chamada é o loop.
 
 ## Contrato de entrada — `RenderState`
@@ -25,7 +25,7 @@ O `TUI.md` descreve as telas e a `TUI-FRAMES.md` mostra os retratos. Este docume
 | `banner` | `string \| null` | aviso não fatal; vira uma linha do frame |
 | `fatal` | `string \| null` | erro fatal; `render` devolve string vazia |
 | `viewport` | `RenderViewport` | `columns` e `rows` do terminal |
-| `color` | `boolean` | liga a paleta do ADR-029 |
+| `color` | `boolean` | liga a paleta de cores da saída humana do CLI |
 | `utf8` | `boolean` | escolhe as bordas UTF-8 ou a queda ASCII |
 
 Tipos de apoio:
@@ -106,4 +106,4 @@ O loop monta o `RenderState`, chama `render` e escreve a string numa única cham
 
 - `docs/especificacao/TUI.md` — telas, teclas, fluxos e regras de renderização.
 - `docs/especificacao/TUI-FRAMES.md` — retratos de referência.
-- ADR-029 (paleta), ADR-031 (camadas e direção de import) e ADR-032 (pasta-módulo).
+- Cores da saída humana do CLI (paleta), MVC no CLI (camadas e direção de import) e Convenção de módulo: pasta com `index.ts` e uma função por arquivo.

@@ -70,7 +70,7 @@ function withFreshStore<T>(dbPath: string, run: (store: Store) => T): T {
   }
 }
 
-describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, T-03, T-05, ADR-011)', () => {
+describe('AC4 — check-in e log na mesma transação (RF-08, RF-13, T-03, T-05)', () => {
   it('review-registra-checkin: o vetor T-20 rebaseado, dois check-ins no mesmo dia', () => {
     withDb((dbPath) => {
       const fixture = fixtureOf('checkin', 'checkin-antecipado-e-dois-no-mesmo-dia')
@@ -315,7 +315,7 @@ function comparableFields(item: ItemJson): Record<string, unknown> {
   }
 }
 
-describe('AC7 — ordem, aborto e não-terminal (ADR-011, CLI.md)', () => {
+describe('AC7 — ordem, aborto e não-terminal (CLI.md)', () => {
   it('review-checkin-antes-do-prompt: o check-in já está commitado quando o prompt falha', () => {
     withDb((dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'a', difficulty: 4, due_date: todayLocalDate() })] })

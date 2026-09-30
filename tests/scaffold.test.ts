@@ -218,75 +218,63 @@ describe('S-15 no native sqlite dependency', () => {
   })
 })
 
-describe('S-17 ADR index', () => {
+describe('S-17 ADR naming', () => {
   const adrDir = resolve(root, 'docs/adr')
 
-  it('links every ADR file from the index and resolves every link', () => {
-    const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
+  it('nomeia cada ADR pelo assunto, sem número', () => {
+    const files = readdirSync(adrDir)
     expect(files.length).toBeGreaterThan(0)
 
-    const links = [
-      ...readFileSync(resolve(adrDir, 'README.md'), 'utf8').matchAll(/\]\(([^)]+)\)/g),
-    ]
-      .map((match) => match[1] ?? '')
-      .filter((link) => !/^[a-z]+:/i.test(link))
-
     for (const file of files) {
-      expect(links).toContain(file)
-    }
-    for (const link of links) {
-      expect(existsSync(resolve(adrDir, link))).toBe(true)
+      expect(file, file).toMatch(/^[a-z0-9-]+\.md$/)
+      expect(file, file).not.toMatch(/^adr-/)
     }
   })
 
-  it('scaffold-adr-027: o índice linka o ADR-027 e o ADR-026 fica superado', () => {
-    const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
-    const adr27 = files.filter((name) => name.startsWith('adr-027'))
-    const adr26Name = files.find((name) => name.startsWith('adr-026')) ?? ''
-
-    expect(adr27.length).toBe(1)
-    expect(adr26Name).not.toBe('')
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr27[0] ?? '')
-    expect(readFileSync(resolve(adrDir, adr26Name), 'utf8')).toContain("status: 'superado'")
+  it('guarda titulo, data e status no frontmatter, sem numero', () => {
+    for (const file of readdirSync(adrDir)) {
+      const source = readFileSync(resolve(adrDir, file), 'utf8')
+      expect(source, file).toMatch(/^titulo: /m)
+      expect(source, file).toMatch(/^data: /m)
+      expect(source, file).toMatch(/^status: /m)
+      expect(source, file).not.toMatch(/^numero:/m)
+    }
   })
 
-  it('scaffold-adr-028: o índice linka o ADR-028 e o ADR-027 fica parcialmente superado', () => {
-    const files = readdirSync(adrDir).filter((name) => name !== 'README.md')
-    const adr28 = files.filter((name) => name.startsWith('adr-028'))
-    const adr27Name = files.find((name) => name.startsWith('adr-027')) ?? ''
+  it('não cita ADR por número no próprio texto', () => {
+    for (const file of readdirSync(adrDir)) {
+      expect(readFileSync(resolve(adrDir, file), 'utf8'), file).not.toMatch(/ADR-\d{3}/)
+    }
+  })
 
-    expect(adr28.length).toBe(1)
-    expect(adr27Name).not.toBe('')
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr28[0] ?? '')
-    expect(readFileSync(resolve(adrDir, adr27Name), 'utf8')).toContain(
-      "status: 'superado-parcialmente'",
+  it('scaffold-adr-supersessao: o symlink fica superado e a distribuição, parcialmente', () => {
+    const superseded = readFileSync(resolve(adrDir, 'instalacao-local-do-cli-symlink-do-shim-no-path.md'), 'utf8')
+    const partial = readFileSync(resolve(adrDir, 'distribuicao-npm-global-do-cli-e-artefato-js.md'), 'utf8')
+    const renamed = readFileSync(resolve(adrDir, 'nome-publicado-do-cli-sob-o-escopo-bosi-programming.md'), 'utf8')
+
+    expect(superseded).toContain("status: 'superado'")
+    expect(partial).toContain("status: 'superado-parcialmente'")
+    expect(renamed).toContain("status: 'aceito'")
+  })
+
+  it('scaffold-adr-pnpm-sem-build: o sem build fica superado em parte', () => {
+    const source = readFileSync(resolve(adrDir, 'scaffold-do-monorepo-pnpm-sem-build.md'), 'utf8')
+
+    expect(source).toContain("status: 'superado-parcialmente'")
+  })
+
+  it('scaffold-adr-mvc: o MVC no CLI e a sessão longa da TUI ficam aceitos', () => {
+    const mvc = readFileSync(resolve(adrDir, 'mvc-no-cli.md'), 'utf8')
+    const session = readFileSync(
+      resolve(adrDir, 'porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md'),
+      'utf8',
     )
+
+    expect(mvc).toContain("status: 'aceito'")
+    expect(session).toContain("status: 'aceito'")
   })
 
-  it('adr-supersessao: o índice liga o ADR-013 e o ADR-026 ao ADR-027', () => {
-    const section =
-      readFileSync(resolve(adrDir, 'README.md'), 'utf8').split('## Supersessão')[1] ?? ''
-    const rows = section.split('\n').filter((line) => line.startsWith('|') && line.includes('adr-'))
-    const rowFor = (name: string) => rows.find((line) => line.includes(name)) ?? ''
-
-    expect(rowFor('adr-013')).toContain('adr-027')
-    expect(rowFor('adr-026')).toContain('adr-027')
-  })
-
-  it('scaffold-adr-030: o índice linka o ADR-030 e o arquivo fica aceito', () => {
-    const adr30 = readdirSync(adrDir).filter((name) => name.startsWith('adr-030'))
-
-    expect(adr30.length).toBe(1)
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr30[0] ?? '')
-    expect(readFileSync(resolve(adrDir, adr30[0] ?? ''), 'utf8')).toContain("status: 'aceito'")
-    expect(textAt('docs/README.md')).toContain('32 ADRs')
-  })
-
-  it('scaffold-adr-029: o CLI declara --no-color e a paleta vive no color.ts', () => {
-    const adr29 = readdirSync(adrDir).filter((name) => name.startsWith('adr-029'))
-
-    expect(adr29.length).toBe(1)
-    expect(readFileSync(resolve(adrDir, 'README.md'), 'utf8')).toContain(adr29[0] ?? '')
+  it('scaffold-adr-paleta: o CLI declara --no-color e a paleta vive no color.ts', () => {
     expect(textAt('apps/cli/src/output/color.ts')).toContain('E8A13B')
     expect(textAt('apps/cli/src/args.ts')).toContain("name: 'no-color'")
     expect(textAt('docs/especificacao/CLI.md')).toContain('`--no-color`')
@@ -742,13 +730,13 @@ describe('S-22 lint gate', () => {
     expect(textAt('AGENTS.md')).toContain('pnpm lint')
   })
 
-  it('indexes ADR-017 and keeps the ADR count in sync', () => {
-    const adrDir = resolve(root, 'docs/adr')
-    const adr17 = readdirSync(adrDir).filter((name) => name.startsWith('adr-017'))
-    expect(adr17.length).toBe(1)
-    expect(textAt('docs/adr/README.md')).toContain(adr17[0] ?? '')
-    const count = readdirSync(adrDir).filter((name) => name !== 'README.md').length
-    expect(textAt('docs/README.md')).toContain(`${count} ADRs`)
+  it('registra o gate de lint no ADR de CI', () => {
+    const source = readFileSync(
+      resolve(root, 'docs/adr/ci-com-lint-typecheck-e-testes-nas-prs-para-main.md'),
+      'utf8',
+    )
+
+    expect(source).toContain("status: 'aceito'")
   })
 })
 
@@ -909,7 +897,7 @@ describe('S-32 inventario-reconciliacao', () => {
 
   it('mantém desktop herdando as telas do web', () => {
     const desktop = textAt('docs/especificacao/DESKTOP.md')
-    expect(desktop).toContain('ADR-009')
+    expect(desktop).toContain('Desktop com Electron reaproveitando o web')
     expect(desktop).toMatch(/herda[^\n]*telas? do web/i)
   })
 
@@ -1082,25 +1070,18 @@ describe('S-37 web-vitest-project', () => {
 })
 
 describe('S-40 web-adr', () => {
-  it('registra o scaffold do web num ADR aceito e indexado', () => {
-    const adrDir = resolve(root, 'docs/adr')
-    const files = readdirSync(adrDir).filter((name) => name.startsWith('adr-032'))
+  it('registra o scaffold do web num ADR aceito e nomeado pelo assunto', () => {
+    const source = readFileSync(
+      resolve(root, 'docs/adr/scaffold-do-apps-web-react-vite-e-mvc-por-feature.md'),
+      'utf8',
+    )
 
-    expect(files).toHaveLength(1)
-    expect(textAt('docs/adr/README.md')).toContain(files[0] ?? '')
-    expect(readFileSync(resolve(adrDir, files[0] ?? ''), 'utf8')).toContain("status: 'aceito'")
+    expect(source).toContain("status: 'aceito'")
+    expect(source).toContain('apps/web')
   })
 })
 
-describe('S-41 web-doc-counters', () => {
-  it('mantém a contagem de ADRs do docs/README em sincronia com os arquivos', () => {
-    const count = readdirSync(resolve(root, 'docs/adr')).filter((name) => name !== 'README.md')
-      .length
-
-    expect(count).toBe(32)
-    expect(textAt('docs/README.md')).toContain(`${count} ADRs`)
-  })
-
+describe('S-41 web-docs', () => {
   it('lista apps/web no README com 4 pacotes e 5 projetos', () => {
     const readme = textAt('README.md')
 

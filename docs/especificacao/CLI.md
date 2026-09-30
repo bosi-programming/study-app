@@ -11,7 +11,7 @@ Versão: 6 | Data: 2026-09-28 | Base: `docs/especificacao/REQUISITOS.md`
   - Windows: `%APPDATA%\study-app\study.db`
 - Sobrescrita por `--db <path>` ou variável `STUDY_DB`; diretórios-pai são criados quando faltarem.
 - Saída humana por padrão; `--json` para script e testes de snapshot.
-- Cor na saída humana é decoração: o texto sem os escapes é o mesmo. A paleta (ADR-029) liga só quando o stdout é um terminal; desligam `--json`, `--no-color` e `NO_COLOR`, liga `FORCE_COLOR`, e `TERM=dumb` desliga.
+- Cor na saída humana é decoração: o texto sem os escapes é o mesmo. A paleta (Cores da saída humana do CLI) liga só quando o stdout é um terminal; desligam `--json`, `--no-color` e `NO_COLOR`, liga `FORCE_COLOR`, e `TERM=dumb` desliga.
 - Prompts vão para o stderr; resultado vai para o stdout.
 - Comandos destrutivos exigem a flag de confirmação: `--yes` em `remove`, `cold purge`, `init --reset` e `export` (esse só quando o arquivo de destino já existe).
 
@@ -107,7 +107,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 - A conta é estritamente maior e em data local: migra quem tem `daysBetween(dataLocalDe(archived_at), hoje) > janela`. Item `archived` com `archived_at` nulo não migra.
 - A migração mantém a linha em `items` com `status = 'cold'` e `cold_archived_at`, e grava um snapshot `{item, review_logs}` em `cold_archive`.
 - Cada migração dispara o export automático para `<data-dir>/exports/cold-archive-<YYYY-MM-DD>.json`, sobrescrevível por `--export-dir`.
-- O export é escrito **antes** da migração: ele é o backup do estado anterior (ADR-005). O item migrado aparece no arquivo ainda como `archived`, e o snapshot novo de `cold_archive` entra no export da execução seguinte. Duas migrações no mesmo dia sobrescrevem o arquivo com o dump completo, sem merge.
+- O export é escrito **antes** da migração: ele é o backup do estado anterior (Arquivo morto em 180 dias). O item migrado aparece no arquivo ainda como `archived`, e o snapshot novo de `cold_archive` entra no export da execução seguinte. Duas migrações no mesmo dia sobrescrevem o arquivo com o dump completo, sem merge.
 - Se o export falhar, nada migra; o aviso vai para o stderr e o comando em execução segue com a saída normal.
 - A migração não bloqueia nem altera a saída do comando em execução.
 - O aviso sai também quando o comando em execução falha, já que a migração já aconteceu. Com `--json` o stderr do erro continua sendo só `{"error":{...}}`, então o aviso é omitido nesse caso, para não quebrar o parse do erro.
@@ -122,16 +122,16 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 - Round-trip: exportar, importar num banco vazio e exportar de novo produz o mesmo conteúdo. A única chave que difere é `exported_at`, que é o relógio de cada execução (T-09).
 - O import é aditivo, não espelho: item ou check-in que só existe no banco local nunca é apagado, e reimportar o mesmo arquivo não escreve nada — o `written: 0` do envelope é a prova da idempotência.
 - O conflito de id é resolvido pelo `updated_at` mais novo, comparado por instante: empate ou local mais novo não toca no banco, e um `ReviewLog` (evento imutável, sem `updated_at`) nunca é sobrescrito.
-- As regras de `schema_version` — igual ou menor aceito pela escada de migrações, futuro recusado com exit 2 — estão em `docs/especificacao/MODELO-DE-DADOS.md`; as isenções dos dois comandos no gancho e no portão do contexto, em `## Arquivo morto` e no ADR-022.
+- As regras de `schema_version` — igual ou menor aceito pela escada de migrações, futuro recusado com exit 2 — estão em `docs/especificacao/MODELO-DE-DADOS.md`; as isenções dos dois comandos no gancho e no portão do contexto, em `## Arquivo morto` e no ADR Export/import do JSON v1.
 
 ## Streak de fila zerada
 
 - O streak é recalculado no início de todo comando que abre o banco, depois da migração do arquivo morto, e de novo no fim, quando a ação termina bem: o primeiro carimbo faz `stats` imprimir o valor de hoje (RF-21) e o segundo faz uma ação que mudou a fila marcar o dia em que aconteceu (RN-14).
-- `export`, `import` e `init` ficam fora do gancho — o primeiro não escreve (RNF-07), o segundo grava o `meta` do arquivo e o gancho o sobrescreveria (ADR-022), e o terceiro fecha e substitui o banco no meio do comando; o banco que sai do `init` carimba no primeiro comando seguinte.
+- `export`, `import` e `init` ficam fora do gancho — o primeiro não escreve (RNF-07), o segundo grava o `meta` do arquivo e o gancho o sobrescreveria (Export/import do JSON v1), e o terceiro fecha e substitui o banco no meio do comando; o banco que sai do `init` carimba no primeiro comando seguinte.
 - O cálculo é o do core (`advanceQueueStreak`/`hasDueItems`, `CORE.md`) e o resultado são as duas chaves de `meta` (`streak_current`/`streak_last_day`) que o export leva e o import devolve.
 - Banco novo ou vazio com a fila vazia carimba 1, não 0 (CA-16); um dia que abriu com item devido carimba 0 e não se recupera no mesmo dia.
 - O streak é global: `-s` recorta as contagens e os check-ins de `stats`, não a consistência.
-- As decisões por trás do gancho — por que antes e depois do comando, e por que o streak não acompanha o `-s` — estão no ADR-023, com as alternativas rejeitadas.
+- As decisões por trás do gancho — por que antes e depois do comando, e por que o streak não acompanha o `-s` — estão no ADR Gancho do streak de fila zerada, com as alternativas rejeitadas.
 
 ## Contrato `--json`
 
@@ -216,7 +216,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 
 ## Saídas esperadas
 
-Os blocos abaixo mostram o texto sem os escapes de cor; a decoração segue a paleta do ADR-029.
+Os blocos abaixo mostram o texto sem os escapes de cor; a decoração segue a paleta do ADR Cores da saída humana do CLI.
 
 ### `study due`
 
@@ -303,8 +303,8 @@ O `code` é o valor estável por onde o consumidor de `schema_version: 1` ramifi
 
 ## Notas de implementação
 
-- Engine: `node:sqlite` (built-in no Node 24) — ADR-014. `foreign_keys = ON`, `journal_mode = WAL` e `busy_timeout = 5000`; o schema canônico aplica verbatim (`pnpm sqlite:probe`).
-- Largura fixa na V1 e paleta do ADR-029 na saída humana: âmbar `#E8A13B` para atraso, verde `#64C889` para hoje e check-in, cinza `#909BA6` para rótulos, cinza-escuro `#5F6977` para metadados e vermelho `#E06C75` para erro. A cor nunca entra no `--json`.
+- Engine: `node:sqlite` (built-in no Node 24) — Engine SQLite do CLI. `foreign_keys = ON`, `journal_mode = WAL` e `busy_timeout = 5000`; o schema canônico aplica verbatim (`pnpm sqlite:probe`).
+- Largura fixa na V1 e paleta do ADR Cores da saída humana do CLI na saída humana: âmbar `#E8A13B` para atraso, verde `#64C889` para hoje e check-in, cinza `#909BA6` para rótulos, cinza-escuro `#5F6977` para metadados e vermelho `#E06C75` para erro. A cor nunca entra no `--json`.
 - `--json` é o contrato usado pelos testes de snapshot do CLI.
 - A resolução por título usa `title_key` (normalizado) e o índice `idx_items_title`.
 - O parser lê todo token iniciado por `-` como flag, então um valor negativo precisa vir depois de `--`: `study config set cold_archive_after_days -- -1` sai 2, enquanto o `-1` cru vira flag desconhecida e sai 1. O `--` precisa ser o último token; uma flag depois dele vira posicional, o comando perde o argumento e sai 1 por aridade.

@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest'
 
 const SRC = resolve(import.meta.dirname, '../src')
 const ADR_DIR = resolve(import.meta.dirname, '../../../docs/adr')
-const DOCS_README = resolve(import.meta.dirname, '../../../docs/README.md')
 
 type Zone = 'controller' | 'view' | 'model' | 'root'
 
@@ -107,14 +106,9 @@ describe('AC3 — a direção dos imports das camadas', () => {
 })
 
 describe('AC6 — o ADR da arquitetura MVC', () => {
-  it('arch-adr-031-aceito-e-indexado: existe, está aceito, linkado e contado', () => {
-    const adr31 = readdirSync(ADR_DIR).filter((name) => name.startsWith('adr-031'))
-    const index = readFileSync(resolve(ADR_DIR, 'README.md'), 'utf8')
-    const count = readdirSync(ADR_DIR).filter((name) => name !== 'README.md').length
+  it('arch-adr-mvc-no-cli-aceito: existe e está aceito', () => {
+    const adr = readFileSync(resolve(ADR_DIR, 'mvc-no-cli.md'), 'utf8')
 
-    expect(adr31).toHaveLength(1)
-    expect(index).toContain(adr31[0] ?? '')
-    expect(readFileSync(resolve(ADR_DIR, adr31[0] ?? ''), 'utf8')).toContain("status: 'aceito'")
-    expect(readFileSync(DOCS_README, 'utf8')).toContain(`${count} ADRs`)
+    expect(adr).toContain("status: 'aceito'")
   })
 })

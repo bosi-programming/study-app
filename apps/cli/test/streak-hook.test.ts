@@ -151,7 +151,7 @@ describe('AC3 — o gancho roda depois do comando (RN-14, CA-16)', () => {
   })
 })
 
-describe('AC4 — as isenções (ADR-022)', () => {
+describe('AC4 — as isenções do export/import', () => {
   it('gancho-isento-export: export não toca o streak do banco', () => {
     withDb((dbPath) => {
       seedStreak(dbPath, 4, '2026-09-12')

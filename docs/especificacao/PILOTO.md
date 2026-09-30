@@ -5,7 +5,7 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/engenharia/ROADMAP.md`
 ## Convenções
 
 - Piloto web com 3 a 5 estudantes, por 2+ semanas, sobre o app da Fase 2 (`ROADMAP.md`, `PRD.md`).
-- Dados ficam no navegador do piloto; só eventos anônimos saem para o Sentry (RNF-05, ADR-006).
+- Dados ficam no navegador do piloto; só eventos anônimos saem para o Sentry (RNF-05, Sentry no piloto).
 - Sem conta, sem login e sem telemetria fora dos eventos listados (RNF-02).
 - A meta é retenção, não volume: >= 50% dos pilotos ativos na 2ª semana e >= 5 itens criados na 1ª semana (`PRD.md`).
 - O piloto não muda a regra de agendamento nem o contrato de dados.
@@ -34,7 +34,7 @@ O app guarda os seus dados de estudo apenas neste navegador: título, matéria, 
 - Regra: nunca enviar título, matéria, nota, link nem id em nenhum evento; nenhum campo é PII.
 - Os eventos são anônimos e agregados: nenhum identifica uma pessoa, e não há `user` no Sentry.
 - Erro de nível `error` e `fatal` vira exceção; `warning` e abaixo não sai do dispositivo.
-- O Sentry é ligado só no piloto (ADR-006); fora dele, nenhum evento é enviado.
+- O Sentry é ligado só no piloto (Sentry no piloto); fora dele, nenhum evento é enviado.
 
 ## Roteiro de entrevista semanal
 
