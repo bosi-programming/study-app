@@ -19,7 +19,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v3 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
-| `docs/adr/README.md` | ADRs numerados com contexto e consequências | 29 ADRs |
+| `docs/adr/README.md` | ADRs numerados com contexto e consequências | 30 ADRs |
 
 ## Ordem de leitura
 
