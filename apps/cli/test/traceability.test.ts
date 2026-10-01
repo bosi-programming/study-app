@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest'
 const PLAN_DOC = resolve(import.meta.dirname, '../../../docs/engenharia/PLANO-DE-TESTES.md')
 const TEST_ROOT = import.meta.dirname
 const SWEEP_FILE = resolve(import.meta.dirname, 'traceability.test.ts')
+const TUI_SUITE_HEADING = '### Suíte da TUI (U-01..U-13)'
+const TUI_TEST_ROOT = resolve(import.meta.dirname, 'tui')
 
 type PlanCase = {
   readonly id: string
@@ -43,6 +45,17 @@ function planCases(): PlanCase[] {
     })
 }
 
+function tuiPlanCases(): PlanCase[] {
+  return sectionOf(readPlan(), TUI_SUITE_HEADING)
+    .split('\n')
+    .filter((line) => /^\| U-\d{2} \|/.test(line))
+    .map((line) => {
+      const cells = cellsOf(line)
+      const caseName = cells[1] ?? ''
+      return { id: cells[0] ?? '', caseName, manual: caseName.includes('(manual)') }
+    })
+}
+
 function cliRequirementRange(): string[] {
   const row = sectionOf(readPlan(), '## Estratégia')
     .split('\n')
@@ -60,7 +73,7 @@ function cliRequirementRange(): string[] {
   )
 }
 
-function spawningTestFiles(): TestFile[] {
+function walkTestFiles(root: string): TestFile[] {
   const files: TestFile[] = []
   const walk = (dir: string): void => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -70,14 +83,21 @@ function spawningTestFiles(): TestFile[] {
         continue
       }
       if (!entry.name.endsWith('.test.ts')) continue
-      if (path === SWEEP_FILE) continue
-      const text = readFileSync(path, 'utf8')
-      if (!text.includes('runStudy(')) continue
-      files.push({ path, text })
+      files.push({ path, text: readFileSync(path, 'utf8') })
     }
   }
-  walk(TEST_ROOT)
+  walk(root)
   return files
+}
+
+function spawningTestFiles(): TestFile[] {
+  return walkTestFiles(TEST_ROOT).filter(
+    (file) => file.path !== SWEEP_FILE && file.text.includes('runStudy('),
+  )
+}
+
+function tuiTestFiles(): TestFile[] {
+  return walkTestFiles(TUI_TEST_ROOT)
 }
 
 function hasToken(text: string, token: string): boolean {
@@ -123,6 +143,33 @@ describe('S-24 os fluxos RF pelo binário', () => {
         (file) => hasToken(file.text, requirement) && file.text.includes('--json'),
       )
       expect(found, `${requirement} sem token num arquivo que exercita --json`).toBe(true)
+    }
+  })
+})
+
+describe('rastreabilidade U-nn do CLI', () => {
+  const cases = tuiPlanCases()
+  const files = tuiTestFiles()
+
+  it('plan-u-nn-forma: a subseção tem 13 ids contíguos, únicos, e marca só o U-13 como manual', () => {
+    const ids = cases.map((entry) => entry.id)
+    const expected = Array.from(
+      { length: 13 },
+      (_, index) => `U-${String(index + 1).padStart(2, '0')}`,
+    )
+
+    expect(ids).toEqual(expected)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(cases.filter((entry) => entry.manual).map((entry) => entry.id)).toEqual(['U-13'])
+  })
+
+  it('plan-u-nn-vinculo: todo U-nn não manual tem token num arquivo de apps/cli/test/tui', () => {
+    const required = cases.filter((entry) => !entry.manual)
+    expect(required).toHaveLength(12)
+
+    for (const entry of required) {
+      const found = files.some((file) => hasToken(file.text, entry.id))
+      expect(found, `${entry.id} (${entry.caseName}) sem token em apps/cli/test/tui`).toBe(true)
     }
   })
 })

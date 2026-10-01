@@ -60,8 +60,9 @@ study tui [--db <path>] [--no-color]
 
 - Laço provado sem PTY: `apps/cli/test/tui/loop.test.ts` injeta um terminal com roteiro de eventos (chunks de teclas e resize) e captura os frames e o desfecho; `apps/cli/test/tui/refusal.test.ts` cobre o predicado puro.
 - Adaptador de terminal provado sem PTY: `apps/cli/test/tui/terminal.test.ts` injeta streams e um emissor de sinais falsos e cobre a abertura (raw mode, tela alternativa e cursor), `SIGTERM`/`SIGHUP`, a idempotência do `close()` e o `withTerminal` no sucesso e na falha; `apps/cli/test/architecture.test.ts` pina o ADR da superfície e a fronteira de `process.`.
-- O PTY real segue verificação manual (`T-26`): exercitado no bin construído (a fila desenha, `j`/`i` respondem, `q` sai 0).
-- Fora desta unidade: a suíte `U-nn` e o spawn sem TTY (BOS-55).
+- A suíte `U-nn` está registrada no `docs/engenharia/PLANO-DE-TESTES.md` (subseção `### Suíte da TUI (U-01..U-13)`) e a varredura de `apps/cli/test/traceability.test.ts` exige o token de cada caso em `apps/cli/test/tui/**/*.test.ts`; o ADR [Rastreabilidade U-nn da TUI por token literal](../adr/rastreabilidade-u-nn-da-tui.md) registra a extensão do molde.
+- O spawn sem TTY ganha `apps/cli/test/tui/spawn.test.ts` (`U-11`/`U-12`): `study tui` e `--no-input` saem 1 com a recusa no stderr e stdout vazio; `--json` sai 1 com o envelope `usage`.
+- O PTY real segue verificação manual (`U-13`, como o `T-26`): exercitado no bin construído (a fila desenha, `j`/`i` respondem, `q` sai 0).
 
 ## Em aberto
 

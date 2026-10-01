@@ -109,6 +109,29 @@ Versão: 5 | Data: 2026-10-01 | Base: `docs/especificacao/REQUISITOS.md`
 - `T-11` não tem casa no core: ordenar a fila é do CLI (`CORE.md`). O `C-62` prova que a ordem documentada em `CA-12` é a que as definições do core produzem, com um comparador local ao teste — atrasados primeiro (`isLate`), depois por vencimento, e o `id` como desempate.
 - `C-56` e `C-57` nasceram do Tasting do BOS-28: datas malformadas falham igual em `compareDates`/`isLate`/`daysLate`/`isDue`, e `note`/`link` guardam o texto digitado (só o vazio vira `null`).
 
+### Suíte da TUI (U-01..U-13)
+
+- IDs `U-nn` são os casos de `apps/cli/test/tui/**/*.test.ts`: os frames puros (`render(estado) -> string`), o parser de teclas, a recusa fora de um terminal e o spawn do bin. É subseção própria, no molde de `S-01..S-55`/`C-01..C-65`: não entra na tabela `## Casos obrigatórios` (o `T-nn` é do domínio) nem nas faixas `W/P/M/D`.
+- Os casos de frame, teclas e recusa já vivem in-process em `apps/cli/test/tui/` (BOS-51/BOS-52/BOS-53); o token `U-nn` rotula cada caso existente e só o spawn sem TTY ganha arquivo próprio. Nenhum caso do domínio é reescrito nem copiado.
+- A varredura de `apps/cli/test/traceability.test.ts` lê esta subseção: exige os 13 ids contíguos, só o `U-13` `(manual)`, e cada `U-nn` não manual como token literal num arquivo de `apps/cli/test/tui/**/*.test.ts` — espelho do `S-23`, com a isenção `(manual)` lida do documento.
+- A TUI não repete a regra: os fluxos do domínio seguem nos `T-nn` do CLI e os RF que a TUI reusa (RF-05, RF-06, RF-08, RF-10, RF-11, RF-12, RF-13, RF-21) seguem ancorados pelos `T-nn` existentes (T-11, T-16, T-03, T-04, T-19, T-05, T-21), porque a faixa `RF-01..RF-20` exige `--json` e a TUI o recusa.
+
+| ID | Caso | Requisito |
+| --- | --- | --- |
+| U-01 | Fila cheia: `render(estado)` 84×24 igual ao retrato de referência | RF-05, RF-07 |
+| U-02 | Fila rolada: indicadores `↑`/`↓`, `a–b de N` e o foco sempre visível | RF-05 |
+| U-03 | Fila sem cor: o atraso vira `!`, sem escape, com a geometria igual | RF-05 |
+| U-04 | Terminal estreito: abaixo de 60×15 só a mensagem; em 60×15 desenha | RF-05 |
+| U-05 | Detalhe: painel somente-leitura com os campos do `study show` e o histórico | RF-06, RF-10 |
+| U-06 | Reavaliação: corpo da fila mais o rodapé com a dificuldade atual e os `1`–`5` | RF-12 |
+| U-07 | Fila vazia: `Fila zerada` com o streak e só `?`/`q` | RF-21 |
+| U-08 | Ajuda: a caixa com a lista de teclas e o lembrete dos comandos de linha | TUI.md — Teclas |
+| U-09 | Parser de teclas: tabela `Teclas` e coluna `Onde`, incluindo o `pending` do escape partido | TUI.md — Teclas |
+| U-10 | Foco contínuo: `j` do último Atrasado ao primeiro Hoje e `g`/`G` às pontas | RF-05 |
+| U-11 | Spawn sem TTY: exit 1, mensagem no stderr e stdout vazio; `--no-input` recusa igual | TUI.md — Erros e exit codes |
+| U-12 | Recusa com `--json`: exit 1, erro `usage` no envelope e stdout vazio | TUI.md — Erros e exit codes |
+| U-13 | PTY real no bin construído: a fila desenha, `j`/`i` respondem e `q` sai 0 (manual) | TUI.md — Testes |
+
 ## Casos por camada (W, P, M, D)
 
 As camadas novas usam faixas próprias de IDs, reservadas para não colidir com `T-nn` (domínio) nem com `C-nn` (a regra, no nível de unidade). Cada faixa é contígua e as specs das camadas referenciam `T` e `C` sem renumerar nenhum dos dois.

@@ -149,8 +149,8 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 - O estado e o desenho são puros: `render(estado) -> string`, comparado por frame nos testes, sem terminal.
 - As teclas são um parser puro de sequências (`\u001b[A`, `\r`, `q`), testado à parte do terminal.
 - Os fluxos do domínio usam os mesmos golden fixtures do CLI: a TUI não repete a regra.
-- Um caso de spawn prova o caminho sem TTY: exit 1, mensagem no stderr e nada no stdout.
-- O PTY real fica em verificação manual, como o `T-26`; a suíte `U-nn` entra no `PLANO-DE-TESTES.md` quando o ticket de implementação abrir.
+- Um caso de spawn (`apps/cli/test/tui/spawn.test.ts`) prova o caminho sem TTY: exit 1, mensagem no stderr e nada no stdout; com `--json` o erro `usage` sai no envelope.
+- O PTY real fica em verificação manual, como o `T-26`; a suíte `U-nn` está registrada no `PLANO-DE-TESTES.md` e a varredura de `apps/cli/test/traceability.test.ts` exige o token de cada caso num arquivo de `apps/cli/test/tui`.
 
 ## Fora de escopo (v1)
 
