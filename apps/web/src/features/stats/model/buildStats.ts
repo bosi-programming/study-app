@@ -1,5 +1,4 @@
 import { type Item, type QueueStreak, type ReviewLog } from '@study/core'
-import { tryLocalDateOf } from '../../../deps.ts'
 
 export type StatsCounts = {
   readonly active: number
@@ -25,6 +24,7 @@ export type StatsInput = {
   readonly logs: readonly ReviewLog[]
   readonly streak: QueueStreak
   readonly today: string
+  readonly localDayOf: (instant: string) => string | null
 }
 
 export function buildStats(input: StatsInput): Stats {
@@ -33,7 +33,7 @@ export function buildStats(input: StatsInput): Stats {
   let checkinsToday = 0
 
   for (const log of input.logs) {
-    const localDay = tryLocalDateOf(log.reviewed_at)
+    const localDay = input.localDayOf(log.reviewed_at)
     if (localDay === input.today) checkinsToday += 1
 
     const subject = subjects.get(log.item_id)

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { type Deps } from '@study/core'
+import { tryLocalDateOf } from '../../../deps.ts'
 import { messageForError } from '../../../errors.ts'
 import { type LoadState } from '../../../loadState.ts'
 import { readQueueStreak } from '../../../queueStreak.ts'
@@ -14,7 +15,12 @@ export function useStats(store: Store, deps: Deps): LoadState<Stats> {
     let active = true
     Promise.all([store.listItems(), store.listReviewLogs(), readQueueStreak(store)]).then(
       ([items, logs, streak]) => {
-        if (active) setState({ status: 'ready', value: buildStats({ items, logs, streak, today }) })
+        if (active) {
+          setState({
+            status: 'ready',
+            value: buildStats({ items, logs, streak, today, localDayOf: tryLocalDateOf }),
+          })
+        }
       },
       (thrown: unknown) => {
         if (active) setState({ status: 'error', message: messageForError(thrown) })

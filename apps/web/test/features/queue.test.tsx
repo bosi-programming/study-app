@@ -1,12 +1,20 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
+import { buildQueue } from '../../src/features/queue/model/buildQueue.ts'
 import { QueueView } from '../../src/features/queue/view/QueueView.tsx'
 import { type Store } from '../../src/store/index.ts'
 import { strings } from '../../src/strings.ts'
 import { makeItem, openTestStore, renderApp, seed, testDeps } from '../helpers.tsx'
 
 afterEach(cleanup)
+
+function checkinLinks(queue: HTMLElement): (string | null)[] {
+  return within(queue)
+    .getAllByRole('link')
+    .filter((link) => link.getAttribute('href')?.startsWith('#/review/'))
+    .map((link) => link.textContent)
+}
 
 function failingDueItems(store: Store): Store {
   return { ...store, dueItems: () => Promise.reject(new Error('IndexedDB explodiu')) }
@@ -25,11 +33,22 @@ describe('AC-4 fila do dia', () => {
     renderApp(store, testDeps(), '#/')
 
     const queue = await screen.findByRole('region', { name: strings.queue.heading })
-    const links = within(queue)
-      .getAllByRole('link')
-      .map((link) => link.textContent)
+    const links = checkinLinks(queue)
 
     expect(links).toEqual(['Atrasado 6 dias', 'Atrasado 2 dias', 'Vence hoje'])
+    expect(within(queue).getAllByRole('link', { name: strings.queue.open })).toHaveLength(3)
+  })
+
+  it('queue-desempata-por-id-quando-o-vencimento-e-o-mesmo', () => {
+    const items = [
+      makeItem('b-2', { title: 'Segundo', due_date: '2026-09-30' }),
+      makeItem('a-1', { title: 'Primeiro', due_date: '2026-09-30' }),
+    ]
+
+    expect(buildQueue(items, '2026-09-30').entries.map((entry) => entry.item.id)).toEqual([
+      'a-1',
+      'b-2',
+    ])
   })
 
   it('queue-mostra-atraso-em-dias-e-proximo-vencimento', async () => {
@@ -42,6 +61,10 @@ describe('AC-4 fila do dia', () => {
     renderApp(store, testDeps(), '#/')
 
     const queue = await screen.findByRole('region', { name: strings.queue.heading })
+    expect(within(queue).getAllByRole('link', { name: strings.queue.open })[0]).toHaveAttribute(
+      'href',
+      '#/items/a-1',
+    )
     expect(within(queue).getByText(strings.queue.late(6))).toBeInTheDocument()
     expect(within(queue).getByText(strings.queue.dueToday)).toBeInTheDocument()
     expect(within(queue).getByText('2026-09-24')).toBeInTheDocument()

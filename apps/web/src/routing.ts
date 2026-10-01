@@ -30,6 +30,10 @@ export function parseHash(hash: string): Route {
   return { name: 'queue' }
 }
 
+export function routeKey(route: Route): string {
+  return route.name === 'item' || route.name === 'review' ? `${route.name}:${route.id}` : route.name
+}
+
 export function hrefFor(route: Route): string {
   switch (route.name) {
     case 'queue':

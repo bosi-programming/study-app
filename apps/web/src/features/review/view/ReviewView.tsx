@@ -1,3 +1,4 @@
+import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '@study/core'
 import { ErrorNotice, LoadingNotice } from '../../../notices.tsx'
 import { hrefFor } from '../../../routing.ts'
 import { strings } from '../../../strings.ts'
@@ -26,8 +27,8 @@ export function ReviewView({ controller }: { readonly controller: ReviewControll
             {strings.review.difficultyLabel}
             <input
               type="number"
-              min={1}
-              max={5}
+              min={MIN_DIFFICULTY}
+              max={MAX_DIFFICULTY}
               value={controller.difficulty}
               onChange={(event) => controller.setDifficulty(event.target.value)}
             />

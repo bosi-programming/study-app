@@ -1,33 +1,16 @@
-import { useEffect, useState } from 'react'
-import { recordReview, reevaluateDifficulty, type Deps, type Item } from '@study/core'
+import { useState } from 'react'
+import { recordReview, reevaluateDifficulty, type Deps } from '@study/core'
 import { messageForError } from '../../../errors.ts'
-import { type LoadState } from '../../../loadState.ts'
 import { rollQueueStreak } from '../../../queueStreak.ts'
 import { type Store } from '../../../store/index.ts'
-import { strings } from '../../../strings.ts'
+import { useItem } from '../../../useItem.ts'
 import { type ReviewController, type ReviewPhase } from '../model/reviewState.ts'
 
 export function useReview(store: Store, deps: Deps, id: string): ReviewController {
-  const [state, setState] = useState<LoadState<Item>>({ status: 'loading' })
+  const { state, setItem } = useItem(store, id)
   const [phase, setPhase] = useState<ReviewPhase>('idle')
   const [difficulty, setDifficulty] = useState('')
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let active = true
-    store.getItem(id).then(
-      (item) => {
-        if (!active) return
-        setState(item === null ? { status: 'error', message: strings.errors.notFound } : { status: 'ready', value: item })
-      },
-      (thrown: unknown) => {
-        if (active) setState({ status: 'error', message: messageForError(thrown) })
-      },
-    )
-    return () => {
-      active = false
-    }
-  }, [store, id])
 
   async function checkin(): Promise<void> {
     if (state.status !== 'ready') return
@@ -41,7 +24,7 @@ export function useReview(store: Store, deps: Deps, id: string): ReviewControlle
       await rollQueueStreak(store, deps.clock.todayLocalDate())
       setDifficulty(String(result.item.difficulty))
       setPhase('reevaluate')
-      setState({ status: 'ready', value: result.item })
+      setItem(result.item)
     } catch (thrown) {
       setError(messageForError(thrown))
     }
@@ -52,12 +35,9 @@ export function useReview(store: Store, deps: Deps, id: string): ReviewControlle
     setError(null)
     try {
       const reviewed = reevaluateDifficulty(state.value, Number(difficulty), deps)
-      if (reviewed !== state.value) {
-        await store.saveItem(reviewed)
-        await rollQueueStreak(store, deps.clock.todayLocalDate())
-      }
+      if (reviewed !== state.value) await store.saveItem(reviewed)
       setPhase('idle')
-      setState({ status: 'ready', value: reviewed })
+      setItem(reviewed)
     } catch (thrown) {
       setError(messageForError(thrown))
     }

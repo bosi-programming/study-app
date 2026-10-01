@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { type RefObject, useEffect, useRef, useState } from 'react'
 import { type Deps } from '@study/core'
 import { AddView, useAdd } from './features/add/index.ts'
 import { ItemDetailView, ItemsView, useItemDetail, useItems } from './features/items/index.ts'
@@ -8,7 +8,7 @@ import { StatsView, useStats } from './features/stats/index.ts'
 import { messageForError } from './errors.ts'
 import { ErrorNotice, LoadingNotice } from './notices.tsx'
 import { rollQueueStreak } from './queueStreak.ts'
-import { hrefFor, type Route } from './routing.ts'
+import { hrefFor, routeKey, type Route } from './routing.ts'
 import { type Store } from './store/index.ts'
 import { strings } from './strings.ts'
 import { type HashNavigation, useHashRoute } from './useHashRoute.ts'
@@ -33,10 +33,11 @@ const NAV: readonly { readonly route: Route; readonly label: string }[] = [
 export function App({ store, deps }: AppProps) {
   const navigation = useHashRoute()
   const boot = useBoot(store, deps)
+  const heading = useNavigationFocus(routeKey(navigation.route))
 
   return (
     <main>
-      <h1>{strings.app.title}</h1>
+      <h1 ref={heading}>{strings.app.title}</h1>
       <Navigation current={navigation.route} />
       {boot.status === 'loading' ? <LoadingNotice /> : null}
       {boot.status === 'error' ? <ErrorNotice message={boot.message} /> : null}
@@ -45,6 +46,21 @@ export function App({ store, deps }: AppProps) {
       ) : null}
     </main>
   )
+}
+
+function useNavigationFocus(key: string): RefObject<HTMLHeadingElement | null> {
+  const heading = useRef<HTMLHeadingElement>(null)
+  const firstRender = useRef(true)
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    heading.current?.focus()
+  }, [key])
+
+  return heading
 }
 
 function useBoot(store: Store, deps: Deps): BootState {

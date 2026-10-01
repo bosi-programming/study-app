@@ -36,10 +36,11 @@ export function QueueView({ state }: QueueViewProps) {
 function QueueRow({ entry }: { readonly entry: QueueEntry }) {
   return (
     <li>
-      <a href={hrefFor({ name: 'item', id: entry.item.id })}>{entry.item.title}</a>
+      <a href={hrefFor({ name: 'review', id: entry.item.id })}>{entry.item.title}</a>
       <span>{entry.item.subject}</span>
       <time dateTime={entry.item.due_date}>{entry.item.due_date}</time>
       <span>{entry.late ? strings.queue.late(entry.daysLate) : strings.queue.dueToday}</span>
+      <a href={hrefFor({ name: 'item', id: entry.item.id })}>{strings.queue.open}</a>
     </li>
   )
 }

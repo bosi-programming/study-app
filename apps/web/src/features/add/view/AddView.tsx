@@ -1,5 +1,7 @@
+import { MAX_DIFFICULTY, MIN_DIFFICULTY } from '@study/core'
+import { DueDate } from '../../due/index.ts'
+import { ErrorNotice, LoadingNotice } from '../../../notices.tsx'
 import { strings } from '../../../strings.ts'
-import { ErrorNotice } from '../../../notices.tsx'
 import { type AddController } from '../model/addForm.ts'
 
 export function AddView({ controller }: { readonly controller: AddController }) {
@@ -33,8 +35,8 @@ export function AddView({ controller }: { readonly controller: AddController }) 
           {strings.add.difficultyLabel}
           <input
             type="number"
-            min={1}
-            max={5}
+            min={MIN_DIFFICULTY}
+            max={MAX_DIFFICULTY}
             value={controller.values.difficulty}
             onChange={(event) => controller.setValue('difficulty', event.target.value)}
           />
@@ -56,16 +58,12 @@ export function AddView({ controller }: { readonly controller: AddController }) 
           />
         </label>
         {fieldErrorNotice(controller, 'link')}
-        <p>
-          {strings.add.previewLabel}{' '}
-          {controller.preview === null ? null : (
-            <time dateTime={controller.preview.dueDate}>{controller.preview.dueDate}</time>
-          )}
-        </p>
+        {controller.preview === null ? null : <DueDate estimate={controller.preview} />}
         <button type="submit" disabled={controller.busy}>
           {strings.add.submit}
         </button>
       </form>
+      {controller.busy ? <LoadingNotice /> : null}
       {controller.error === null ? null : <ErrorNotice message={controller.error} />}
     </section>
   )

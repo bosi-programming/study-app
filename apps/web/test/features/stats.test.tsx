@@ -2,7 +2,9 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import { type Deps, type Item, type ReviewLog } from '@study/core'
+import { buildStats } from '../../src/features/stats/model/buildStats.ts'
 import { StatsView } from '../../src/features/stats/view/StatsView.tsx'
+import { tryLocalDateOf } from '../../src/deps.ts'
 import { type Store } from '../../src/store/index.ts'
 import { strings } from '../../src/strings.ts'
 import { makeItem, makeLog, openTestStore, renderApp, seed, storeWith, testDeps } from '../helpers.tsx'
@@ -105,6 +107,21 @@ describe('AC-8 stats', () => {
     await openStats(store, deps)
 
     expect(screen.getByText(`${strings.stats.streak}: 1`)).toBeInTheDocument()
+  })
+})
+
+describe('AC-8 stats, bordas do model', () => {
+  it('stats-ignora-log-de-item-desconhecido-no-recorte-por-materia', () => {
+    const stats = buildStats({
+      items: [makeItem('a-1', { subject: 'Cálculo' })],
+      logs: [makeLog('l-1', 'orfao', { reviewed_at: '2026-09-30T12:00:00Z' })],
+      streak: { streak_current: 3, streak_last_day: '2026-09-30' },
+      today: '2026-09-30',
+      localDayOf: tryLocalDateOf,
+    })
+
+    expect(stats.bySubject).toEqual([])
+    expect(stats.checkinsToday).toBe(1)
   })
 })
 

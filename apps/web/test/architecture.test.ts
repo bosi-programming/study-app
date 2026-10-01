@@ -113,6 +113,21 @@ describe('S-38 web-layer-direction', () => {
     expect(domOffenders).toEqual([])
   })
 
+  it('arch-model-nao-importa-a-borda: o model não alcança deps.ts nem store', () => {
+    const offenders = filesInZone('model')
+      .flatMap((file) =>
+        specifiersOf(file).flatMap((specifier) => {
+          const target = resolveTarget(file, specifier)
+          if (target === null) return []
+          const name = rel(target)
+          const isBorder = name === 'deps.ts' || name.startsWith('store/')
+          return isBorder ? [`${rel(file)} -> ${specifier}`] : []
+        }),
+      )
+
+    expect(offenders).toEqual([])
+  })
+
   it('arch-root-compõe: a feature tem model, view, controller e o barrel ligando as três', () => {
     const zones = new Set(sourceFiles(SRC).map(zoneOf))
 

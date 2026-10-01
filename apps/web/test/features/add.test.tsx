@@ -7,6 +7,8 @@ import { openTestStore, renderApp, storeWith, testDeps } from '../helpers.tsx'
 
 afterEach(cleanup)
 
+const goldenInitialDue = initialDueFixture()
+
 function initialDueFixture(): InitialDueFixture {
   const fixture = goldenFixtures.find((entry) => entry.kind === 'initial-due')
   if (fixture === undefined || fixture.kind !== 'initial-due') {
@@ -63,17 +65,17 @@ describe('AC-2 adicionar item', () => {
     })
   })
 
-  it('add-mostra-o-vencimento-inicial-do-vetor-golden', async () => {
-    const fixture = initialDueFixture()
-    const { store } = await openTestStore()
-    await openAdd(store, testDeps(fixture.created_on))
+  it.each(goldenInitialDue.cases)(
+    'add-mostra-o-vencimento-inicial-do-vetor-golden (dificuldade $difficulty)',
+    async ({ difficulty, expected_due_date }) => {
+      const { store } = await openTestStore()
+      await openAdd(store, testDeps(goldenInitialDue.created_on))
 
-    for (const entry of fixture.cases) {
-      fill({ difficulty: String(entry.difficulty) })
+      fill({ difficulty: String(difficulty) })
 
-      expect(await screen.findByText(entry.expected_due_date)).toBeInTheDocument()
-    }
-  })
+      expect(await screen.findByText(expected_due_date)).toBeInTheDocument()
+    },
+  )
 
   it('add-recusa-titulo-so-com-espacos-com-mensagem-por-campo', async () => {
     const { store } = await openTestStore()
@@ -106,6 +108,23 @@ describe('AC-2 adicionar item', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('matéria deve ter no máximo 60 caracteres')
     expect(await store.listItems()).toEqual([])
+  })
+
+  it('add-mostra-carregando-enquanto-o-item-nao-foi-salvo', async () => {
+    const { store } = await openTestStore()
+    let release: () => void = () => undefined
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await openAdd(storeWith(store, { saveItem: () => pending }), testDeps())
+
+    fill({ title: 'Derivadas parciais', subject: 'Cálculo' })
+    submit()
+
+    expect(await screen.findByRole('status')).toHaveTextContent(strings.notice.loading)
+
+    release()
+    expect(await screen.findByRole('heading', { name: strings.items.heading })).toBeInTheDocument()
   })
 
   it('add-erro-ao-salvar-vira-mensagem-pt-br', async () => {

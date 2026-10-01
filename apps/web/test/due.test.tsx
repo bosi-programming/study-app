@@ -3,7 +3,7 @@ import { InvalidDifficultyError } from '@study/core'
 import { type InitialDueFixture, goldenFixtures } from '@study/golden'
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
-import { DueDate, initialDueEstimate, useDue } from '../src/features/due/index.ts'
+import { DueDate, initialDueEstimate } from '../src/features/due/index.ts'
 
 afterEach(cleanup)
 
@@ -18,8 +18,7 @@ function initialDueFixture(): InitialDueFixture {
 const fixture = initialDueFixture()
 
 function DueHarness({ difficulty, createdOn }: { difficulty: number; createdOn: string }) {
-  const estimate = useDue(difficulty, createdOn)
-  return <DueDate estimate={estimate} />
+  return <DueDate estimate={initialDueEstimate(difficulty, createdOn)} />
 }
 
 describe('S-39 web-golden-vector', () => {

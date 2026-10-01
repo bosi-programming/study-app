@@ -113,6 +113,14 @@ describe('AC-9 estados do detalhe', () => {
     expect(screen.getByRole('status')).toHaveTextContent(strings.notice.loading)
   })
 
+  it('screen-detalhe-de-item-inexistente-vira-nao-encontrado', async () => {
+    const { store } = await openTestStore()
+
+    renderApp(store, testDeps(), '#/items/sem-item')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.notFound)
+  })
+
   it('screen-erro-do-detalhe-vira-mensagem-pt-br', async () => {
     const { store } = await openTestStore()
 

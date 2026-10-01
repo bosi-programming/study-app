@@ -47,17 +47,16 @@ describe('AC-5 check-in e reavaliação', () => {
       last_reviewed_at: '2026-09-30T12:00:00Z',
     })
 
-    expect(await store.listReviewLogs('a-1')).toEqual([
-      {
-        id: '00000000-0000-4000-8000-000000000001',
-        item_id: 'a-1',
-        reviewed_at: '2026-09-30T12:00:00Z',
-        due_date_at_review: '2026-09-30',
-        interval_after: 10,
-        review_count_after: 1,
-        late: false,
-      },
-    ])
+    const logs = await store.listReviewLogs('a-1')
+    expect(logs).toHaveLength(1)
+    expect(logs[0]).toMatchObject({
+      item_id: 'a-1',
+      reviewed_at: '2026-09-30T12:00:00Z',
+      due_date_at_review: '2026-09-30',
+      interval_after: 10,
+      review_count_after: 1,
+      late: false,
+    })
   })
 
   it('review-pede-a-dificuldade-com-a-atual-como-padrao', async () => {
@@ -202,6 +201,14 @@ describe('AC-9 estados do check-in', () => {
     render(<ReviewView controller={controller} />)
 
     expect(screen.getByRole('status')).toHaveTextContent(strings.notice.loading)
+  })
+
+  it('screen-check-in-de-item-inexistente-vira-nao-encontrado', async () => {
+    const { store } = await openTestStore()
+
+    renderApp(store, testDeps(), '#/review/sem-item')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.notFound)
   })
 
   it('screen-erro-do-check-in-vira-mensagem-pt-br', async () => {

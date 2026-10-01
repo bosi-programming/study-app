@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { createItem, type Deps } from '@study/core'
 import { fieldErrorOf, messageForError } from '../../../errors.ts'
-import { rollQueueStreak } from '../../../queueStreak.ts'
 import { type Store } from '../../../store/index.ts'
 import { tryInitialDueEstimate } from '../../due/model/due.ts'
 import {
@@ -31,7 +30,6 @@ export function useAdd(store: Store, deps: Deps, onSaved: AddSaved): AddControll
     try {
       const item = createItem(toItemInput(values), deps)
       await store.saveItem(item)
-      await rollQueueStreak(store, deps.clock.todayLocalDate())
       onSaved({ name: 'items' })
     } catch (thrown) {
       const fieldError = fieldErrorOf(thrown)
