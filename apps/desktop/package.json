@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@study/core": "workspace:*",
-    "electron": "44.5.1",
+    "electron": "44.5.0",
     "playwright-core": "1.63.0"
   }
 }
