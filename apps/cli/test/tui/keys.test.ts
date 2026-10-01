@@ -154,7 +154,7 @@ describe('AC2 — totalidade', () => {
   })
 })
 
-describe('AC3 — a tabela Teclas', () => {
+describe('AC3 — a tabela Teclas (U-09)', () => {
   it.each([
     ['seta para cima', `${CSI}A`, 'focus-prev'],
     ['seta para baixo', `${CSI}B`, 'focus-next'],
@@ -196,7 +196,7 @@ describe('AC3 — a tabela Teclas', () => {
   })
 })
 
-describe('AC4 — a coluna Onde', () => {
+describe('AC4 — a coluna Onde (U-09)', () => {
   it.each([
     ['fila', 'queue', []],
     ['detalhe', 'detail', [{ kind: 'close-detail' }]],
@@ -269,7 +269,7 @@ describe('AC5 — várias teclas por chunk', () => {
   })
 })
 
-describe('AC6 — escape partido e Esc sozinho', () => {
+describe('AC6 — escape partido e Esc sozinho (U-09)', () => {
   it.each([
     ['fila', 'queue', []],
     ['detalhe', 'detail', [{ kind: 'close-detail' }]],
@@ -308,7 +308,7 @@ describe('AC6 — escape partido e Esc sozinho', () => {
   })
 })
 
-describe('AC7 — foco contínuo pela sessão', () => {
+describe('AC7 — foco contínuo pela sessão (U-10)', () => {
   it('foco-atravessa-secoes: j leva o foco do último atrasado ao primeiro de hoje', () => {
     withTarget((target) => {
       const command = actionOf(firstCommand('j', 'queue'))
