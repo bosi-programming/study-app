@@ -179,6 +179,22 @@ describe('W-11.16 store-schema-divergente', () => {
     await expect(openStore(environment, name)).rejects.toThrow(SchemaMismatchError)
   })
 
+  it('rejeita um banco com keyPath divergente no store', async () => {
+    const environment = freshEnvironment()
+    const name = 'schema-key-path'
+    const db = await openDiverged(environment, name, (transaction) => {
+      for (const spec of IDB_SCHEMA) {
+        const keyPath = spec.name === ITEMS_STORE ? 'uuid' : spec.keyPath
+        const objectStore = transaction.db.createObjectStore(spec.name, { keyPath })
+        for (const index of spec.indexes) objectStore.createIndex(index.name, [...index.keyPath])
+      }
+      transaction.objectStore(META_STORE).put({ key: SCHEMA_VERSION_KEY, value: SCHEMA_VERSION })
+    })
+    db.close()
+
+    await expect(openStore(environment, name)).rejects.toThrow(SchemaMismatchError)
+  })
+
   it('rejeita um banco com índice a mais', async () => {
     const environment = freshEnvironment()
     const name = 'schema-index-extra'

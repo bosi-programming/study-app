@@ -10,6 +10,7 @@ const SOURCE_PATTERN = /\.tsx?$/
 const REACT_PATTERN = /^react(-dom)?(\/|$)/
 const DOM_GLOBAL_PATTERN = /\b(document|window)\b/
 const NETWORK_PATTERN = /fetch\(|XMLHttpRequest|WebSocket|navigator\.onLine|https?:\/\//
+const GLOBAL_READ_PATTERN = /\b(globalThis|performance)\b/
 
 function sourceFiles(dir: string): string[] {
   const files: string[] = []
@@ -166,6 +167,15 @@ describe('S-38 web-store-separation', () => {
   it('arch-store-sem-rede: nenhum caminho do store toca API de rede', () => {
     const offenders = filesInZone('store')
       .filter((file) => NETWORK_PATTERN.test(readFileSync(file, 'utf8')))
+      .map(rel)
+
+    expect(offenders).toEqual([])
+  })
+
+  it('arch-store-globais-so-no-idb: fora do idb.ts o store não lê global', () => {
+    const offenders = filesInZone('store')
+      .filter((file) => relative(SRC, file) !== 'store/idb.ts')
+      .filter((file) => GLOBAL_READ_PATTERN.test(readFileSync(file, 'utf8')))
       .map(rel)
 
     expect(offenders).toEqual([])

@@ -151,7 +151,7 @@ Os `RF-nn` de tela do web continuam com a fonte em `REQUISITOS.md` e o comportam
 
 ### Detalhe do W-11
 
-Os 20 casos `W-11.1`..`W-11.20` desmembram a persistência IndexedDB do web em unidade: o schema pinado ao documento, o round-trip por entidade, a fila com 5.000 itens, a ausência de rede e a falha alta nas bordas. Todos rodam no projeto `web` do `vitest.config.ts`, em `apps/web/test/store/**`, com um `IdbEnvironment` de `fake-indexeddb` injetado por teste — nenhum toca rede.
+Os 25 casos `W-11.1`..`W-11.25` desmembram a persistência IndexedDB do web em unidade: o schema pinado ao documento, o round-trip por entidade, a fila com 5.000 itens, a ausência de rede e a falha alta nas bordas. Todos rodam no projeto `web` do `vitest.config.ts`, em `apps/web/test/store/**`, com um `IdbEnvironment` de `fake-indexeddb` injetado por teste — nenhum toca rede.
 
 | Caso | O que prova | Arquivo |
 | --- | --- | --- |
@@ -175,6 +175,11 @@ Os 20 casos `W-11.1`..`W-11.20` desmembram a persistência IndexedDB do web em u
 | W-11.18 | `deleteItem` remove o item e os `review_logs` dele, sem tocar nos de outro item | `apps/web/test/store/store.test.ts` |
 | W-11.19 | `listColdArchive` ordena por `cold_archived_at, id`, o purge remove a entrada e o restore devolve o item a ativo | `apps/web/test/store/store.test.ts` |
 | W-11.20 | `listReviewLogs(itemId)` devolve só os logs do item ordenados `reviewed_at, id`; sem argumento, todos | `apps/web/test/store/store.test.ts` |
+| W-11.21 | `browserIdb()` lança `IndexedDbUnavailableError` sem `globalThis.IDBKeyRange`, com o factory presente | `apps/web/test/store/store.test.ts` |
+| W-11.22 | Fechar a view de dentro da transação é recusado com mensagem própria | `apps/web/test/store/store.test.ts` |
+| W-11.23 | A requisição pendente rejeita (`AbortError`) quando a transação aborta | `apps/web/test/store/store.test.ts` |
+| W-11.24 | `openStore` rejeita banco com `keyPath` divergente num store | `apps/web/test/store/schema.test.ts` |
+| W-11.25 | Fora do `idb.ts`, nenhum arquivo do store lê `globalThis` nem `performance` | `apps/web/test/architecture.test.ts` |
 
 ## Rastreabilidade
 

@@ -22,6 +22,23 @@ function withoutIndexedDb(run: () => void): void {
   }
 }
 
+function withoutKeyRange(run: () => void): void {
+  const scope = globalThis as MutableGlobal
+  const hadFactory = 'indexedDB' in scope
+  const factory = scope.indexedDB
+  const hadKeyRange = 'IDBKeyRange' in scope
+  const keyRange = scope.IDBKeyRange
+  scope.indexedDB = new IDBFactory()
+  delete scope.IDBKeyRange
+  try {
+    run()
+  } finally {
+    if (hadFactory) scope.indexedDB = factory
+    else delete scope.indexedDB
+    if (hadKeyRange) scope.IDBKeyRange = keyRange
+  }
+}
+
 const ITEM: Item = makeItem('2f1c9c1e-6a1a-4a2e-9f4e-1b2c3d4e5f60', {
   title: 'Derivadas Parciais',
   subject: 'Cálculo',
@@ -57,6 +74,15 @@ afterEach(() => {
 describe('W-11.15 store-sem-indexeddb', () => {
   it('lança IndexedDbUnavailableError com mensagem clara sem globalThis.indexedDB', () => {
     withoutIndexedDb(() => {
+      expect(() => browserIdb()).toThrow(IndexedDbUnavailableError)
+      expect(() => browserIdb()).toThrow('IndexedDB indisponível')
+    })
+  })
+})
+
+describe('W-11.21 store-sem-key-range', () => {
+  it('lança IndexedDbUnavailableError sem globalThis.IDBKeyRange, com o factory presente', () => {
+    withoutKeyRange(() => {
       expect(() => browserIdb()).toThrow(IndexedDbUnavailableError)
       expect(() => browserIdb()).toThrow('IndexedDB indisponível')
     })
@@ -142,6 +168,29 @@ describe('W-11.17 store-transaction-atomica', () => {
         await scoped.transaction(async () => undefined)
       }),
     ).rejects.toThrow('transação aninhada')
+  })
+})
+
+describe('W-11.22 store-fecha-em-transacao', () => {
+  it('recusa fechar a view de dentro da transação', async () => {
+    await expect(
+      context.store.transaction(async (scoped) => {
+        scoped.close()
+      }),
+    ).rejects.toThrow('não é possível fechar o store dentro de uma transação')
+  })
+})
+
+describe('W-11.23 store-requisicao-com-falha', () => {
+  it('rejeita a requisição pendente quando a transação aborta', async () => {
+    const pending: Promise<unknown>[] = []
+    const failure = context.store.transaction(async (scoped) => {
+      pending.push(scoped.getItem(ITEM.id))
+      throw new Error('aborta a transação')
+    })
+
+    await expect(failure).rejects.toThrow('aborta a transação')
+    await expect(pending[0]).rejects.toMatchObject({ name: 'AbortError' })
   })
 })
 
