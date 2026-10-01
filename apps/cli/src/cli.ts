@@ -24,7 +24,7 @@ import { colorEnabled, resolveColorEnabled, setColorEnabled } from './output/col
 import { printError, printSuccess } from './output/index.ts'
 import { USAGE } from './output/usage.ts'
 import { exitCodeOf, refuseTui, runTui } from './tui/loop/index.ts'
-import { processTerminal } from './tui/terminal/index.ts'
+import { withTerminal } from './tui/terminal/index.ts'
 
 const COMMANDS: Record<string, Command> = {
   init: initCommand,
@@ -162,22 +162,21 @@ function runTuiCommand(args: ParsedArgs, json: boolean): void {
     return
   }
 
-  void runTui({
-    dbPath: valueOf(args, 'db'),
-    exportDir: valueOf(args, 'export-dir'),
-    deps: systemDeps,
-    env: process.env,
-    color: colorEnabled(),
-    terminal: processTerminal(),
-  })
+  void withTerminal((terminal) =>
+    runTui({
+      dbPath: valueOf(args, 'db'),
+      exportDir: valueOf(args, 'export-dir'),
+      deps: systemDeps,
+      env: process.env,
+      color: colorEnabled(),
+      terminal,
+    }),
+  )
     .then((outcome) => {
       process.exitCode = exitCodeOf(outcome)
     })
     .catch((error: unknown) => {
       printError(error, { json })
       process.exitCode = exitCodeFor(error)
-    })
-    .finally(() => {
-      process.stdin.pause()
     })
 }
