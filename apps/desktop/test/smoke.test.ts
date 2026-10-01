@@ -319,6 +319,24 @@ describe('AC6 desktop-bundle-falha', () => {
     expect(status).toBe(404)
   })
 
+  it('responde 404 para uma travessia de caminho codificada', async () => {
+    const status = await page.evaluate(async () => {
+      const response = await fetch('study://app/..%2f..%2f..%2fpackage.json')
+      return response.status
+    })
+
+    expect(status).toBe(404)
+  })
+
+  it('responde 404 para um host diferente de study://app', async () => {
+    const status = await app.evaluate(async ({ net }) => {
+      const response = await net.fetch('study://outro/index.html')
+      return response.status
+    })
+
+    expect(status).toBe(404)
+  })
+
   it('falha alto quando o bundle apontado não existe', { timeout: 30_000 }, async () => {
     const missing = join(tmpdir(), 'study-bundle-ausente')
     const child = spawn(electronBinary(), [...chromiumFlags(), desktopDir], {

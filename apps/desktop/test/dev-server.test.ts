@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { type ElectronApplication, type Page, _electron } from 'playwright-core'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { chromiumFlags, desktopDir, desktopEnv, electronBinary } from './electron.ts'
@@ -81,5 +84,28 @@ describe('S-50 desktop-dev-server', () => {
       contextIsolation: true,
       sandbox: true,
     })
+  })
+
+  it('prefere o STUDY_WEB_URL ao STUDY_WEB_DIST quando os dois estão definidos', async () => {
+    const bundleDir = mkdtempSync(join(tmpdir(), 'study-precedencia-'))
+    writeFileSync(join(bundleDir, 'index.html'), '<!doctype html><h1>Bundle</h1>')
+    const appWithBoth = await _electron.launch({
+      executablePath: electronBinary(),
+      args: [...chromiumFlags(), desktopDir],
+      env: desktopEnv({ STUDY_WEB_URL: webUrl(smokePort), STUDY_WEB_DIST: bundleDir }),
+    })
+
+    try {
+      const bothPage = await appWithBoth.firstWindow()
+      await bothPage.locator('h1').waitFor()
+      const origin = await bothPage.evaluate(
+        () => (globalThis as unknown as { location: { origin: string } }).location.origin,
+      )
+
+      expect(origin).toBe(webUrl(smokePort))
+    } finally {
+      await appWithBoth.close()
+      rmSync(bundleDir, { recursive: true, force: true })
+    }
   })
 })

@@ -1439,7 +1439,12 @@ describe('S-55 desktop-loading-origin-adr', () => {
   })
 
   it('fica coberto pela linha docs/adr/ do índice', () => {
-    expect(indexRows().some((line) => line.includes('docs/adr/'))).toBe(true)
+    const directory = adrPath.slice(0, adrPath.lastIndexOf('/') + 1)
+    const row = indexRows().find((line) => line.includes(`\`${directory}\``))
+
+    expect(row, `${directory} ausente no índice`).toBeDefined()
+    expect(existsSync(resolve(root, adrPath)), adrPath).toBe(true)
+    expect(adrPath.startsWith(directory)).toBe(true)
   })
 
   it('entra na faixa S-01..S-55 do plano', () => {
