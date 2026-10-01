@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { type Clock, type Deps } from '@study/core'
 import { render, type RenderResult } from '@testing-library/react'
 import { App } from '../src/App.tsx'
+import { type FileGateway } from '../src/files.ts'
 import { type Store } from '../src/store/index.ts'
 import { makeItem, makeLog, openTestStore, seed, type TestStore } from './store/helpers.ts'
 
@@ -9,6 +10,31 @@ export { makeItem, makeLog, openTestStore, seed }
 export type { TestStore }
 
 export const DEFAULT_TODAY = '2026-09-30'
+
+export type SavedFile = {
+  readonly name: string
+  readonly content: string
+}
+
+export type TestFiles = FileGateway & {
+  readonly saved: readonly SavedFile[]
+  setPicked(text: string | null): void
+}
+
+export function testFiles(): TestFiles {
+  const saved: SavedFile[] = []
+  let picked: string | null = null
+  return {
+    saved,
+    setPicked: (text) => {
+      picked = text
+    },
+    saveFile: async (name, content) => {
+      saved.push({ name, content })
+    },
+    pickFile: () => Promise.resolve(picked),
+  }
+}
 
 export type TestDeps = Deps & {
   setToday(day: string): void
@@ -41,9 +67,14 @@ export function testDeps(today: string = DEFAULT_TODAY): TestDeps {
   }
 }
 
-export function renderApp(store: Store, deps: Deps, hash = '#/'): RenderResult {
+export function renderApp(
+  store: Store,
+  deps: Deps,
+  hash = '#/',
+  files: FileGateway = testFiles(),
+): RenderResult {
   globalThis.location.hash = hash
-  return render(<App store={store} deps={deps} />)
+  return render(<App store={store} deps={deps} files={files} />)
 }
 
 export function navigate(hash: string): void {
