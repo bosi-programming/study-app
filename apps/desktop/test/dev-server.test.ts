@@ -33,8 +33,8 @@ describe('S-50 desktop-dev-server', () => {
     await expect(page.locator('h1').textContent()).resolves.toBe('Study')
   })
 
-  it('mostra o texto que vem do core', async () => {
-    await expect(page.locator('main').innerText()).resolves.toContain('Próxima revisão em')
+  it('mostra o shell do web servido pelo dev server', async () => {
+    await expect(page.locator('nav').innerText()).resolves.toContain('Adicionar')
   })
 
   it('expõe a ponte do preload no renderer', async () => {

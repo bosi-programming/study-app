@@ -23,6 +23,16 @@ pnpm bench:web     # mede a fila de 5.000 itens do web sobre o IndexedDB (RNF-03
 pnpm sqlite:probe  # prova o schema canônico no engine do CLI (Engine SQLite do CLI)
 ```
 
+### Rodar o app web
+
+As telas da fase 2 rodam no dev server do Vite, em `http://localhost:4173`, com os dados no IndexedDB do navegador. São seis rotas por hash: `#/` (fila do dia), `#/add`, `#/items`, `#/items/:id` (detalhe, com arquivar e desarquivar), `#/review/:id` (check-in) e `#/stats`.
+
+```bash
+pnpm --filter @study/web dev        # telas do web, em http://localhost:4173
+```
+
+Não há build de produção nesta fase: o deploy da URL pública fica com o ticket da fase 2 (BOS-45). O desktop abre essas mesmas telas, como a seção abaixo mostra.
+
 ### Rodar o app desktop
 
 Em produção o desktop abre o renderer do `apps/web` a partir do bundle, servido pelo protocolo próprio `study://app` — sem dev server e sem backend. Gere o bundle e aponte o desktop para ele:

@@ -1,7 +1,6 @@
-import { resolveRef } from '@study/core'
+import { resolveRef, unarchiveItem } from '@study/core'
 import { assertAllowedFlags, assertPositionals } from '../args.ts'
 import { CliError } from '../errors.ts'
-import { unarchiveItem } from '../model/coldArchive.ts'
 import { toItemJson } from '../model/json.ts'
 import { type Command } from './types.ts'
 
