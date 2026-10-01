@@ -310,6 +310,15 @@ describe('AC4 desktop-bundle-persistence', () => {
 })
 
 describe('AC6 desktop-bundle-falha', () => {
+  it('responde 404 para um asset inexistente sob a origem do bundle', async () => {
+    const status = await page.evaluate(async () => {
+      const response = await fetch('study://app/nao-existe.js')
+      return response.status
+    })
+
+    expect(status).toBe(404)
+  })
+
   it('falha alto quando o bundle apontado não existe', { timeout: 30_000 }, async () => {
     const missing = join(tmpdir(), 'study-bundle-ausente')
     const child = spawn(electronBinary(), [...chromiumFlags(), desktopDir], {
