@@ -11,7 +11,7 @@ export const browserFiles: FileGateway = {
     anchor.href = url
     anchor.download = name
     anchor.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => URL.revokeObjectURL(url), 0)
   },
   pickFile: () =>
     new Promise((resolve) => {
