@@ -85,6 +85,7 @@ e `subject`.
 Operações de item:
 
 - `createItem(input, deps)` — valida tudo e devolve um `Item` novo, `active`.
+- `archiveItem(item, now)` / `unarchiveItem(item, now)` — o ciclo de vida `active` ↔ `archived` sem persistência: devolvem o `Item` novo com `updated_at = now` e `archived_at = now` no arquivar, zerado no desarquivar. Nenhum dos dois olha `cold` nem recusa transição repetida; quem recusa é quem chama (o comando do CLI, a tela do web) e `cold` segue com `restore`/`purge` no CLI.
 - `toDifficulty(value)` — estreita um `number` para `Difficulty`; use antes de
   `createItem`/`reevaluateDifficulty` quando o valor vier de um flag do CLI.
 - `validateTitle` / `validateSubject` / `validateNote` / `validateLink` — os
@@ -224,7 +225,7 @@ const streak = advanceQueueStreak({ streak_current: 3, streak_last_day: '2026-09
 ## Testes
 
 - `packages/core/test/*.test.ts` — um arquivo por preocupação (`normalize`,
-  `local-date`, `item`, `schedule`, `streak`, `ref`, `errors`, `predicates`) mais
+  `local-date`, `item`, `lifecycle`, `schedule`, `streak`, `ref`, `errors`, `predicates`) mais
   `golden.test.ts`, que consome `fixtures/golden` via `@study/golden` como devDependency.
 - `core.test.ts` é o scanner de pureza: recusa import de Node/browser em
   qualquer arquivo de `src` e recusa `Date.now`, `new Date()` sem argumento,
