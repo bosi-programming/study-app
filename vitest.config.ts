@@ -49,8 +49,8 @@ export default defineConfig({
           root: './apps/desktop',
           environment: 'node',
           include: ['test/**/*.test.ts'],
-          testTimeout: 60_000,
-          hookTimeout: 60_000,
+          testTimeout: 120_000,
+          hookTimeout: 120_000,
         },
       },
       {

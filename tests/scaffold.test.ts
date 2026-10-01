@@ -923,11 +923,11 @@ function layerCaseSection(): string {
 describe('S-33 plano-ids-camada', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe o plano para v5 e a suíte de scaffold para S-01..S-54', () => {
+  it('sobe o plano para v5 e a suíte de scaffold para S-01..S-55', () => {
     expect(plan).toMatch(
       /^Versão: 5 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-54)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
   })
 
   it('reserva as quatro faixas por camada', () => {
@@ -1020,9 +1020,18 @@ describe('S-35 web-core-from-src-no-copy', () => {
     expect(Object.keys(manifest.dependencies ?? {}).sort()).toEqual(['react', 'react-dom'])
   })
 
-  it('não versiona dist nem copia a regra sob o src', () => {
-    expect(existsSync(resolve(root, 'apps/web/dist'))).toBe(false)
+  it('não versiona o dist do build do web', () => {
+    const gitignore = readFileSync(resolve(root, '.gitignore'), 'utf8').split('\n')
+    const tracked = spawnSync('git', ['ls-files', '--', 'apps/web/dist'], {
+      cwd: root,
+      encoding: 'utf8',
+    })
 
+    expect(gitignore.map((line) => line.trim())).toContain('dist/')
+    expect(tracked.stdout.trim()).toBe('')
+  })
+
+  it('não copia a regra do core sob o src', () => {
     for (const file of webSourceFiles()) {
       const source = readFileSync(file, 'utf8')
       if (CORE_RULE_SYMBOL.test(source)) {
@@ -1109,8 +1118,8 @@ const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40'
 describe('S-42 web-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-54 e lista os casos do web', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-54)')
+  it('sobe a suíte de scaffold para S-01..S-55 e lista os casos do web', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
     for (const id of webScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1127,7 +1136,7 @@ describe('S-42 web-plan-ids', () => {
   it('atualiza o literal do S-33 para o título novo', () => {
     const previousTitle = ['### Suíte de scaffold (S-01', 'S-33)'].join('..')
 
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-54')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-55')
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 })
@@ -1207,9 +1216,18 @@ describe('S-45 desktop-deps-from-src-no-copy', () => {
     }
   })
 
-  it('não versiona dist nem copia a regra sob o src', () => {
-    expect(existsSync(resolve(root, 'apps/desktop/dist'))).toBe(false)
+  it('não versiona o dist do desktop', () => {
+    const gitignore = readFileSync(resolve(root, '.gitignore'), 'utf8').split('\n')
+    const tracked = spawnSync('git', ['ls-files', '--', 'apps/desktop/dist'], {
+      cwd: root,
+      encoding: 'utf8',
+    })
 
+    expect(gitignore.map((line) => line.trim())).toContain('dist/')
+    expect(tracked.stdout.trim()).toBe('')
+  })
+
+  it('não copia a regra do core sob o src', () => {
     for (const file of desktopSourceFiles()) {
       const source = readFileSync(file, 'utf8')
       if (CORE_RULE_SYMBOL.test(source)) {
@@ -1238,9 +1256,9 @@ describe('S-47 desktop-vitest-project', () => {
     expect(desktop?.include).toContain('test/**/*.test.ts')
   })
 
-  it('usa o teto de 60s que o smoke do Electron precisa', () => {
-    expect(desktop?.testTimeout).toBe(60_000)
-    expect(desktop?.hookTimeout).toBe(60_000)
+  it('usa o teto de 120s que o build do web e os dois lançamentos pedem', () => {
+    expect(desktop?.testTimeout).toBe(120_000)
+    expect(desktop?.hookTimeout).toBe(120_000)
   })
 
   it('leva o pnpm test a seis projetos', () => {
@@ -1258,9 +1276,13 @@ describe('S-48 desktop-main-window', () => {
     expect(main).toContain('nodeIntegration: false')
   })
 
-  it('carrega a porta fixa pelo STUDY_WEB_URL, sem bundle', () => {
+  it('carrega o dev server por STUDY_WEB_URL e o bundle por study://', () => {
     expect(main).toContain('STUDY_WEB_URL')
+    expect(main).toContain('STUDY_WEB_DIST')
     expect(main).toContain('http://localhost:4173')
+    expect(main).toContain('registerSchemesAsPrivileged')
+    expect(main).toContain('protocol.handle')
+    expect(main).toContain('study://app')
     expect(main).toContain('loadURL')
     expect(main).not.toContain('loadFile')
   })
@@ -1294,20 +1316,27 @@ describe('S-49 desktop-preload-bridge', () => {
 
 describe('S-50 desktop-smoke-electron', () => {
   const smoke = textAt('apps/desktop/test/smoke.test.ts')
+  const harness = textAt('apps/desktop/test/electron.ts')
 
-  it('lança o Electron real e prova a janela do renderer', () => {
+  it('lança o Electron real sobre o bundle, sem dev server', () => {
     expect(smoke).toContain('_electron.launch')
     expect(smoke).toContain('firstWindow')
+    expect(smoke).toContain('STUDY_WEB_DIST')
+    expect(smoke).toContain('STUDY_USER_DATA')
     expect(smoke).toContain('STUDY_WEB_URL')
+    expect(smoke).toContain('study://app')
+    expect(smoke).toContain("'@study/web', 'build'")
+    expect(smoke).toContain('listItems')
     expect(smoke).toContain('studyDesktop')
     expect(smoke).toContain('getLastWebPreferences')
   })
 
   it('pré-checa o binário do Electron com causa e remédio, sem skip', () => {
-    expect(smoke).toContain("require('electron')")
-    expect(smoke).toContain('allowBuilds')
+    expect(harness).toContain("require('electron')")
+    expect(harness).toContain('allowBuilds')
     expect(smoke).not.toContain('it.skip')
     expect(smoke).not.toContain('describe.skip')
+    expect(harness).not.toContain('it.skip')
   })
 })
 
@@ -1368,13 +1397,14 @@ const desktopScaffoldCases = [
   'S-52',
   'S-53',
   'S-54',
+  'S-55',
 ]
 
 describe('S-54 desktop-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-54 e lista os casos do desktop', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-54)')
+  it('sobe a suíte de scaffold para S-01..S-55 e lista os casos do desktop', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
     for (const id of desktopScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1384,12 +1414,34 @@ describe('S-54 desktop-plan-ids', () => {
 
     expect(plan).not.toContain(previousTitle)
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousCases)
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-54')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-55')
   })
 
   it('registra o D-02 coberto em parte e as pendências D-01 e D-03', () => {
     expect(plan).toMatch(/D-02[^\n]*coberto em parte/)
     expect(plan).toMatch(/D-01[^\n]*pendente/)
     expect(plan).toMatch(/D-03[^\n]*pendente/)
+  })
+})
+
+describe('S-55 desktop-loading-origin-adr', () => {
+  const adrPath = 'docs/adr/origem-de-carregamento-do-renderer-no-desktop.md'
+
+  it('registra a origem de carregamento num ADR aceito e nomeado pelo assunto', () => {
+    const source = readFileSync(resolve(root, adrPath), 'utf8')
+
+    expect(source).toContain("status: 'aceito'")
+    expect(source).toContain('study://app')
+  })
+
+  it('fica coberto pela linha docs/adr/ do índice', () => {
+    expect(indexRows().some((line) => line.includes('docs/adr/'))).toBe(true)
+  })
+
+  it('entra na faixa S-01..S-55 do plano', () => {
+    const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+
+    expect(plan).toContain('S-55')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
   })
 })

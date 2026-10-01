@@ -7,7 +7,7 @@ Instruções para agentes que trabalham neste repositório. Valem para os cinco 
 - `packages/core` (`@study/core`) — domínio e regra de agendamento, TS puro, sem API de Node ou browser.
 - `apps/cli` (`@bosi-programming/study-cli`) — superfície da fase 1, bin `study`, publicável no npm.
 - `apps/web` (`@study/web`) — app React + Vite da fase 2; MVC por feature e o core consumido pelo `src`.
-- `apps/desktop` (`@study/desktop`) — casca Electron da fase 5; carrega o renderer do `apps/web` pelo dev server do Vite, sem UI própria.
+- `apps/desktop` (`@study/desktop`) — casca Electron da fase 5; carrega o renderer do `apps/web` pelo bundle de produção (`study://app`) ou pelo dev server do Vite, sem UI própria.
 - `fixtures/golden` (`@study/golden`) — golden fixtures importáveis, vetores de regressão.
 - `docs/` — documentos de engenharia; o índice é `docs/README.md`.
 - `scripts/` — `bench.ts`, `bench-web.ts` e `sqlite-probe.ts`, provas executáveis.
