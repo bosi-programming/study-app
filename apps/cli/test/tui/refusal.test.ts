@@ -3,7 +3,7 @@ import { refuseTui } from '../../src/tui/loop/index.ts'
 
 const REFUSAL = 'a TUI exige um terminal interativo'
 
-describe('AC2 — a recusa fora de um terminal interativo', () => {
+describe('AC2 — a recusa fora de um terminal interativo (U-12)', () => {
   it.each([
     ['stdin não-TTY', false, true],
     ['stdout não-TTY', true, false],
