@@ -13,11 +13,11 @@ Ritmo do projeto: menos de 10h/semana. As decisões de produto e de arquitetura 
 
 ```bash
 pnpm install
-pnpm test          # 5 projetos: core, golden, cli, web, scaffold
+pnpm test          # 6 projetos: core, golden, cli, web, desktop, scaffold
 pnpm test:golden   # só o projeto golden: forma dos fixtures + vetores
 pnpm test:coverage # linhas de packages/core/src (falha abaixo de 90%)
 pnpm lint          # ESLint em todo o TS do repo (CI com lint, typecheck e testes nas PRs)
-pnpm typecheck     # tsc --noEmit nos 4 pacotes + tsconfig da raiz
+pnpm typecheck     # tsc --noEmit nos 5 pacotes + tsconfig da raiz
 pnpm bench         # stub: declara o bloqueio da RNF-03, ainda não mede
 pnpm sqlite:probe  # prova o schema canônico no engine do CLI (Engine SQLite do CLI)
 ```
@@ -45,9 +45,10 @@ O `pnpm install` continua criando `node_modules/.bin/study` para rodar o CLI de 
 | `packages/core` | `@study/core` | Domínio e regra de agendamento, em TS puro, sem API de Node ou browser. |
 | `apps/cli` | `@bosi-programming/study-cli` | Superfície da fase 1; declara o bin `study`. |
 | `apps/web` | `@study/web` | App React + Vite da fase 2; consome o `@study/core` pelo `src`. |
+| `apps/desktop` | `@study/desktop` | Casca Electron da fase 5; abre o renderer do `apps/web` no desktop, sem UI própria. |
 | `fixtures/golden` | `@study/golden` | Golden fixtures importáveis, vetores de regressão de todos os apps. |
 
-Não existe `dist/` para `core` e `golden`: eles exportam `./src/index.ts` e o Node 24 consome o TypeScript direto. O `apps/web` consome o core pelo symlink do workspace, sem alias e sem pré-build. O `@bosi-programming/study-cli` gera um bundle em `apps/cli/dist/` no `prepare`, para o artefato publicado.
+Não existe `dist/` para `core` e `golden`: eles exportam `./src/index.ts` e o Node 24 consome o TypeScript direto. O `apps/web` consome o core pelo symlink do workspace, sem alias e sem pré-build. O `apps/desktop` carrega o renderer do `apps/web` a partir do dev server do Vite (`STUDY_WEB_URL`, porta 4173), sem bundle de produção. O `@bosi-programming/study-cli` gera um bundle em `apps/cli/dist/` no `prepare`, para o artefato publicado.
 
 ## Documentos
 

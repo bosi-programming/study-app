@@ -22,7 +22,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/MOBILE.md` | Expo, `expo-sqlite`, telas e lojas do app mobile | Rascunho v1 |
 | `docs/especificacao/DESKTOP.md` | Electron sobre o renderer do web, empacotamento e smoke | Rascunho v1 |
 | `docs/engenharia/INVENTARIO-DE-REQUISITOS.md` | Onde faltam requisitos, por fase, e onde cada documento mora | Rascunho v1 |
-| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v4 |
+| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v5 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
 | `docs/adr/` | ADRs com contexto, decisão e consequências | Rascunho v1 |
