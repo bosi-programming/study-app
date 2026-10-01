@@ -41,17 +41,16 @@ export async function importDump(store: Store, text: string): Promise<ImportCoun
     for (const log of logPlan.write) await scoped.saveReviewLog(log)
     for (const entry of coldPlan.write) await scoped.saveColdArchive(entry)
     for (const meta of mergeMeta(dump)) await scoped.setMeta(meta.key, meta.value)
-    return {
-      items: itemPlan.write.length,
-      reviewLogs: logPlan.write.length,
-      coldArchive: coldPlan.write.length,
-      written: itemPlan.write.length + logPlan.write.length + coldPlan.write.length,
-      skipped: itemPlan.skipped + logPlan.skipped + coldPlan.skipped,
-    }
+    return counts(
+      itemPlan.write.length,
+      logPlan.write.length,
+      coldPlan.write.length,
+      itemPlan.skipped + logPlan.skipped + coldPlan.skipped,
+    )
   })
 }
 
-export async function exportRelaxed(
+export async function exportForRecovery(
   environment: IdbEnvironment,
   name: string,
   deps: Deps,
@@ -83,9 +82,21 @@ async function readMeta(store: Store): Promise<Record<string, string | null>> {
   return Object.fromEntries(entries)
 }
 
-function countsOf(dump: DumpJsonV1): DataCounts {
-  const items = dump.items.length
-  const reviewLogs = dump.review_logs.length
-  const coldArchive = dump.cold_archive.length
-  return { items, reviewLogs, coldArchive, written: items + reviewLogs + coldArchive, skipped: 0 }
+function countsOf(dump: DumpJsonV1): ImportCounts {
+  return counts(dump.items.length, dump.review_logs.length, dump.cold_archive.length, 0)
+}
+
+function counts(
+  items: number,
+  reviewLogs: number,
+  coldArchive: number,
+  skipped: number,
+): ImportCounts {
+  return {
+    items,
+    reviewLogs,
+    coldArchive,
+    written: items + reviewLogs + coldArchive,
+    skipped,
+  }
 }

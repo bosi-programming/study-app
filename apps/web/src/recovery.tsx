@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { type Deps } from '@study/core'
-import { exportRelaxed } from './features/data/index.ts'
+import { exportForRecovery } from './features/data/index.ts'
 import { type FileGateway } from './files.ts'
 import { ErrorNotice } from './notices.tsx'
 import { type IdbEnvironment, SchemaMismatchError, SchemaVersionError } from './store/index.ts'
@@ -22,7 +22,7 @@ export function RecoveryScreen({ error, environment, name, deps, files }: Recove
   const [failed, setFailed] = useState(false)
 
   const download = (): void => {
-    exportRelaxed(environment, name, deps, files).then(
+    exportForRecovery(environment, name, deps, files).then(
       () => setFailed(false),
       () => setFailed(true),
     )
