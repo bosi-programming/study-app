@@ -25,6 +25,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v5 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
+| `docs/engenharia/VERIFICACAO-FASE-2.md` | Registro datado da camada de persistência IndexedDB do web e do `W-11` | Rascunho v1 |
 | `docs/adr/` | ADRs com contexto, decisão e consequências | Rascunho v1 |
 
 ## Ordem de leitura
@@ -45,4 +46,5 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 14. `docs/especificacao/DESKTOP.md` — o app Electron da fase 5.
 15. `docs/engenharia/PLANO-DE-TESTES.md` — como provar que funciona.
 16. `docs/engenharia/ROADMAP.md` — em que ordem construir.
-17. `docs/adr/` — por que as escolhas técnicas foram feitas.
+17. `docs/engenharia/VERIFICACAO-FASE-2.md` — o que a camada de persistência do web fecha, com o `W-11` medido.
+18. `docs/adr/` — por que as escolhas técnicas foram feitas.
