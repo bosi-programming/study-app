@@ -98,6 +98,7 @@ Operações de item:
 | `BASE_INTERVAL_DAYS` | d1 = 10, d2 = 7, d3 = 5, d4 = 3, d5 = 2 dias |
 | `MAX_INTERVAL_DAYS` | 365 |
 | `DIFFICULTY_LABELS` | `1 trivial` … `5 muito difícil` — a cópia única em pt-BR da escala de `FEASIBILITY.md`, para o prompt do CLI e o web |
+| `MIN_DIFFICULTY` / `MAX_DIFFICULTY` | 1 e 5 — o domínio que `toDifficulty` aceita, para o `min`/`max` do input de dificuldade nas telas |
 
 - `intervalFor(difficulty, n) = min(365, base × 2ⁿ)`.
 - `initialDueDate(difficulty, from) = from + base`.

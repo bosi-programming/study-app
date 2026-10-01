@@ -27,7 +27,7 @@ export {
   validateTitle,
 } from './item.ts'
 
-export { toDifficulty } from './difficulty.ts'
+export { MAX_DIFFICULTY, MIN_DIFFICULTY, toDifficulty } from './difficulty.ts'
 export type { Difficulty, Item, ItemInput, ItemStatus } from './entity.ts'
 
 export {
