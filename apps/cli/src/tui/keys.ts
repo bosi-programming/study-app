@@ -5,6 +5,8 @@ export type KeyCommand =
   | { readonly kind: 'focus-prev' }
   | { readonly kind: 'focus-first' }
   | { readonly kind: 'focus-last' }
+  | { readonly kind: 'page-next' }
+  | { readonly kind: 'page-prev' }
   | { readonly kind: 'open-detail' }
   | { readonly kind: 'close-detail' }
   | { readonly kind: 'start-reevaluate' }
@@ -195,7 +197,7 @@ function focusCommands(screen: KeyScreen, kind: 'focus-prev' | 'focus-next'): re
 
 function queueCommands(
   screen: KeyScreen,
-  kind: 'focus-prev' | 'focus-next' | 'focus-first' | 'focus-last',
+  kind: 'focus-prev' | 'focus-next' | 'focus-first' | 'focus-last' | 'page-prev' | 'page-next',
 ): readonly KeyCommand[] {
   return screen === 'queue' ? [{ kind }] : []
 }
@@ -238,9 +240,9 @@ function commandsFor(screen: KeyScreen, token: KeyToken): readonly KeyCommand[] 
     case 'focus-next':
       return focusCommands(screen, 'focus-next')
     case 'page-prev':
-      return queueCommands(screen, 'focus-prev')
+      return queueCommands(screen, 'page-prev')
     case 'page-next':
-      return queueCommands(screen, 'focus-next')
+      return queueCommands(screen, 'page-next')
     case 'focus-first':
       return queueCommands(screen, 'focus-first')
     case 'focus-last':

@@ -8,7 +8,7 @@ import { sectionLines } from './sectionLines.ts'
 import type { RenderState } from './types.ts'
 import { windowRows } from './windowRows.ts'
 
-const QUEUE_CHROME = 3
+export const QUEUE_CHROME = 3
 
 export function renderQueue(state: RenderState): string[] {
   const { columns } = state.viewport

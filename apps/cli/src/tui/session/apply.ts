@@ -3,6 +3,7 @@ import { readQueueStreak, rollQueueStreak } from '../../model/queueStreak.ts'
 import { dispatch } from './dispatch.ts'
 import { failureState } from './failureState.ts'
 import { reconcileFocus } from './reconcileFocus.ts'
+import { reconcileReevaluation } from './reconcileReevaluation.ts'
 import { settle } from './settle.ts'
 import { type SessionAction, type SessionState, type StoreTracker } from './types.ts'
 
@@ -33,8 +34,9 @@ export function apply(
       finalFocusId,
     )
 
+    const reconciled = reconcileReevaluation(settled, target.store)
     return {
-      ...settled,
+      ...reconciled,
       streak,
       banner: migrationLine === null ? null : { kind: 'info', message: migrationLine },
     }
