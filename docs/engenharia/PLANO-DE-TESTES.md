@@ -1,6 +1,6 @@
 # Plano de Testes — App de Estudo Espaçado
 
-Versão: 5 | Data: 2026-10-01 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 6 | Data: 2026-10-01 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Estratégia
 
@@ -185,7 +185,7 @@ Os 25 casos `W-11.1`..`W-11.25` desmembram a persistência IndexedDB do web em u
 
 ### Detalhe das telas do web (BOS-43)
 
-As seis telas do BOS-43 são teste de comportamento no projeto `web`, montando o `App` sobre o `fake-indexeddb` (a view também é montada direto para o estado de carregando). Cada `W-nn` abaixo fecha na suíte que o `VERIFICACAO-FASE-2.md` registra; `W-05` (histórico no detalhe) e `W-14` (editar e remover) seguem abertos, e `W-07`..`W-09` (arquivo morto, config e export/import) ficam com o BOS-44.
+As seis telas do BOS-43 são teste de comportamento no projeto `web`, montando o `App` sobre o `fake-indexeddb` (a view também é montada direto para o estado de carregando). Cada `W-nn` abaixo fecha na suíte que o `VERIFICACAO-FASE-2.md` registra; `W-05` (histórico no detalhe) e `W-14` (editar e remover) seguem abertos, e `W-07`/`W-08` (arquivo morto e config) continuam com as features do arquivo morto. O `W-09` (export/import) fechou no BOS-44, com o detalhe próprio abaixo.
 
 - `W-01` (adicionar) — `apps/web/test/features/add.test.tsx`: cria o item com título, matéria e dificuldade, mostra o vencimento inicial do core e recusa campo fora da invariante com a mensagem por campo.
 - `W-02` (lista) — `apps/web/test/features/items.test.tsx`: filtra por matéria e status (ativo por padrão), ordena por vencimento e busca por termo sem caixa e sem acento.
@@ -197,6 +197,47 @@ As seis telas do BOS-43 são teste de comportamento no projeto `web`, montando o
 - `W-13` (strings) — `apps/web/test/strings.test.ts`: não há literal pt-BR fora de `apps/web/src/strings.ts`, com a varredura cobrindo `src/**`.
 
 O shell tem suíte própria: `apps/web/test/routing.test.ts` prova o `parseHash`/`hrefFor` das seis rotas e `apps/web/test/app.test.tsx` prova a montagem, a navegação por hash e a queda na fila com hash desconhecido.
+
+### Detalhe do W-09
+
+O `W-09` (export/import pela interface) fechou no BOS-44/ENG-19: a rota `#/data` lê e escreve o contrato JSON v1 do `MODELO-DE-DADOS.md` com o leitor em `apps/web/src/features/data/model/` (`json.ts`, `migrations.ts`, `merge.ts`) espelhando o `apps/cli/src/model/json.ts` e o `apps/cli/src/model/import.ts`, sem importar o CLI. Os 31 casos rodam no projeto `web` (`Vitest` + Testing Library, sobre `fake-indexeddb`) e os dois do round-trip cruzado no projeto `scaffold` (ambiente node); nenhum toca rede. O `RF-20` (export automático a cada migração para o arquivo morto) fica fora — a migração ainda não existe no web e entra com a feature do arquivo morto.
+
+| Caso | O que prova | Arquivo |
+| --- | --- | --- |
+| `dataExportCriaArquivoComSeisChaves` | o download tem `schema_version: 1`, `exported_at` do clock e as seis chaves | `apps/web/test/features/dataModel.test.ts` |
+| `dataExportIncluiAtivosArquivadosColdHistorico` | itens nos três status, histórico completo e arquivo morto achatado `{item, review_logs, cold_archived_at}` | `apps/web/test/features/dataModel.test.ts` |
+| `dataExportMetaGravaPadroesQuandoFaltaChave` | janela 180, locale `pt-BR` e streak 0/null quando a chave falta | `apps/web/test/features/dataModel.test.ts` |
+| `mergeImportArquivoEmpateNaoEscreve` | item e entrada de arquivo morto empatados são ignorados | `apps/web/test/features/dataModel.test.ts` |
+| `mergeItemArquivoVenceSoSeEstritamenteMaisNovo` | local mais novo e empate não escrevem; mais novo escreve | `apps/web/test/features/dataModel.test.ts` |
+| `mergeTimestampComparaPorInstanteNaoPorString` | `+00:00` mais novo vence sobre `Z` | `apps/web/test/features/dataModel.test.ts` |
+| `mergeItemComTimestampInvalidoNaoEscreve` | `updated_at` malformado não escreve | `apps/web/test/features/dataModel.test.ts` |
+| `mergeReviewLogInsereSoSeIdNaoExiste` | log com `id` existente é ignorado | `apps/web/test/features/dataModel.test.ts` |
+| `mergeReviewLogDedupDentroDoMesmoArquivo` | `id` repetido no arquivo grava uma linha só | `apps/web/test/features/dataModel.test.ts` |
+| `mergeColdArchiveUsaColdArchivedAtEstrito` | arquivo morto só escreve quando `cold_archived_at` é estritamente mais novo | `apps/web/test/features/dataModel.test.ts` |
+| `importReviewLogOrfaoRecusaArquivoInteiro` | `review_log` órfão recusa antes da primeira escrita | `apps/web/test/features/dataModel.test.ts` |
+| `importArquivoMortoOrfaoNaoRecusa` | entrada de arquivo morto sem item correspondente é ignorada, não recusa | `apps/web/test/features/dataModel.test.ts` |
+| `importSchemaVersionFuturoRecusa` | versão 2 vira `UnsupportedSchemaError` | `apps/web/test/features/dataModel.test.ts` |
+| `importArquivoForaDoContratoRecusa` | JSON inválido, tipo errado e status/dificuldade fora viram `InvalidDumpError` | `apps/web/test/features/dataModel.test.ts` |
+| `importMetaGravaSoChavesConhecidas` | só as quatro chaves conhecidas entram no `meta` | `apps/web/test/features/dataModel.test.ts` |
+| `importAditivoNaoApagaItemSoLocal` | item que só existe local continua | `apps/web/test/features/dataModel.test.ts` |
+| `migrateDumpAplicaPassoEAjustaSchemaVersion` | a escada de migrações aplica o passo e ajusta a versão | `apps/web/test/features/dataModel.test.ts` |
+| `dataTelaConfirmaExportComContagens` | a confirmação e as contagens do export aparecem na tela | `apps/web/test/features/data.test.tsx` |
+| `dataTelaMostraContagensDoImport` | escrita, ignorados, itens, check-ins e arquivo morto na tela | `apps/web/test/features/data.test.tsx` |
+| `dataImportDuasVezesNaoDuplica` | duas importações do mesmo arquivo não repetem item | `apps/web/test/features/data.test.tsx` |
+| `dataImportSegundaRodadaGravaZero` | a segunda rodada devolve `written: 0` e mantém as contagens | `apps/web/test/features/data.test.tsx` |
+| `importEscritaRodaNumaTransacaoUnica` | arquivo recusado não muda nada no banco | `apps/web/test/features/data.test.tsx` |
+| `dataImportCanceladoVoltaAoInicioSemErro` | cancelar o seletor de arquivo volta ao estado inicial | `apps/web/test/features/data.test.tsx` |
+| `dataPickFileQuebradoMostraFalhaDeStore` | a rejeição do `pickFile` vira a mensagem de falha do store | `apps/web/test/features/data.test.tsx` |
+| `dataExportComStoreQuebradoMostraFalhaDeExport` | a falha de leitura no export vira `não foi possível exportar o arquivo` | `apps/web/test/features/data.test.tsx` |
+| `dataSchemaVersionFuturoMostraMensagemTraduzida` | versão futura na tela vira `schema_version 2 não suportado` | `apps/web/test/features/data.test.tsx` |
+| `openStoreRelaxadoLeBancoComSchemaDivergente` | `checkSchema: false` abre o banco com `schema_version` 2 | `apps/web/test/store/openOptions.test.ts` |
+| `recoveryBootComSchemaDivergenteOfereceDownload` | a tela de falha do boot mostra o botão e baixa o dump | `apps/web/test/recovery.test.tsx` |
+| `recoveryStoreIlegivelMostraFalhaDeExport` | store que não lê vira `não foi possível exportar o arquivo` | `apps/web/test/recovery.test.tsx` |
+| `crossArquivoDoWebAbreNoImportDoCli` | dump do web aplicado pelo `applyDump` do CLI sem perda | `tests/export-import-cross.test.ts` |
+| `crossArquivoDoCliAbreNoImportDoWeb` | dump do CLI aplicado pelo `importDump` do web sem perda | `tests/export-import-cross.test.ts` |
+
+O shell passa a pinar sete rotas: `apps/web/test/routing.test.ts` (`routing-le-as-sete-rotas-com-e-sem-parametro`) prova `parseHash('#/data')` e `hrefFor`, e `apps/web/test/app.test.tsx` (`app-nav-alcanca-as-sete-rotas`) prova a navegação até a tela `#/data`. O `W-11.16` continua valendo para a abertura normal (`checkSchema` padrão `true`), e a abertura relaxada do `RNF-07` é só o caminho da recuperação.
+
 
 ## Rastreabilidade
 
