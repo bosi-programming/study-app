@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { type TuiTerminal } from '../../src/tui/loop/index.ts'
 import {
   openTerminal,
@@ -6,6 +6,7 @@ import {
   withTerminal,
   type TerminalEnvironment,
 } from '../../src/tui/terminal/index.ts'
+import { processEnvironment } from '../../src/tui/terminal/processEnvironment.ts'
 
 type Listener = (...args: unknown[]) => void
 
@@ -125,6 +126,21 @@ describe('o exit de sinal do adaptador de terminal', () => {
 })
 
 describe('AC1 — a abertura do adaptador de terminal', () => {
+  it('terminal-ambiente-de-processo: liga stdin/stdout/stderr, os sinais e o exit do processo', () => {
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never)
+    const environment = processEnvironment()
+
+    expect(environment.input).toBe(process.stdin)
+    expect(environment.output).toBe(process.stdout)
+    expect(environment.error).toBe(process.stderr)
+    expect(environment.signals).toBe(process)
+
+    environment.exit(130)
+    expect(exit).toHaveBeenCalledWith(130)
+
+    exit.mockRestore()
+  })
+
   it('terminal-abre-raw-tela-cursor: liga raw mode e escreve tela alternativa com cursor escondido antes de qualquer frame', () => {
     const harness = fakeEnvironment()
     const terminal = openTerminal(harness.environment)
@@ -190,23 +206,25 @@ describe('AC3 — sinais e exit de sinal', () => {
     expect(harness.exits).toEqual([code])
   })
 
-  it('terminal-sinal-duplo-nao-duplica: dois sinais restauram uma vez e saem uma vez', () => {
+  it('terminal-sinal-duplo-nao-duplica: um segundo sinal no handler já aberto restaura uma vez e sai uma vez', () => {
     const harness = fakeEnvironment()
     openTerminal(harness.environment)
+    const onTerm = harness.signals.get('SIGTERM')
 
     harness.emit(harness.signals, 'SIGTERM')
-    harness.emit(harness.signals, 'SIGTERM')
+    onTerm?.()
 
     expect(harness.out).toHaveLength(2)
     expect(harness.exits).toEqual([143])
   })
 
-  it('terminal-sinal-apos-fechar-ignora: depois de close um sinal não restaura de novo nem chama exit', () => {
+  it('terminal-sinal-apos-fechar-ignora: um sinal no handler depois de close não restaura de novo nem chama exit', () => {
     const harness = fakeEnvironment()
     const terminal = openTerminal(harness.environment)
+    const onHup = harness.signals.get('SIGHUP')
 
     terminal.close()
-    harness.emit(harness.signals, 'SIGHUP')
+    onHup?.()
 
     expect(harness.out).toHaveLength(2)
     expect(harness.exits).toEqual([])
