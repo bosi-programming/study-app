@@ -5,14 +5,14 @@ export type TerminalSignal = 'SIGTERM' | 'SIGHUP'
 export type TerminalInput = {
   setEncoding(encoding: BufferEncoding): unknown
   setRawMode(mode: boolean): unknown
-  on(event: string, listener: (...args: never[]) => void): unknown
-  off(event: string, listener: (...args: never[]) => void): unknown
+  on(event: string, listener: (...args: unknown[]) => void): unknown
+  off(event: string, listener: (...args: unknown[]) => void): unknown
   pause(): unknown
 }
 
 export type TerminalOutput = {
-  on(event: string, listener: (...args: never[]) => void): unknown
-  off(event: string, listener: (...args: never[]) => void): unknown
+  on(event: string, listener: (...args: unknown[]) => void): unknown
+  off(event: string, listener: (...args: unknown[]) => void): unknown
   write(chunk: string): unknown
   readonly columns: number | undefined
   readonly rows: number | undefined
