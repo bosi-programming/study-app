@@ -29,6 +29,10 @@ export type ItemFilter = {
   readonly subjectKey?: string
 }
 
+export type OpenStoreOptions = {
+  readonly checkSchema?: boolean
+}
+
 export type ColdArchiveEntry = {
   readonly id: string
   readonly payload: string
@@ -294,7 +298,12 @@ function createStore(db: IDBDatabase, environment: IdbEnvironment): Store {
   }
 }
 
-export function openStore(environment: IdbEnvironment, name: string = IDB_NAME): Promise<Store> {
+export function openStore(
+  environment: IdbEnvironment,
+  name: string = IDB_NAME,
+  options: OpenStoreOptions = {},
+): Promise<Store> {
+  const checkSchema = options.checkSchema ?? true
   return new Promise((resolve, reject) => {
     const openRequest = environment.factory.open(name, IDB_VERSION)
     openRequest.onupgradeneeded = () => {
@@ -308,6 +317,10 @@ export function openStore(environment: IdbEnvironment, name: string = IDB_NAME):
     openRequest.onerror = () => reject(openRequest.error ?? new Error('falha ao abrir o IndexedDB'))
     openRequest.onsuccess = () => {
       const db = openRequest.result
+      if (!checkSchema) {
+        resolve(createStore(db, environment))
+        return
+      }
       assertSchema(db)
         .then(() => resolve(createStore(db, environment)))
         .catch((error: unknown) => {
