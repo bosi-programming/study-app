@@ -898,3 +898,102 @@ describe('AC6 — duas instâncias sob WAL', () => {
     })
   })
 })
+
+describe('AC10 — a reavaliação após o check-in', () => {
+  it('session-checkin-abre-reavaliacao: o check-in abre a reavaliação do item revisado, já fora da fila', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', difficulty: 3, due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        const state = session.applyAction({ kind: 'check-in' })
+
+        expect(state.screen).toBe('reevaluate')
+        expect(state.reevaluation).toEqual({ itemId: 'A', currentDifficulty: 3 })
+        expect(state.queue.map((item) => item.id)).toEqual([])
+        withStore(dbPath, (store) => {
+          expect(store.listReviewLogs('A')).toHaveLength(1)
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('session-reavaliacao-item-ativo-fora-da-fila-escreve: reevaluate grava a dificuldade nova do item ativo que saiu da fila', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', difficulty: 3, due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'check-in' })
+        const state = session.applyAction({ kind: 'reevaluate', difficulty: 5 })
+
+        expect(state.reevaluation).toBeNull()
+        expect(state.screen).toBe('queue')
+        withStore(dbPath, (store) => {
+          const item = store.getItem('A')
+          expect(item?.difficulty).toBe(5)
+          expect(item?.review_count).toBe(1)
+          expect(store.listReviewLogs('A')).toHaveLength(1)
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('session-reavaliacao-item-inativo-cancela: item arquivado limpa a reavaliação e não escreve', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', difficulty: 3, due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'check-in' })
+        expect(session.state().reevaluation?.itemId).toBe('A')
+
+        archive(dbPath, 'A', today)
+        const state = session.applyAction({ kind: 'reevaluate', difficulty: 5 })
+
+        expect(state.reevaluation).toBeNull()
+        expect(state.screen).toBe('queue')
+        withStore(dbPath, (store) => {
+          expect(store.getItem('A')?.difficulty).toBe(3)
+          expect(store.listReviewLogs('A')).toHaveLength(1)
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('session-reavaliacao-item-removido-cancela: item removido limpa a reavaliação e não escreve', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', difficulty: 3, due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'check-in' })
+        withStore(dbPath, (store) => store.deleteItem('A'))
+
+        const state = session.applyAction({ kind: 'reevaluate', difficulty: 5 })
+
+        expect(state.reevaluation).toBeNull()
+        expect(state.screen).toBe('queue')
+        withStore(dbPath, (store) => {
+          expect(store.getItem('A')).toBeNull()
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
+})

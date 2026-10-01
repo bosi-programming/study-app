@@ -32,8 +32,12 @@ export function dispatch(
       return { ...state, screen: 'queue', reevaluation: null }
     case 'toggle-help':
       return { ...state, screen: state.screen === 'help' ? 'queue' : 'help' }
-    case 'check-in':
-      return checkIn(target, state)
+    case 'check-in': {
+      const reevaluation = checkIn(target, state)
+      return reevaluation === null
+        ? state
+        : { ...state, screen: 'reevaluate', reevaluation }
+    }
     case 'reevaluate':
       return reevaluate(target, state, action.difficulty)
   }

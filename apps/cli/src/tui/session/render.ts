@@ -2,6 +2,7 @@ import { type ContextHookTarget, runEntryHooks } from '../../context.ts'
 import { readQueueStreak } from '../../model/queueStreak.ts'
 import { failureState } from './failureState.ts'
 import { reconcileFocus } from './reconcileFocus.ts'
+import { reconcileReevaluation } from './reconcileReevaluation.ts'
 import { settle } from './settle.ts'
 import { type SessionState, type StoreTracker } from './types.ts'
 
@@ -18,8 +19,9 @@ export function render(target: ContextHookTarget, tracker: StoreTracker, state: 
     const streak = readQueueStreak(target.store)
     const focusId = reconcileFocus(state.focusId, state.queue, queue)
     const settled = settle({ ...state, today }, queue, focusId)
+    const reconciled = reconcileReevaluation(settled, target.store)
     return {
-      ...settled,
+      ...reconciled,
       streak,
       banner: migrationLine === null ? null : { kind: 'info', message: migrationLine },
     }
