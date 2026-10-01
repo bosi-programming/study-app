@@ -4,11 +4,12 @@ import { describe, expect, it } from 'vitest'
 
 const SRC = resolve(import.meta.dirname, '../src')
 
-type Zone = 'controller' | 'view' | 'model' | 'root'
+type Zone = 'controller' | 'view' | 'model' | 'store' | 'root'
 
 const SOURCE_PATTERN = /\.tsx?$/
 const REACT_PATTERN = /^react(-dom)?(\/|$)/
 const DOM_GLOBAL_PATTERN = /\b(document|window)\b/
+const NETWORK_PATTERN = /fetch\(|XMLHttpRequest|WebSocket|navigator\.onLine|https?:\/\//
 
 function sourceFiles(dir: string): string[] {
   const files: string[] = []
@@ -21,7 +22,9 @@ function sourceFiles(dir: string): string[] {
 }
 
 function zoneOf(path: string): Zone {
-  const match = /^features\/[^/]+\/(model|view|controller)\//.exec(relative(SRC, path))
+  const relativePath = relative(SRC, path)
+  if (/^store\//.test(relativePath)) return 'store'
+  const match = /^features\/[^/]+\/(model|view|controller)\//.exec(relativePath)
   if (match?.[1] === 'model' || match?.[1] === 'view' || match?.[1] === 'controller') {
     return match[1]
   }
@@ -116,5 +119,55 @@ describe('S-38 web-layer-direction', () => {
     expect(zones.has('view')).toBe(true)
     expect(zones.has('controller')).toBe(true)
     expect(zoneOf(resolve(SRC, 'features/due/index.ts'))).toBe('root')
+  })
+})
+
+describe('S-38 web-store-separation', () => {
+  it('arch-store-zona-existe: a zona store enxerga os módulos do store', () => {
+    expect(filesInZone('store').map(rel).toSorted()).toEqual([
+      'store/idb.ts',
+      'store/index.ts',
+      'store/mapping.ts',
+      'store/schema.ts',
+      'store/store.ts',
+    ])
+  })
+
+  it('arch-store-nao-importa-react: o store não importa react/react-dom', () => {
+    const offenders = filesInZone('store')
+      .flatMap((file) => specifiersOf(file).map((specifier) => ({ file, specifier })))
+      .filter((entry) => REACT_PATTERN.test(entry.specifier))
+      .map((entry) => `${rel(entry.file)} -> ${entry.specifier}`)
+
+    expect(offenders).toEqual([])
+  })
+
+  it('arch-store-sem-dom: o store não toca document nem window', () => {
+    const offenders = filesInZone('store')
+      .filter((file) => DOM_GLOBAL_PATTERN.test(readFileSync(file, 'utf8')))
+      .map(rel)
+
+    expect(offenders).toEqual([])
+  })
+
+  it('arch-store-nao-importa-features: o store não alcança model, view nem controller', () => {
+    const offenders = importsFrom('store')
+      .filter(
+        (entry) =>
+          entry.zones.includes('model') ||
+          entry.zones.includes('view') ||
+          entry.zones.includes('controller'),
+      )
+      .map((entry) => `${rel(entry.file)} -> ${entry.specifier}`)
+
+    expect(offenders).toEqual([])
+  })
+
+  it('arch-store-sem-rede: nenhum caminho do store toca API de rede', () => {
+    const offenders = filesInZone('store')
+      .filter((file) => NETWORK_PATTERN.test(readFileSync(file, 'utf8')))
+      .map(rel)
+
+    expect(offenders).toEqual([])
   })
 })
