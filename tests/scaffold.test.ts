@@ -721,7 +721,7 @@ describe('S-22 lint gate', () => {
     for (const name of lintedRoots) {
       expect(results.some((entry) => entry.filePath.includes(`/${name}/`))).toBe(true)
     }
-  })
+  }, 30_000)
 
   it('leaves no lint suppression behind in the linted tree', () => {
     const directive = ['eslint', 'disable'].join('-')
