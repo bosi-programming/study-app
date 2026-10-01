@@ -1261,6 +1261,10 @@ describe('S-47 desktop-vitest-project', () => {
     expect(desktop?.hookTimeout).toBe(120_000)
   })
 
+  it('serializa os arquivos para o download e os lançamentos do Electron não correrem juntos', () => {
+    expect(desktop?.fileParallelism).toBe(false)
+  })
+
   it('leva o pnpm test a seis projetos', () => {
     expect(vitestConfig.test?.projects).toHaveLength(6)
   })

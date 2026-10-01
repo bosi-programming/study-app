@@ -49,6 +49,7 @@ export default defineConfig({
           root: './apps/desktop',
           environment: 'node',
           include: ['test/**/*.test.ts'],
+          fileParallelism: false,
           testTimeout: 120_000,
           hookTimeout: 120_000,
         },
