@@ -471,6 +471,16 @@ describe('AC1/AC2 — o comando study tui', () => {
     expect(errorOf(result)).toEqual({ code: 'usage', message: 'a TUI exige um terminal interativo' })
   })
 
+  it('tui-fecha-com-withterminal: o ramo de tui compõe com withTerminal e não pausa o stdin por fora', () => {
+    const source = readFileSync(resolve(repoRoot, 'apps/cli/src/cli.ts'), 'utf8')
+    const branchAt = source.indexOf('runTuiCommand(args, json)')
+
+    expect(branchAt).toBeGreaterThan(-1)
+    expect(source.indexOf('withTerminal(', branchAt)).toBeGreaterThan(-1)
+    expect(source).not.toContain('process.stdin.pause()')
+    expect(source).not.toContain('processTerminal')
+  })
+
   it('tui-recusa-antes-do-contexto: o cli.ts recusa antes de abrir o banco', () => {
     const source = readFileSync(resolve(repoRoot, 'apps/cli/src/cli.ts'), 'utf8')
     const branchAt = source.indexOf('runTuiCommand(args, json)')
