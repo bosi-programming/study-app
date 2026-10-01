@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { type Item, type ReviewLog } from '@study/core'
 import { toItemJson, toReviewLogJson } from '../../src/features/data/model/json.ts'
+import { type FileGateway } from '../../src/files.ts'
 import { strings } from '../../src/strings.ts'
 import { type Store } from '../../src/store/index.ts'
 import {
@@ -11,6 +12,7 @@ import {
   openTestStore,
   renderApp,
   seed,
+  storeWith,
   testDeps,
   testFiles,
   type TestFiles,
@@ -158,5 +160,59 @@ describe('AC7 recusa pela tela', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(strings.data.invalidFile)
     expect(await store.listItems()).toEqual(before)
     expect(await store.listReviewLogs()).toEqual([])
+  })
+})
+
+describe('AC7 erros e cancelamento do controller na tela', () => {
+  it('dataImportCanceladoVoltaAoInicioSemErro', async () => {
+    const { store } = await openTestStore()
+    const files = testFiles()
+    files.setPicked(null)
+
+    await openData(store, files)
+    fireEvent.click(screen.getByRole('button', { name: strings.data.import }))
+
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.queryByText(strings.data.imported)).not.toBeInTheDocument()
+  })
+
+  it('dataPickFileQuebradoMostraFalhaDeStore', async () => {
+    const { store } = await openTestStore()
+    const files: FileGateway = {
+      saveFile: async () => {},
+      pickFile: () => Promise.reject(new Error('leitor explodiu')),
+    }
+    renderApp(store, testDeps(), '#/data', files)
+    await screen.findByRole('heading', { name: strings.data.heading })
+
+    fireEvent.click(screen.getByRole('button', { name: strings.data.import }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.store)
+  })
+
+  it('dataExportComStoreQuebradoMostraFalhaDeExport', async () => {
+    const { store } = await openTestStore()
+    const broken = storeWith(store, {
+      listReviewLogs: () => Promise.reject(new Error('leitura explodiu')),
+    })
+    const files = testFiles()
+
+    await openData(broken, files)
+    fireEvent.click(screen.getByRole('button', { name: strings.data.export }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.data.exportFailed)
+    expect(files.saved).toHaveLength(0)
+  })
+
+  it('dataSchemaVersionFuturoMostraMensagemTraduzida', async () => {
+    const { store } = await openTestStore()
+    const files = testFiles()
+    files.setPicked(JSON.stringify({ schema_version: 2 }))
+
+    await openData(store, files)
+    fireEvent.click(screen.getByRole('button', { name: strings.data.import }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.data.unsupportedSchema(2))
   })
 })

@@ -18,6 +18,7 @@ import {
   mergeReviewLogs,
   validateReferences,
 } from '../../src/features/data/model/merge.ts'
+import { migrateDump } from '../../src/features/data/model/migrations.ts'
 import { makeItem, makeLog } from '../store/helpers.ts'
 
 const STAMP = '2026-10-01T12:00:00Z'
@@ -277,5 +278,39 @@ describe('AC7 bordas herdadas', () => {
 
     expect(plan.write).toEqual([incoming])
     expect(plan.write.some((item) => item.id === 'a-local')).toBe(false)
+  })
+
+  it('mergeItemComTimestampInvalidoNaoEscreve', () => {
+    const local = makeItem('a-1', { updated_at: '2026-09-01T00:00:00Z' })
+    const broken = makeItem('a-1', { updated_at: 'nao-e-data' })
+
+    const plan = mergeItems(parseDumpV1(dumpJson({ items: [toItemJson(broken)] })), [local])
+
+    expect(plan.write).toEqual([])
+    expect(plan.skipped).toBe(1)
+  })
+
+  it('importArquivoMortoOrfaoNaoRecusa', () => {
+    const dump = parseDumpV1(
+      dumpJson({ cold_archive: [coldJson(coldRecord(makeItem('sumido'), [], STAMP))] }),
+    )
+
+    expect(() => validateReferences(dump, new Set())).not.toThrow()
+  })
+})
+
+describe('AC1 escada de migracoes', () => {
+  it('migrateDumpAplicaPassoEAjustaSchemaVersion', () => {
+    const table = {
+      2: (dump: Record<string, unknown>): Record<string, unknown> => ({
+        ...dump,
+        meta: { locale: 'en-US' },
+      }),
+    }
+
+    const migrated = migrateDump({ schema_version: 1, meta: {} }, 1, table, 2)
+
+    expect(migrated.schema_version).toBe(2)
+    expect(migrated.meta).toEqual({ locale: 'en-US' })
   })
 })
