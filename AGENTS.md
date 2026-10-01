@@ -9,7 +9,7 @@ Instruções para agentes que trabalham neste repositório. Valem para os quatro
 - `apps/web` (`@study/web`) — app React + Vite da fase 2; MVC por feature e o core consumido pelo `src`.
 - `fixtures/golden` (`@study/golden`) — golden fixtures importáveis, vetores de regressão.
 - `docs/` — documentos de engenharia; o índice é `docs/README.md`.
-- `scripts/` — `bench.ts` e `sqlite-probe.ts`, provas executáveis.
+- `scripts/` — `bench.ts`, `bench-web.ts` e `sqlite-probe.ts`, provas executáveis.
 - `tests/scaffold.test.ts` — prova a estrutura do próprio repositório.
 
 ## Toolchain
@@ -18,7 +18,7 @@ Node >= 24 e pnpm 12.4.1. `core` e `golden` são consumidos direto do `src`, sem
 
 ## Comandos
 
-`pnpm install`, `pnpm test`, `pnpm test:golden`, `pnpm test:coverage`, `pnpm lint`, `pnpm typecheck`, `pnpm bench` e `pnpm sqlite:probe`. Detalhes no `README.md`.
+`pnpm install`, `pnpm test`, `pnpm test:golden`, `pnpm test:coverage`, `pnpm lint`, `pnpm typecheck`, `pnpm bench`, `pnpm bench:web` e `pnpm sqlite:probe`. Detalhes no `README.md`.
 
 ## Convenções
 
