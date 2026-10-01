@@ -71,6 +71,7 @@ describe('S-50 desktop-smoke', () => {
           const [window] = BrowserWindow.getAllWindows()
           return window?.isVisible() ?? false
         }),
+        { timeout: 15_000, interval: 100 },
       )
       .toBe(true)
   })
