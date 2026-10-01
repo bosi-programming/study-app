@@ -45,6 +45,16 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'desktop',
+          root: './apps/desktop',
+          environment: 'node',
+          include: ['test/**/*.test.ts'],
+          testTimeout: 60_000,
+          hookTimeout: 60_000,
+        },
+      },
+      {
+        test: {
           name: 'scaffold',
           root: '.',
           environment: 'node',

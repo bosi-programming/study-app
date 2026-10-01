@@ -630,7 +630,7 @@ describe('S-21 CI workflow', () => {
       'pnpm install --frozen-lockfile',
       'pnpm lint',
       'pnpm typecheck',
-      'pnpm test',
+      'xvfb-run -a pnpm test',
     ].map((needle) => workflow.indexOf(needle))
     expect(order.every((index) => index >= 0)).toBe(true)
     expect([...order].sort((left, right) => left - right)).toEqual(order)
@@ -640,7 +640,16 @@ describe('S-21 CI workflow', () => {
     const runSteps = [...workflow.matchAll(/run:\s*(.+)/g)].map((match) => (match[1] ?? '').trim())
     expect(runSteps).toContain('pnpm lint')
     expect(runSteps).toContain('pnpm typecheck')
-    expect(runSteps).toContain('pnpm test')
+    expect(runSteps).toContain('xvfb-run -a pnpm test')
+  })
+
+  it('instala as bibliotecas de sistema do Electron e o xvfb antes dos gates', () => {
+    const installStep = sectionBetween(workflow, 'Install Electron system libraries', 'Lint')
+
+    expect(installStep).toContain('apt-get')
+    expect(installStep).toContain('xvfb')
+    expect(workflow).toContain('xvfb-run -a pnpm test')
+    expect(workflow.indexOf('xvfb')).toBeLessThan(workflow.indexOf('xvfb-run -a pnpm test'))
   })
 
   it('reads contents in block form, since the inline form is not valid YAML', () => {
@@ -777,7 +786,7 @@ describe('S-29 docs-index-novos', () => {
   it('sobe a linha do plano de testes para v4', () => {
     const row = indexRows().find((line) => line.includes('docs/engenharia/PLANO-DE-TESTES.md'))
     expect(row).toBeDefined()
-    expect(row).toContain('Rascunho v4')
+    expect(row).toContain('Rascunho v5')
   })
 })
 
@@ -914,11 +923,11 @@ function layerCaseSection(): string {
 describe('S-33 plano-ids-camada', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe o plano para v4 e a suíte de scaffold para S-01..S-43', () => {
+  it('sobe o plano para v5 e a suíte de scaffold para S-01..S-54', () => {
     expect(plan).toMatch(
-      /^Versão: 4 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
+      /^Versão: 5 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-43)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-54)')
   })
 
   it('reserva as quatro faixas por camada', () => {
@@ -1049,8 +1058,8 @@ describe('S-37 web-vitest-project', () => {
     expect(web?.include).toContain('test/**/*.test.tsx')
   })
 
-  it('leva o pnpm test a cinco projetos', () => {
-    expect(vitestConfig.test?.projects).toHaveLength(5)
+  it('leva o pnpm test a seis projetos', () => {
+    expect(vitestConfig.test?.projects).toHaveLength(6)
   })
 
   it('carrega as dependências de teste no manifesto e no lockfile', () => {
@@ -1082,12 +1091,12 @@ describe('S-40 web-adr', () => {
 })
 
 describe('S-41 web-docs', () => {
-  it('lista apps/web no README com 4 pacotes e 5 projetos', () => {
+  it('lista apps/web no README com 5 pacotes e 6 projetos', () => {
     const readme = textAt('README.md')
 
     expect(readme).toContain('apps/web')
-    expect(readme).toContain('4 pacotes')
-    expect(readme).toContain('5 projetos')
+    expect(readme).toContain('5 pacotes')
+    expect(readme).toContain('6 projetos')
   })
 
   it('lista apps/web no layout do AGENTS', () => {
@@ -1100,8 +1109,8 @@ const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40'
 describe('S-42 web-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-43 e lista os casos do web', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-43)')
+  it('sobe a suíte de scaffold para S-01..S-54 e lista os casos do web', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-54)')
     for (const id of webScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1118,7 +1127,269 @@ describe('S-42 web-plan-ids', () => {
   it('atualiza o literal do S-33 para o título novo', () => {
     const previousTitle = ['### Suíte de scaffold (S-01', 'S-33)'].join('..')
 
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-43')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-54')
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
+  })
+})
+
+type DesktopManifest = WebManifest
+
+const DESKTOP_SOURCE_PATTERN = /\.(ts|cjs)$/
+
+function desktopSourceFiles(): string[] {
+  const files: string[] = []
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = resolve(dir, entry.name)
+      if (entry.isDirectory()) walk(path)
+      else if (DESKTOP_SOURCE_PATTERN.test(entry.name)) files.push(path)
+    }
+  }
+  walk(resolve(root, 'apps/desktop/src'))
+  return files
+}
+
+function desktopFiles(pattern: RegExp): string[] {
+  const files: string[] = []
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules') continue
+      const path = resolve(dir, entry.name)
+      if (entry.isDirectory()) walk(path)
+      else if (pattern.test(entry.name)) files.push(path)
+    }
+  }
+  walk(resolve(root, 'apps/desktop'))
+  return files
+}
+
+describe('S-44 desktop-member-manifest', () => {
+  const manifest = readJson<DesktopManifest>('apps/desktop/package.json')
+
+  it('declara @study/desktop como membro privado e módulo em node >= 24', () => {
+    expect(manifest).toMatchObject({
+      name: '@study/desktop',
+      private: true,
+      type: 'module',
+      engines: { node: '>=24' },
+    })
+  })
+
+  it('expõe o script typecheck que o pnpm -r typecheck alcança', () => {
+    expect(manifest.scripts?.typecheck).toBe('tsc --noEmit -p tsconfig.json')
+  })
+
+  it('fica coberto pelo glob apps/* sem mexer no pnpm-workspace', () => {
+    expect(readFileSync(resolve(root, 'pnpm-workspace.yaml'), 'utf8')).toContain('apps/*')
+  })
+
+  it('não declara campos de publicação', () => {
+    for (const field of ['bin', 'files', 'publishConfig', 'build']) {
+      expect(manifest, field).not.toHaveProperty(field)
+    }
+  })
+})
+
+describe('S-45 desktop-deps-from-src-no-copy', () => {
+  const manifest = readJson<PackageJson>('apps/desktop/package.json')
+
+  it('toma o core do workspace pelo src', () => {
+    expect(manifest.devDependencies?.['@study/core']).toBe('workspace:*')
+  })
+
+  it('pina electron e playwright-core no manifesto e no lockfile', () => {
+    const lockfile = readFileSync(resolve(root, 'pnpm-lock.yaml'), 'utf8')
+
+    for (const dependency of ['electron', 'playwright-core']) {
+      const version = manifest.devDependencies?.[dependency]
+      expect(version, dependency).toBeDefined()
+      expect(lockfile).toContain(`${dependency}@${version}`)
+    }
+  })
+
+  it('não versiona dist nem copia a regra sob o src', () => {
+    expect(existsSync(resolve(root, 'apps/desktop/dist'))).toBe(false)
+
+    for (const file of desktopSourceFiles()) {
+      const source = readFileSync(file, 'utf8')
+      if (CORE_RULE_SYMBOL.test(source)) {
+        expect(source, file).toMatch(/from '@study\/core'/)
+      }
+    }
+  })
+})
+
+describe('S-46 desktop-tsconfig', () => {
+  const config = readJson<TsConfig>('apps/desktop/tsconfig.json')
+
+  it('herda o base com tipos de node e sem DOM', () => {
+    expect(String(config.extends)).toMatch(/tsconfig\.base\.json$/)
+    expect(config.compilerOptions?.types).toEqual(['node'])
+    expect(config.compilerOptions?.lib ?? []).not.toContain('DOM')
+  })
+})
+
+describe('S-47 desktop-vitest-project', () => {
+  const desktop = projectNamed('desktop')
+
+  it('roda os testes do desktop a partir do apps/desktop', () => {
+    expect(desktop?.root).toBe('./apps/desktop')
+    expect(desktop?.environment).toBe('node')
+    expect(desktop?.include).toContain('test/**/*.test.ts')
+  })
+
+  it('usa o teto de 60s que o smoke do Electron precisa', () => {
+    expect(desktop?.testTimeout).toBe(60_000)
+    expect(desktop?.hookTimeout).toBe(60_000)
+  })
+
+  it('leva o pnpm test a seis projetos', () => {
+    expect(vitestConfig.test?.projects).toHaveLength(6)
+  })
+})
+
+describe('S-48 desktop-main-window', () => {
+  const main = textAt('apps/desktop/src/main.ts')
+
+  it('cria a BrowserWindow com as três flags de isolamento', () => {
+    expect(main).toContain('new BrowserWindow')
+    expect(main).toContain('contextIsolation: true')
+    expect(main).toContain('sandbox: true')
+    expect(main).toContain('nodeIntegration: false')
+  })
+
+  it('carrega a porta fixa pelo STUDY_WEB_URL, sem bundle', () => {
+    expect(main).toContain('STUDY_WEB_URL')
+    expect(main).toContain('http://localhost:4173')
+    expect(main).toContain('loadURL')
+    expect(main).not.toContain('loadFile')
+  })
+
+  it('o Vite do web usa a mesma porta com strictPort', () => {
+    const vite = textAt('apps/web/vite.config.ts')
+
+    expect(vite).toContain('port: 4173')
+    expect(vite).toContain('strictPort: true')
+  })
+})
+
+const preloadPath = 'apps/desktop/src/preload.cjs'
+
+describe('S-49 desktop-preload-bridge', () => {
+  const preload = textAt(preloadPath)
+
+  it('expõe só a ponte studyDesktop pelo contextBridge', () => {
+    expect(preload).toContain('contextBridge')
+    expect(preload).toContain("exposeInMainWorld('studyDesktop'")
+    expect(preload).toContain('process.platform')
+    expect(preload).toContain('process.versions.electron')
+  })
+
+  it('fica em CJS, porque o preload em sandbox não aceita ESM', () => {
+    expect(existsSync(resolve(root, preloadPath))).toBe(true)
+    expect(preload).toContain('require(')
+    expect(preload).not.toMatch(/^\s*import\s/m)
+  })
+})
+
+describe('S-50 desktop-smoke-electron', () => {
+  const smoke = textAt('apps/desktop/test/smoke.test.ts')
+
+  it('lança o Electron real e prova a janela do renderer', () => {
+    expect(smoke).toContain('_electron.launch')
+    expect(smoke).toContain('firstWindow')
+    expect(smoke).toContain('STUDY_WEB_URL')
+    expect(smoke).toContain('studyDesktop')
+    expect(smoke).toContain('getLastWebPreferences')
+  })
+
+  it('pré-checa o binário do Electron com causa e remédio, sem skip', () => {
+    expect(smoke).toContain("require('electron')")
+    expect(smoke).toContain('allowBuilds')
+    expect(smoke).not.toContain('it.skip')
+    expect(smoke).not.toContain('describe.skip')
+  })
+})
+
+describe('S-51 desktop-no-web-ui-dup', () => {
+  it('não tem tela nem arquivo .tsx sob apps/desktop', () => {
+    expect(desktopFiles(/\.tsx$/)).toEqual([])
+  })
+
+  it('não é importado nem exigido pelo apps/web/src', () => {
+    for (const file of webSourceFiles()) {
+      const source = readFileSync(file, 'utf8')
+      expect(source, file).not.toContain('@study/desktop')
+      expect(source, file).not.toContain('studyDesktop')
+    }
+  })
+})
+
+describe('S-52 desktop-adr', () => {
+  it('registra o scaffold do desktop num ADR aceito e nomeado pelo assunto', () => {
+    const source = readFileSync(
+      resolve(root, 'docs/adr/scaffold-do-apps-desktop-com-electron.md'),
+      'utf8',
+    )
+
+    expect(source).toContain("status: 'aceito'")
+    expect(source).toContain('apps/desktop')
+  })
+})
+
+describe('S-53 desktop-docs', () => {
+  it('lista apps/desktop no README com 5 pacotes e 6 projetos', () => {
+    const readme = textAt('README.md')
+
+    expect(readme).toContain('apps/desktop')
+    expect(readme).toContain('5 pacotes')
+    expect(readme).toContain('6 projetos')
+  })
+
+  it('lista apps/desktop no layout do AGENTS', () => {
+    expect(textAt('AGENTS.md')).toContain('apps/desktop')
+  })
+
+  it('mantém DESKTOP.md e o plano citando o scaffold', () => {
+    expect(textAt('docs/especificacao/DESKTOP.md')).toContain('apps/desktop')
+    expect(textAt('docs/engenharia/PLANO-DE-TESTES.md')).toContain('scaffold')
+  })
+})
+
+const desktopScaffoldCases = [
+  'S-44',
+  'S-45',
+  'S-46',
+  'S-47',
+  'S-48',
+  'S-49',
+  'S-50',
+  'S-51',
+  'S-52',
+  'S-53',
+  'S-54',
+]
+
+describe('S-54 desktop-plan-ids', () => {
+  const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+
+  it('sobe a suíte de scaffold para S-01..S-54 e lista os casos do desktop', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-54)')
+    for (const id of desktopScaffoldCases) expect(plan, id).toContain(id)
+  })
+
+  it('move o topo antigo: não sobra o título nem o literal anteriores', () => {
+    const previousTitle = ['### Suíte de scaffold (S-01', 'S-43)'].join('..')
+    const previousCases = ['S-01', 'S-43'].join('..')
+
+    expect(plan).not.toContain(previousTitle)
+    expect(textAt('tests/scaffold.test.ts')).not.toContain(previousCases)
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-54')
+  })
+
+  it('registra o D-02 coberto em parte e as pendências D-01 e D-03', () => {
+    expect(plan).toMatch(/D-02[^\n]*coberto em parte/)
+    expect(plan).toMatch(/D-01[^\n]*pendente/)
+    expect(plan).toMatch(/D-03[^\n]*pendente/)
   })
 })

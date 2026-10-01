@@ -1,12 +1,13 @@
 # AGENTS.md
 
-Instruções para agentes que trabalham neste repositório. Valem para os quatro membros do workspace: `packages/core`, `apps/cli`, `apps/web` e `fixtures/golden`.
+Instruções para agentes que trabalham neste repositório. Valem para os cinco membros do workspace: `packages/core`, `apps/cli`, `apps/web`, `apps/desktop` e `fixtures/golden`.
 
 ## Layout
 
 - `packages/core` (`@study/core`) — domínio e regra de agendamento, TS puro, sem API de Node ou browser.
 - `apps/cli` (`@bosi-programming/study-cli`) — superfície da fase 1, bin `study`, publicável no npm.
 - `apps/web` (`@study/web`) — app React + Vite da fase 2; MVC por feature e o core consumido pelo `src`.
+- `apps/desktop` (`@study/desktop`) — casca Electron da fase 5; carrega o renderer do `apps/web` pelo dev server do Vite, sem UI própria.
 - `fixtures/golden` (`@study/golden`) — golden fixtures importáveis, vetores de regressão.
 - `docs/` — documentos de engenharia; o índice é `docs/README.md`.
 - `scripts/` — `bench.ts`, `bench-web.ts` e `sqlite-probe.ts`, provas executáveis.
@@ -14,7 +15,7 @@ Instruções para agentes que trabalham neste repositório. Valem para os quatro
 
 ## Toolchain
 
-Node >= 24 e pnpm 12.4.1. `core` e `golden` são consumidos direto do `src`, sem `dist/`; o `apps/web` também consome o `@study/core` pelo `src`, sem alias nem pré-build; o `@bosi-programming/study-cli` roda `build.mjs` no `prepare` e gera o bundle publicado em `apps/cli/dist/`.
+Node >= 24 e pnpm 12.4.1. `core` e `golden` são consumidos direto do `src`, sem `dist/`; o `apps/web` também consome o `@study/core` pelo `src`, sem alias nem pré-build; o `@bosi-programming/study-cli` roda `build.mjs` no `prepare` e gera o bundle publicado em `apps/cli/dist/`; o `apps/desktop` roda o main em TS direto e o preload em CJS, sem build.
 
 ## Comandos
 
