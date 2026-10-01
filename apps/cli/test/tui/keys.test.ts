@@ -84,7 +84,9 @@ describe('AC1 — contrato e pureza', () => {
   })
 
   it('keys-deterministico: o mesmo chunk, tela e pending devolvem o mesmo resultado', () => {
-    expect(parseKeys('\u001b[Aj', 'queue', CSI)).toEqual(parseKeys('\u001b[Aj', 'queue', CSI))
+    const expected = { commands: [{ kind: 'focus-prev' }, { kind: 'focus-next' }], pending: '' }
+    expect(parseKeys(`${CSI}Aj`, 'queue')).toEqual(expected)
+    expect(parseKeys(`${CSI}Aj`, 'queue')).toEqual(expected)
   })
 
   it('keys-sem-io: o fonte não toca em processo, relógio, ambiente, sessão nem view', () => {
@@ -106,6 +108,15 @@ describe('AC2 — totalidade', () => {
     expect(parseKeys(`${CSI}99~`, 'queue')).toEqual({ commands: [], pending: '' })
   })
 
+  it.each([`${CSI}1~`, `${CSI}4~`, `${CSI}7~`, `${CSI}8~`])(
+    'keys-csi-conhecida: %s é inerte e seu prefixo fica retido',
+    (chunk) => {
+      expect(parseKeys(chunk, 'queue')).toEqual({ commands: [], pending: '' })
+      const prefix = chunk.slice(0, -1)
+      expect(parseKeys(prefix, 'queue')).toEqual({ commands: [], pending: prefix })
+    },
+  )
+
   it.each([
     ['esquerda', `${CSI}D`],
     ['direita', `${CSI}C`],
@@ -116,6 +127,9 @@ describe('AC2 — totalidade', () => {
     ['mouse SGR', `${CSI}<0;10;5M`],
     ['mouse X10', `${CSI}M`],
     ['mouse X10 com cauda', `${CSI}M  j`],
+    ['digito zero', '0'],
+    ['digito seis', '6'],
+    ['digito nove', '9'],
   ])('keys-inertes: %s na fila devolve zero comandos', (_name, chunk) => {
     expect(commandsOf(chunk, 'queue')).toEqual([])
   })
@@ -159,16 +173,21 @@ describe('AC3 — a tabela Teclas', () => {
     expect(commandsOf('G', 'queue')).toEqual([{ kind: 'focus-last' }])
   })
 
-  it('keys-acoes-nomeadas: i, ?, Enter, 1–5, q e Ctrl-C na fila', () => {
-    expect(commandsOf('i', 'queue')).toEqual([{ kind: 'open-detail' }])
-    expect(commandsOf('?', 'queue')).toEqual([{ kind: 'toggle-help' }])
-    expect(commandsOf('\r', 'queue')).toEqual([{ kind: 'check-in' }])
-    expect(commandsOf('3', 'queue')).toEqual([
+  it.each([
+    ['i', 'i', [{ kind: 'open-detail' }]],
+    ['?', '?', [{ kind: 'toggle-help' }]],
+    ['Enter', '\r', [{ kind: 'check-in' }]],
+    ['q', 'q', [{ kind: 'quit' }]],
+    ['Ctrl-C', CTRL_C, [{ kind: 'interrupt' }]],
+  ] as const)('keys-acoes-nomeadas: %s na fila', (_name, chunk, expected) => {
+    expect(commandsOf(chunk, 'queue')).toEqual(expected)
+  })
+
+  it.each([1, 2, 3, 4, 5] as const)('keys-digitos-de-fila: %i na fila inicia e reavalia', (difficulty) => {
+    expect(commandsOf(String(difficulty), 'queue')).toEqual([
       { kind: 'start-reevaluate' },
-      { kind: 'reevaluate', difficulty: 3 },
+      { kind: 'reevaluate', difficulty },
     ])
-    expect(commandsOf('q', 'queue')).toEqual([{ kind: 'quit' }])
-    expect(commandsOf(CTRL_C, 'queue')).toEqual([{ kind: 'interrupt' }])
   })
 })
 
@@ -257,6 +276,19 @@ describe('AC6 — escape partido e Esc sozinho', () => {
   it('keys-seta-partida: o prefixo fica retido e o read seguinte completa', () => {
     expect(parseKeys(CSI, 'queue')).toEqual({ commands: [], pending: CSI })
     expect(parseKeys('A', 'queue', CSI)).toEqual({ commands: [{ kind: 'focus-prev' }], pending: '' })
+  })
+
+  it('keys-seta-ss3-partida: o prefixo SS3 fica retido e o read seguinte completa', () => {
+    expect(parseKeys(`${ESC}O`, 'queue')).toEqual({ commands: [], pending: `${ESC}O` })
+    expect(parseKeys('A', 'queue', `${ESC}O`)).toEqual({
+      commands: [{ kind: 'focus-prev' }],
+      pending: '',
+    })
+  })
+
+  it('keys-mouse-x10-partido: o relatório fica retido até a cauda chegar', () => {
+    expect(parseKeys(`${CSI}M`, 'queue')).toEqual({ commands: [], pending: `${CSI}M` })
+    expect(parseKeys('  j', 'queue', `${CSI}M`)).toEqual({ commands: [], pending: '' })
   })
 
   it('keys-prefixo-nao-consome: o comando anterior sai e só o escape fica retido', () => {

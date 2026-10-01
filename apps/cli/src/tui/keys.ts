@@ -40,11 +40,13 @@ const ESC = '\u001b'
 const CSI = `${ESC}[`
 const SS3 = `${ESC}O`
 const SS3_LENGTH = 3
+const ESCAPE_PAIR_LENGTH = 2
 const ENTER = '\r'
 const CTRL_C = '\u0003'
 const FIRST_DIGIT = '1'
 const LAST_DIGIT = '5'
-const X10_TAIL = 3
+const X10_MOUSE = `${CSI}M`
+const X10_MOUSE_LENGTH = 3
 
 const CSI_FINAL_MIN = 0x40
 const CSI_FINAL_MAX = 0x7e
@@ -55,17 +57,19 @@ const CSI_INTERMEDIATE_MAX = 0x2f
 
 const INERT: KeyToken = { kind: 'inert' }
 
-const KNOWN_CSI = [
-  `${CSI}A`, `${CSI}B`, `${CSI}C`, `${CSI}D`, `${CSI}H`, `${CSI}F`,
-  `${CSI}1~`, `${CSI}4~`, `${CSI}5~`, `${CSI}6~`, `${CSI}7~`, `${CSI}8~`,
-]
-
 const CSI_TOKENS: Readonly<Record<string, KeyToken>> = {
   [`${CSI}A`]: { kind: 'focus-prev' },
   [`${CSI}B`]: { kind: 'focus-next' },
   [`${CSI}5~`]: { kind: 'page-prev' },
   [`${CSI}6~`]: { kind: 'page-next' },
 }
+
+const INERT_CSI = [
+  `${CSI}C`, `${CSI}D`, `${CSI}H`, `${CSI}F`,
+  `${CSI}1~`, `${CSI}4~`, `${CSI}7~`, `${CSI}8~`,
+]
+
+const KNOWN_CSI = [...Object.keys(CSI_TOKENS), ...INERT_CSI]
 
 const SS3_TOKENS: Readonly<Record<string, KeyToken>> = {
   [`${SS3}A`]: { kind: 'focus-prev' },
@@ -89,7 +93,7 @@ type Scan = {
   readonly pending: string
 }
 
-type CsiScan = { readonly length: number; readonly token: KeyToken } | { readonly pending: string }
+type ScanResult = { readonly length: number; readonly token: KeyToken } | { readonly pending: string }
 
 function isCsiParam(code: number): boolean {
   return code >= CSI_PARAM_MIN && code <= CSI_PARAM_MAX
@@ -107,7 +111,7 @@ function isKnownCsiPrefix(sequence: string): boolean {
   return KNOWN_CSI.some((known) => known.startsWith(sequence))
 }
 
-function scanCsi(rest: string): CsiScan | null {
+function scanCsi(rest: string): ScanResult | null {
   if (!rest.startsWith(CSI)) return null
 
   let index = CSI.length
@@ -120,8 +124,9 @@ function scanCsi(rest: string): CsiScan | null {
     if (isCsiFinal(code)) {
       const sequence = rest.slice(0, index + 1)
       const token = CSI_TOKENS[sequence] ?? INERT
-      const tail = sequence === `${CSI}M` ? X10_TAIL : 0
-      return { length: Math.min(index + 1 + tail, rest.length), token }
+      const length = index + 1 + (sequence === X10_MOUSE ? X10_MOUSE_LENGTH : 0)
+      if (length > rest.length) return { pending: rest }
+      return { length, token }
     }
     return { length: CSI.length, token: INERT }
   }
@@ -129,8 +134,9 @@ function scanCsi(rest: string): CsiScan | null {
   return isKnownCsiPrefix(rest) ? { pending: rest } : { length: rest.length, token: INERT }
 }
 
-function scanSs3(rest: string): { readonly length: number; readonly token: KeyToken } | null {
+function scanSs3(rest: string): ScanResult | null {
   if (!rest.startsWith(SS3)) return null
+  if (rest.length < SS3_LENGTH) return { pending: rest }
   const token = SS3_TOKENS[rest.slice(0, SS3_LENGTH)]
   return token === undefined ? null : { length: SS3_LENGTH, token }
 }
@@ -161,6 +167,7 @@ function scan(input: string): Scan {
       }
       const ss3 = scanSs3(rest)
       if (ss3 !== null) {
+        if ('pending' in ss3) return { tokens, pending: ss3.pending }
         tokens.push(ss3.token)
         index += ss3.length
         continue
@@ -170,7 +177,7 @@ function scan(input: string): Scan {
         index += 1
         continue
       }
-      index += 2
+      index += ESCAPE_PAIR_LENGTH
       continue
     }
 
@@ -184,6 +191,13 @@ function scan(input: string): Scan {
 
 function focusCommands(screen: KeyScreen, kind: 'focus-prev' | 'focus-next'): readonly KeyCommand[] {
   return screen === 'queue' || screen === 'help' ? [{ kind }] : []
+}
+
+function queueCommands(
+  screen: KeyScreen,
+  kind: 'focus-prev' | 'focus-next' | 'focus-first' | 'focus-last',
+): readonly KeyCommand[] {
+  return screen === 'queue' ? [{ kind }] : []
 }
 
 function enterCommands(screen: KeyScreen): readonly KeyCommand[] {
@@ -224,13 +238,13 @@ function commandsFor(screen: KeyScreen, token: KeyToken): readonly KeyCommand[] 
     case 'focus-next':
       return focusCommands(screen, 'focus-next')
     case 'page-prev':
-      return screen === 'queue' ? [{ kind: 'focus-prev' }] : []
+      return queueCommands(screen, 'focus-prev')
     case 'page-next':
-      return screen === 'queue' ? [{ kind: 'focus-next' }] : []
+      return queueCommands(screen, 'focus-next')
     case 'focus-first':
-      return screen === 'queue' ? [{ kind: 'focus-first' }] : []
+      return queueCommands(screen, 'focus-first')
     case 'focus-last':
-      return screen === 'queue' ? [{ kind: 'focus-last' }] : []
+      return queueCommands(screen, 'focus-last')
     case 'enter':
       return enterCommands(screen)
     case 'escape':
