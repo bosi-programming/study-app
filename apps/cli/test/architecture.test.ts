@@ -135,3 +135,31 @@ describe('AC9 — a camada de entrada da TUI', () => {
     expect(adr).toContain("status: 'aceito'")
   })
 })
+
+describe('AC9 — a zona do laço da TUI', () => {
+  it('laco-zona-root: tui/loop/** é raiz de composição', () => {
+    const offenders = sourceFiles(resolve(SRC, 'tui/loop'))
+      .filter((file) => zoneOf(file) !== 'root')
+      .map(rel)
+
+    expect(offenders).toEqual([])
+    expect(zoneOf(resolve(SRC, 'tui/loop/runTui.ts'))).toBe('root')
+  })
+
+  it('laco-sem-process: nenhum arquivo do laço usa process., node:, setRawMode ou SIGWINCH', () => {
+    const offenders = sourceFiles(resolve(SRC, 'tui/loop'))
+      .filter((file) => /process\.|node:|setRawMode|SIGWINCH/.test(readFileSync(file, 'utf8')))
+      .map(rel)
+
+    expect(offenders).toEqual([])
+  })
+
+  it('adr-laco-e-reavaliacao-aceitos: os dois ADRs existem, nomeados pelo assunto, e aceitos', () => {
+    for (const name of [
+      'porta-de-terminal-injetada-e-zona-do-laco-da-tui.md',
+      'reavaliacao-apos-check-in-na-sessao-da-tui.md',
+    ]) {
+      expect(readFileSync(resolve(ADR_DIR, name), 'utf8'), name).toContain("status: 'aceito'")
+    }
+  })
+})

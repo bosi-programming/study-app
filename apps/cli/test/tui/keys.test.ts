@@ -48,7 +48,12 @@ function firstCommand(chunk: string, screen: KeyScreen, pending = ''): KeyComman
 }
 
 function actionOf(command: KeyCommand): SessionAction {
-  if (command.kind === 'quit' || command.kind === 'interrupt') {
+  if (
+    command.kind === 'quit' ||
+    command.kind === 'interrupt' ||
+    command.kind === 'page-prev' ||
+    command.kind === 'page-next'
+  ) {
     throw new Error('comando de saída não é ação de sessão')
   }
   return command
@@ -162,8 +167,8 @@ describe('AC3 — a tabela Teclas', () => {
   })
 
   it.each([
-    ['PgUp', `${CSI}5~`, 'focus-prev'],
-    ['PgDn', `${CSI}6~`, 'focus-next'],
+    ['PgUp', `${CSI}5~`, 'page-prev'],
+    ['PgDn', `${CSI}6~`, 'page-next'],
   ])('keys-pagina: %s na fila vira %s', (_name, chunk, kind) => {
     expect(commandsOf(chunk, 'queue')).toEqual([{ kind }])
   })
@@ -239,8 +244,8 @@ describe('AC4 — a coluna Onde', () => {
     ['k na ajuda', 'k', 'help', [{ kind: 'focus-prev' }]],
     ['j no detalhe', 'j', 'detail', []],
     ['k na reavaliação', 'k', 'reevaluate', []],
-    ['PgUp na fila', `${CSI}5~`, 'queue', [{ kind: 'focus-prev' }]],
-    ['PgDn na fila', `${CSI}6~`, 'queue', [{ kind: 'focus-next' }]],
+    ['PgUp na fila', `${CSI}5~`, 'queue', [{ kind: 'page-prev' }]],
+    ['PgDn na fila', `${CSI}6~`, 'queue', [{ kind: 'page-next' }]],
     ['PgUp na ajuda', `${CSI}5~`, 'help', []],
     ['g na fila', 'g', 'queue', [{ kind: 'focus-first' }]],
     ['G na fila', 'G', 'queue', [{ kind: 'focus-last' }]],
@@ -297,7 +302,7 @@ describe('AC6 — escape partido e Esc sozinho', () => {
       pending: `${CSI}5`,
     })
     expect(parseKeys('~', 'queue', `${CSI}5`)).toEqual({
-      commands: [{ kind: 'focus-prev' }],
+      commands: [{ kind: 'page-prev' }],
       pending: '',
     })
   })

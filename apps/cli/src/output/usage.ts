@@ -9,6 +9,7 @@ Comandos:
   list                lista itens (--status, -s)
   find <termo>        busca por substring no título (--status, -s)
   due                 fila do dia, atrasados primeiro (-s)
+  tui                 abre a TUI no terminal (exige um terminal interativo)
   review <ref>        check-in e dificuldade (-d pula o prompt)
   difficulty <ref> <1-5>  reavalia a dificuldade sem check-in
   show <ref>          detalhe e vencimento; --history inclui os check-ins

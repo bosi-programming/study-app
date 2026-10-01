@@ -10,7 +10,7 @@ Registro datado do que cada pedaço da fase 2 fecha: a camada de persistência I
 | --- | --- | --- | --- | --- |
 | IndexedDB com o mesmo contrato de dados | `pnpm vitest run --project web` | `apps/web/test/store/{schema,mapping,store,queue}.test.ts` (os 25 casos `W-11.1`..`W-11.25`) e a zona `store` do `apps/web/test/architecture.test.ts` | 2026-09-30 | quatro stores com os índices do `MODELO-DE-DADOS.md`, schema pinado ao doc, round-trip por entidade e fila correta com 5.000 itens |
 | Reuso do core TS sem duplicação | `pnpm --filter @study/web typecheck` | `apps/web/src/store/mapping.ts` importa `titleKey`/`subjectKey`/`toDifficulty` e os tipos de `@study/core` | 2026-09-30 | a regra e os tipos vêm do barrel; o web não reimplementa `RN-nn` |
-| Telas: adicionar, lista, fila, check-in, arquivar e stats | `pnpm vitest run --project web` | `apps/web/test/{routing,strings}.test.ts`, `apps/web/test/app.test.tsx`, `apps/web/test/features/*.test.tsx` e `packages/core/test/lifecycle.test.ts` | 2026-10-01 | as seis rotas do `WEB.md` sobre o shell `{ store, deps }`, com o ciclo de vida do item no core; o projeto `web` vai a 15 arquivos/124 casos |
+| Telas: adicionar, lista, fila, check-in, arquivar e stats | `pnpm vitest run --project web` | `apps/web/test/{routing,strings}.test.ts`, `apps/web/test/app.test.tsx`, `apps/web/test/features/*.test.tsx` e `packages/core/test/lifecycle.test.ts` | 2026-10-01 | as seis rotas do `WEB.md` sobre o shell `{ store, deps }`, com o ciclo de vida do item no core; o projeto `web` vai a 19 arquivos/146 casos |
 | Deploy em free tier e export/import pela interface | — | em aberto (BOS-44, BOS-45) | (a preencher) | (a preencher) |
 
 ## Telas do web (BOS-43, ENG-18)
@@ -54,7 +54,7 @@ Projeto `web`, por rodada:
 | 2026-09-30 (BOS-42) | 7 | 66 |
 | 2026-10-01 (BOS-43) | 15 | 124 |
 
-Rodada dos comandos do web em 2026-10-01, todos com exit 0: `pnpm vitest run --project web` (15 arquivos/124 casos, 42 deles na zona `store` que o BOS-42 entregou), `pnpm --filter @study/web typecheck` e `pnpm exec eslint apps/web`. O `pnpm bench:web` não foi re-medido nesta unidade porque o caminho que ele mede não mudou.
+Rodada dos comandos do web em 2026-10-01, todos com exit 0: `pnpm vitest run --project web` (19 arquivos/146 casos, 42 deles na zona `store` que o BOS-42 entregou), `pnpm --filter @study/web typecheck` e `pnpm exec eslint apps/web`. O `pnpm bench:web` não foi re-medido nesta unidade porque o caminho que ele mede não mudou.
 
 ## Verificações já cobertas por teste
 
