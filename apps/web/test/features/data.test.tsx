@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { type Item, type ReviewLog } from '@study/core'
 import { toItemJson, toReviewLogJson } from '../../src/features/data/model/json.ts'
@@ -60,7 +60,7 @@ function savedText(files: TestFiles): string {
   return first.content
 }
 
-async function openData(store: Store, files: TestFiles): Promise<void> {
+async function openData(store: Store, files: FileGateway): Promise<void> {
   renderApp(store, testDeps(), '#/data', files)
   await screen.findByRole('heading', { name: strings.data.heading })
 }
@@ -78,6 +78,7 @@ describe('AC1/AC4 export pela tela', () => {
     fireEvent.click(screen.getByRole('button', { name: strings.data.export }))
 
     expect(await screen.findByText(strings.data.exported)).toBeInTheDocument()
+    expect(files.saved[0]?.name).toBe('study-2026-09-30.json')
     const dump = JSON.parse(savedText(files)) as Record<string, unknown>
     expect(Object.keys(dump)).toEqual([
       'schema_version',
@@ -114,7 +115,7 @@ describe('AC2/AC4 import pela tela', () => {
     expect(await store.listItems()).toHaveLength(1)
   })
 
-  it('dataImportDuasVezesNaoDuplica', async () => {
+  it('dataImportDuasVezesNaoDuplicaNemGrava', async () => {
     const { store } = await openTestStore()
     const files = testFiles()
     files.setPicked(dumpText([makeItem('a-1')], [makeLog('l-1', 'a-1')]))
@@ -125,27 +126,40 @@ describe('AC2/AC4 import pela tela', () => {
     fireEvent.click(screen.getByRole('button', { name: strings.data.import }))
 
     expect(await screen.findByText(`${strings.data.countsWritten}: 0`)).toBeInTheDocument()
+    expect(screen.getByText(`${strings.data.countsSkipped}: 2`)).toBeInTheDocument()
     expect(await store.listItems()).toHaveLength(1)
     expect(await store.listReviewLogs()).toHaveLength(1)
   })
 
-  it('dataImportSegundaRodadaGravaZero', async () => {
+  it('dataBotoesFicamDesabilitadosDuranteAOperacao', async () => {
     const { store } = await openTestStore()
-    const files = testFiles()
-    files.setPicked(dumpText([makeItem('a-1')], [makeLog('l-1', 'a-1')]))
+    let release: (() => void) | undefined
+    const files: FileGateway = {
+      saveFile: () =>
+        new Promise<void>((resolve) => {
+          release = resolve
+        }),
+      pickFile: () => Promise.resolve(null),
+    }
 
     await openData(store, files)
-    fireEvent.click(screen.getByRole('button', { name: strings.data.import }))
-    await screen.findByText(strings.data.imported)
-    fireEvent.click(screen.getByRole('button', { name: strings.data.import }))
+    const exportButton = screen.getByRole('button', { name: strings.data.export })
+    const importButton = screen.getByRole('button', { name: strings.data.import })
 
-    expect(await screen.findByText(`${strings.data.countsSkipped}: 2`)).toBeInTheDocument()
-    expect(screen.getByText(`${strings.data.countsWritten}: 0`)).toBeInTheDocument()
+    fireEvent.click(exportButton)
+
+    await waitFor(() => expect(exportButton).toBeDisabled())
+    expect(importButton).toBeDisabled()
+    await waitFor(() => expect(release).toBeTypeOf('function'))
+    await act(async () => {
+      release?.()
+    })
+    await waitFor(() => expect(exportButton).toBeEnabled())
   })
 })
 
 describe('AC7 recusa pela tela', () => {
-  it('importEscritaRodaNumaTransacaoUnica', async () => {
+  it('importOrfaoRecusaAntesDeQualquerEscrita', async () => {
     const { store } = await openTestStore()
     await seed(store, [makeItem('local-1')])
     const before = await store.listItems()
