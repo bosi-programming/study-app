@@ -112,8 +112,10 @@ describe('AC2 — totalidade', () => {
     ['home', `${CSI}H`],
     ['end', `${CSI}F`],
     ['esc na fila', ESC],
+    ['esc malformado com j', `${ESC}j`],
     ['mouse SGR', `${CSI}<0;10;5M`],
     ['mouse X10', `${CSI}M`],
+    ['mouse X10 com cauda', `${CSI}M  j`],
   ])('keys-inertes: %s na fila devolve zero comandos', (_name, chunk) => {
     expect(commandsOf(chunk, 'queue')).toEqual([])
   })
@@ -137,6 +139,8 @@ describe('AC3 — a tabela Teclas', () => {
   it.each([
     ['seta para cima', `${CSI}A`, 'focus-prev'],
     ['seta para baixo', `${CSI}B`, 'focus-next'],
+    ['seta SS3 para cima', `${ESC}OA`, 'focus-prev'],
+    ['seta SS3 para baixo', `${ESC}OB`, 'focus-next'],
     ['j', 'j', 'focus-next'],
     ['k', 'k', 'focus-prev'],
   ])('keys-navegacao: %s na fila vira %s', (_name, chunk, kind) => {

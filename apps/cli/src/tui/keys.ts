@@ -165,8 +165,12 @@ function scan(input: string): Scan {
         index += ss3.length
         continue
       }
-      if (rest.length === 1) tokens.push({ kind: 'escape' })
-      index += 1
+      if (rest.length === 1) {
+        tokens.push({ kind: 'escape' })
+        index += 1
+        continue
+      }
+      index += 2
       continue
     }
 
