@@ -3,6 +3,7 @@ import { type TuiTerminal } from '../../src/tui/loop/index.ts'
 import { openTerminal } from '../../src/tui/terminal/openTerminal.ts'
 import { signalExitCode } from '../../src/tui/terminal/signalExitCode.ts'
 import { type TerminalEnvironment } from '../../src/tui/terminal/types.ts'
+import { withTerminal } from '../../src/tui/terminal/withTerminal.ts'
 
 type Listener = (...args: unknown[]) => void
 
@@ -325,5 +326,46 @@ describe('AC9 — bordas do ciclo de vida', () => {
 
     expect(harness.out).toEqual(['\u001b[?1049h\u001b[?25l', '\u001b[?1049l\u001b[?25h'])
     expect(harness.rawModes).toEqual([true, false])
+  })
+})
+
+describe('AC2 — a composição com finally', () => {
+  it('terminal-compoe-finally-sucesso: withTerminal devolve o resultado do callback e restaura no fim', async () => {
+    const harness = fakeEnvironment()
+
+    const result = await withTerminal(async (terminal) => {
+      terminal.write('frame')
+      return 'done'
+    }, harness.environment)
+
+    expect(result).toBe('done')
+    expect(harness.out).toEqual(['\u001b[?1049h\u001b[?25l', 'frame', '\u001b[?1049l\u001b[?25h'])
+    expect(harness.rawModes).toEqual([true, false])
+  })
+
+  it('terminal-falha-restaura-antes-de-propagar: withTerminal restaura e repropaga quando o callback rejeita', async () => {
+    const harness = fakeEnvironment()
+
+    await expect(
+      withTerminal(() => Promise.reject(new Error('fatal')), harness.environment),
+    ).rejects.toThrow('fatal')
+
+    expect(harness.out).toEqual(['\u001b[?1049h\u001b[?25l', '\u001b[?1049l\u001b[?25h'])
+    expect(harness.rawModes).toEqual([true, false])
+  })
+})
+
+describe('AC9 — bordas do ciclo de vida', () => {
+  it('terminal-eof-fim-de-entrada: end do stdin resolve null e o withTerminal restaura como nos demais caminhos', async () => {
+    const harness = fakeEnvironment()
+
+    const seen = await withTerminal((terminal) => {
+      const pending = terminal.next()
+      harness.emit(harness.input, 'end')
+      return pending
+    }, harness.environment)
+
+    expect(seen).toBeNull()
+    expect(harness.out).toEqual(['\u001b[?1049h\u001b[?25l', '\u001b[?1049l\u001b[?25h'])
   })
 })
