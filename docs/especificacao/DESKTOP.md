@@ -20,7 +20,7 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/engenharia/ROADMAP.md`
 ## Carregamento em produção
 
 - O main serve o bundle do web (`pnpm --filter @study/web build`, saída em `apps/web/dist`) por um protocolo próprio privilegiado na origem estável `study://app`, sem dev server.
-- Precedência da fonte: `STUDY_WEB_URL` (dev server) > `STUDY_WEB_DIST` (bundle apontado) > bundle empacotado (`process.resourcesPath/web`).
+- Precedência da fonte: `STUDY_WEB_URL` (dev server) > `STUDY_WEB_DIST` (bundle apontado) > bundle empacotado (`process.resourcesPath/web`); sem nenhum e fora do pacote, o default é o dev server (`http://localhost:4173`).
 - Bundle ausente falha alto: erro logado e `app.exit(1)`, sem janela em branco.
 - O IndexedDB vive sob `study://app`; dados gravados sob a origem antiga (`http://localhost:4173`) não migram (Origem de carregamento do renderer no desktop).
 - O dev loop segue pelo dev server do Vite (`STUDY_WEB_URL`, porta 4173).

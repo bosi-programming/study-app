@@ -25,14 +25,14 @@ pnpm sqlite:probe  # prova o schema canônico no engine do CLI (Engine SQLite do
 
 ### Rodar o app desktop
 
-Em produção o desktop abre o renderer do `apps/web` a partir do bundle, servido pelo protocolo próprio `study://app` — sem dev server e sem backend. Gere o bundle uma vez e abra a janela:
+Em produção o desktop abre o renderer do `apps/web` a partir do bundle, servido pelo protocolo próprio `study://app` — sem dev server e sem backend. Gere o bundle e aponte o desktop para ele:
 
 ```bash
-pnpm --filter @study/web build      # bundle do web em apps/web/dist
-pnpm --filter @study/desktop dev    # janela do Electron sobre study://app
+pnpm --filter @study/web build                                       # bundle do web em apps/web/dist
+STUDY_WEB_DIST="$PWD/apps/web/dist" pnpm --filter @study/desktop dev # janela do Electron sobre study://app
 ```
 
-`STUDY_WEB_DIST` aponta um bundle fora do default (empacotado, o default é `process.resourcesPath/web`). `STUDY_USER_DATA` troca o perfil do Electron e isola os dados entre execuções.
+`STUDY_WEB_DIST` (caminho absoluto, porque o script roda em `apps/desktop`) é o que faz a janela abrir sobre `study://app` fora do pacote; empacotado, o default é `process.resourcesPath/web`. Sem ele e fora do pacote, a janela cai no dev server do Vite em `http://localhost:4173`. `STUDY_USER_DATA` troca o perfil do Electron e isola os dados entre execuções.
 
 O dev loop continua valendo: `STUDY_WEB_URL` tem precedência sobre o bundle e aponta a janela para o dev server do Vite.
 
