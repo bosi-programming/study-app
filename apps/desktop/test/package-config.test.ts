@@ -1,6 +1,8 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { builderArgs, packageVersion } from '../scripts/builder.ts'
 import { shellFor } from '../scripts/run.ts'
 import { assertSigningReady, signingPlan } from '../scripts/signing.ts'
 import { assertReleasableVersion, desktopVersion, webVersion } from '../scripts/version.ts'
@@ -31,11 +33,20 @@ describe('S-57 desktop-versao-fonte-unica', () => {
     expect(assertReleasableVersion('1.2.3-beta.1+build.9')).toBe('1.2.3-beta.1+build.9')
   })
 
-  it('injeta a versão do web no empacotamento', () => {
-    const source = sourceAt('apps/desktop/scripts/package.ts')
+  it('injeta no pacote a versão do web, não um número próprio', () => {
+    const fixture = mkdtempSync(join(tmpdir(), 'study-web-version-'))
 
-    expect(source).toContain('webVersion')
-    expect(source).toContain('--config.extraMetadata.version=')
+    try {
+      mkdirSync(join(fixture, 'apps/web'), { recursive: true })
+      writeFileSync(join(fixture, 'apps/web/package.json'), '{"version":"1.2.3"}')
+
+      const version = packageVersion(fixture)
+
+      expect(version).toBe('1.2.3')
+      expect(builderArgs(version)).toContain('--config.extraMetadata.version=1.2.3')
+    } finally {
+      rmSync(fixture, { recursive: true, force: true })
+    }
   })
 })
 
@@ -103,7 +114,29 @@ describe('S-58 desktop-plano-de-assinatura', () => {
     expect(source).toContain('GPG_KEY_ID')
     expect(source).toContain('GPG_PASSPHRASE')
   })
+
+  it('satisfaz o plano de assinatura com os segredos do passo Package do workflow', () => {
+    const env = stepEnv(sourceAt('.github/workflows/release.yml'), 'Package')
+
+    for (const platform of ['darwin', 'win32', 'linux'] as const) {
+      expect(signingPlan(platform, env).missing, platform).toEqual([])
+    }
+  })
 })
+
+function stepEnv(source: string, stepName: string): Record<string, string> {
+  const lines = source.split('\n')
+  const start = lines.findIndex((line) => line.trim() === `- name: ${stepName}`)
+  if (start < 0) return {}
+
+  const env: Record<string, string> = {}
+  for (const line of lines.slice(start + 1)) {
+    if (/^\s*-\s/.test(line)) break
+    const match = /^\s+([A-Z_]+):\s*\$\{\{\s*secrets\.[A-Z_]+\s*\}\}\s*$/.exec(line)
+    if (match?.[1] !== undefined) env[match[1]] = 'set'
+  }
+  return env
+}
 
 function yamlSection(source: string, key: string): string[] {
   const lines = source.split('\n')

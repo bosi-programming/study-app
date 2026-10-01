@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
+import { builderArgs, packageVersion } from './builder.ts'
 import { run } from './run.ts'
 import { assertSigningReady, signingPlan, signingPlatform } from './signing.ts'
-import { assertReleasableVersion, webVersion } from './version.ts'
 
 const desktopDir = resolve(import.meta.dirname, '..')
 const rootDir = resolve(desktopDir, '../..')
@@ -11,7 +11,7 @@ function pnpm(args: readonly string[], env: NodeJS.ProcessEnv): void {
   run('pnpm', args, { cwd: desktopDir, env })
 }
 
-const version = assertReleasableVersion(webVersion(rootDir))
+const version = packageVersion(rootDir)
 
 pnpm(['--filter', '@study/web', 'build'], process.env)
 
@@ -27,15 +27,4 @@ if (!plan.signed) {
   )
 }
 
-pnpm(
-  [
-    'exec',
-    'electron-builder',
-    '--config',
-    'electron-builder.yml',
-    `--config.extraMetadata.version=${version}`,
-    '--publish',
-    'never',
-  ],
-  env,
-)
+pnpm(builderArgs(version), env)
