@@ -112,3 +112,26 @@ describe('AC6 — o ADR da arquitetura MVC', () => {
     expect(adr).toContain("status: 'aceito'")
   })
 })
+
+describe('AC9 — a camada de entrada da TUI', () => {
+  it('keys-zona-root: tui/keys.ts fica na raiz da composição', () => {
+    expect(zoneOf(resolve(SRC, 'tui/keys.ts'))).toBe('root')
+  })
+
+  it('keys-sem-view: tui/keys.ts não importa a view', () => {
+    const keys = resolve(SRC, 'tui/keys.ts')
+    const offenders = specifiersOf(keys).flatMap((specifier) => {
+      const target = targetOf(keys, specifier)
+      if (target === null || zoneOf(target) !== 'view') return []
+      return [`${rel(keys)} -> ${specifier}`]
+    })
+
+    expect(offenders).toEqual([])
+  })
+
+  it('adr-teclas-aceito: o ADR da camada de entrada existe e está aceito', () => {
+    const adr = readFileSync(resolve(ADR_DIR, 'teclas-da-tui-como-adaptador-de-entrada-puro.md'), 'utf8')
+
+    expect(adr).toContain("status: 'aceito'")
+  })
+})
