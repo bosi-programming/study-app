@@ -64,6 +64,7 @@ export type DumpSnapshot = {
 
 const DEFAULT_LOCALE = 'pt-BR'
 const DEFAULT_COLD_ARCHIVE_AFTER_DAYS = 180
+const DEFAULT_STREAK_CURRENT = 0
 const MIN_DIFFICULTY = 1
 const MAX_DIFFICULTY = 5
 const ITEM_STATUSES: readonly ItemStatus[] = ['active', 'archived', 'cold']
@@ -257,12 +258,9 @@ export function dumpJsonV1(snapshot: DumpSnapshot): DumpJsonV1 {
     schema_version: CURRENT_SCHEMA_VERSION,
     exported_at: snapshot.exportedAt,
     meta: {
-      cold_archive_after_days: numberMeta(
-        snapshot.meta['cold_archive_after_days'] ?? null,
-        DEFAULT_COLD_ARCHIVE_AFTER_DAYS,
-      ),
+      cold_archive_after_days: windowMeta(snapshot.meta['cold_archive_after_days'] ?? null),
       locale: snapshot.meta['locale'] ?? DEFAULT_LOCALE,
-      streak_current: numberMeta(snapshot.meta['streak_current'] ?? null, 0),
+      streak_current: numberMeta(snapshot.meta['streak_current'] ?? null, DEFAULT_STREAK_CURRENT),
       streak_last_day: snapshot.meta['streak_last_day'] ?? null,
     },
     items: snapshot.items.map(toItemJson),
@@ -276,6 +274,15 @@ function coldArchiveJson(entry: ColdArchiveRecord): Record<string, unknown> {
     ...(JSON.parse(entry.payload) as Record<string, unknown>),
     cold_archived_at: entry.cold_archived_at,
   }
+}
+
+function windowMeta(value: string | null): number {
+  if (value === null) return DEFAULT_COLD_ARCHIVE_AFTER_DAYS
+  const trimmed = value.trim()
+  if (!/^\d+$/.test(trimmed)) return DEFAULT_COLD_ARCHIVE_AFTER_DAYS
+  const parsed = Number(trimmed)
+  if (!Number.isInteger(parsed) || parsed < 1) return DEFAULT_COLD_ARCHIVE_AFTER_DAYS
+  return parsed
 }
 
 function numberMeta(value: string | null, fallback: number): number {

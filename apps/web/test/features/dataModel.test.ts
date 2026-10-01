@@ -23,6 +23,35 @@ import { makeItem, makeLog } from '../store/helpers.ts'
 
 const STAMP = '2026-10-01T12:00:00Z'
 
+const COLD_ITEM_LITERAL = {
+  id: 'a-3',
+  title: 'Item a-3',
+  subject: 'Cálculo',
+  difficulty: 3,
+  note: null,
+  link: null,
+  interval_days: 3,
+  due_date: '2026-09-30',
+  review_count: 0,
+  on_time_streak: 0,
+  status: 'cold',
+  last_reviewed_at: null,
+  archived_at: null,
+  cold_archived_at: STAMP,
+  created_at: '2026-09-01T09:00:00Z',
+  updated_at: '2026-09-01T09:00:00Z',
+}
+
+const LOG_LITERAL = {
+  id: 'l-1',
+  item_id: 'a-3',
+  reviewed_at: '2026-09-06T22:10:00Z',
+  due_date_at_review: '2026-09-06',
+  interval_after: 6,
+  review_count_after: 1,
+  late: false,
+}
+
 function makeSnapshot(
   options: {
     readonly exportedAt?: string
@@ -101,10 +130,31 @@ describe('AC1 contrato do export', () => {
 
     expect(dump.items.map((item) => item.id)).toEqual(['a-1', 'a-2', 'a-3'])
     expect(dump.items.map((item) => item.status)).toEqual(['active', 'archived', 'cold'])
-    expect(dump.review_logs).toEqual([toReviewLogJson(log)])
+    expect(dump.review_logs).toEqual([LOG_LITERAL])
     expect(dump.cold_archive).toEqual([
-      { item: toItemJson(cold), review_logs: [toReviewLogJson(log)], cold_archived_at: STAMP },
+      { item: COLD_ITEM_LITERAL, review_logs: [LOG_LITERAL], cold_archived_at: STAMP },
     ])
+  })
+
+  const windows: readonly (readonly [string, string | null, number])[] = [
+    ['ausente', null, 180],
+    ['aceita', '90', 90],
+    ['recusa zero', '0', 180],
+    ['recusa negativo', '-5', 180],
+    ['recusa fracionário', '1.5', 180],
+    ['recusa texto', 'abc', 180],
+  ]
+
+  it.each(windows)('dataExportNormalizaAJanelaDoArquivoMorto (%s)', (_label, raw, expected) => {
+    const dump = dumpJsonV1(makeSnapshot({ meta: { cold_archive_after_days: raw } }))
+
+    expect(dump.meta['cold_archive_after_days']).toBe(expected)
+  })
+
+  it('dataExportZeraOStreakQuandoNaoEhNumero', () => {
+    const dump = dumpJsonV1(makeSnapshot({ meta: { streak_current: 'abc' } }))
+
+    expect(dump.meta['streak_current']).toBe(0)
   })
 
   it('dataExportMetaGravaPadroesQuandoFaltaChave', () => {
@@ -217,33 +267,28 @@ describe('AC7 bordas herdadas', () => {
   })
 
   it('importSchemaVersionFuturoRecusa', () => {
-    let caught: unknown
-    try {
-      parseDumpV1(dumpJson({ schema_version: 2 }))
-    } catch (error) {
-      caught = error
-    }
-
-    expect(caught).toBeInstanceOf(UnsupportedSchemaError)
-    expect((caught as UnsupportedSchemaError).version).toBe(2)
+    expect(() => parseDumpV1(dumpJson({ schema_version: 2 }))).toThrowError(UnsupportedSchemaError)
+    expect(() => parseDumpV1(dumpJson({ schema_version: 7 }))).toThrowError(
+      new UnsupportedSchemaError(7),
+    )
   })
 
-  it('importArquivoForaDoContratoRecusa', () => {
-    const item = toItemJson(makeItem('a-1'))
-    const cases = [
-      '{ nao eh json',
-      dumpJson({ schema_version: '1' }),
-      dumpJson({ schema_version: 0 }),
-      dumpJson({ schema_version: 1.5 }),
-      dumpJson({ items: {} }),
-      dumpJson({ meta: [] }),
-      dumpJson({ exported_at: 3 }),
-      dumpJson({ items: [{ ...item, status: 'sumido' }] }),
-      dumpJson({ items: [{ ...item, difficulty: 9 }] }),
-      dumpJson({ cold_archive: [{ cold_archived_at: 'x' }] }),
-    ]
+  const item = toItemJson(makeItem('a-1'))
+  const invalidBodies: readonly (readonly [string, string])[] = [
+    ['json inválido', '{ nao eh json'],
+    ['schema_version texto', dumpJson({ schema_version: '1' })],
+    ['schema_version zero', dumpJson({ schema_version: 0 })],
+    ['schema_version fracionário', dumpJson({ schema_version: 1.5 })],
+    ['items não-lista', dumpJson({ items: {} })],
+    ['meta não-registro', dumpJson({ meta: [] })],
+    ['exported_at não-texto', dumpJson({ exported_at: 3 })],
+    ['status fora do contrato', dumpJson({ items: [{ ...item, status: 'sumido' }] })],
+    ['dificuldade fora do contrato', dumpJson({ items: [{ ...item, difficulty: 9 }] })],
+    ['cold_archive sem carimbo', dumpJson({ cold_archive: [{ cold_archived_at: 'x' }] })],
+  ]
 
-    for (const text of cases) expect(() => parseDumpV1(text)).toThrowError(InvalidDumpError)
+  it.each(invalidBodies)('importArquivoForaDoContratoRecusa (%s)', (_label, text) => {
+    expect(() => parseDumpV1(text)).toThrowError(InvalidDumpError)
   })
 
   it('importMetaGravaSoChavesConhecidas', () => {
