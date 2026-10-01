@@ -13,6 +13,7 @@ import {
   SCHEMA_VERSION_KEY,
   applySchema,
 } from '../../src/store/schema.ts'
+import { SchemaMismatchError, SchemaVersionError, openStore } from '../../src/store/store.ts'
 
 type IdbEnvironment = { factory: IDBFactory; keyRange: typeof IDBKeyRange }
 
@@ -134,5 +135,59 @@ describe('W-11.2 store-schema-pinado-ao-doc', () => {
         expect(index.name).toBe([...index.keyPath].join('+'))
       }
     }
+  })
+})
+
+function openDiverged(
+  environment: IdbEnvironment,
+  name: string,
+  upgrade: (transaction: IDBTransaction) => void,
+): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = environment.factory.open(name, IDB_VERSION)
+    request.onupgradeneeded = () => {
+      const transaction = request.transaction
+      if (transaction === null) throw new Error('transação de upgrade ausente')
+      upgrade(transaction)
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+}
+
+describe('W-11.16 store-schema-divergente', () => {
+  it('rejeita um banco com schema_version diferente de 1', async () => {
+    const environment = freshEnvironment()
+    const name = 'schema-version-divergent'
+    const db = await openDiverged(environment, name, (transaction) => {
+      applySchema(transaction)
+      transaction.objectStore(META_STORE).put({ key: SCHEMA_VERSION_KEY, value: '2' })
+    })
+    db.close()
+
+    await expect(openStore(environment, name)).rejects.toThrow(SchemaVersionError)
+  })
+
+  it('rejeita um banco com store faltando', async () => {
+    const environment = freshEnvironment()
+    const name = 'schema-store-missing'
+    const db = await openDiverged(environment, name, (transaction) => {
+      transaction.db.createObjectStore(ITEMS_STORE, { keyPath: 'id' })
+    })
+    db.close()
+
+    await expect(openStore(environment, name)).rejects.toThrow(SchemaMismatchError)
+  })
+
+  it('rejeita um banco com índice a mais', async () => {
+    const environment = freshEnvironment()
+    const name = 'schema-index-extra'
+    const db = await openDiverged(environment, name, (transaction) => {
+      applySchema(transaction)
+      transaction.objectStore(ITEMS_STORE).createIndex('extra', 'title')
+    })
+    db.close()
+
+    await expect(openStore(environment, name)).rejects.toThrow(SchemaMismatchError)
   })
 })
