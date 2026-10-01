@@ -26,9 +26,9 @@ Data: 2026-09-30 (projeto `web`).
 
 | Projeto | Arquivos | Casos |
 | --- | --- | --- |
-| web | 7 | 55 |
+| web | 7 | 61 |
 
-Rodada dos comandos do web, todos com exit 0: `pnpm vitest run --project web` (55 casos), `pnpm --filter @study/web typecheck`, `pnpm exec eslint apps/web` e `pnpm bench:web`.
+Rodada dos comandos do web, todos com exit 0: `pnpm vitest run --project web` (61 casos, já com os três `missing test` que a revisão do Tasting fechou), `pnpm --filter @study/web typecheck`, `pnpm exec eslint apps/web` e `pnpm bench:web`.
 
 ## Verificações já cobertas por teste
 
