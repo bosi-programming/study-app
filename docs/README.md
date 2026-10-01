@@ -26,7 +26,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
 | `docs/engenharia/VERIFICACAO-FASE-2.md` | Registro datado da camada de persistência IndexedDB do web e do `W-11` | Rascunho v1 |
-| `docs/engenharia/COMANDO-STUDY-TUI.md` | Registro do comando `study tui`, suas recusas e o laço da TUI | Rascunho v1 |
+| `docs/engenharia/COMANDO-STUDY-TUI.md` | Registro do comando `study tui`, suas recusas, o laço da TUI e o ciclo de vida do terminal | Rascunho v1 |
 | `docs/adr/` | ADRs com contexto, decisão e consequências | Rascunho v1 |
 
 ## Ordem de leitura

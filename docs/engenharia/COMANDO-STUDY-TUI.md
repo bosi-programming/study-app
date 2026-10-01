@@ -4,6 +4,8 @@ Versão: 1 | Data: 2026-10-01 | Base: `docs/especificacao/TUI.md`, `docs/especif
 
 Registro do comando `study tui` (BOS-53, ENG-28): a segunda superfície do CLI, que liga a sessão (BOS-50), o desenho puro (BOS-51) e o parser de teclas (BOS-52) num laço de terminal. O contrato observável é o do `TUI.md`; esta nota registra o que a unidade entrega, como usar e como o laço funciona por dentro. PR: https://github.com/bosi-programming/study-app/pull/36
 
+O ciclo de vida do terminal (raw mode, tela alternativa, cursor, `SIGTERM`/`SIGHUP`, restauração e exit codes de processo) é da unidade seguinte, BOS-54 (ENG-29): PR: https://github.com/bosi-programming/study-app/pull/38
+
 ## O que faz
 
 - Registra `study tui` no despacho do `cli.ts` e no bloco de uso (`--help` global só ganha a linha).
