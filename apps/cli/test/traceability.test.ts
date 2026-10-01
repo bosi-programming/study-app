@@ -126,3 +126,61 @@ describe('S-24 os fluxos RF pelo binário', () => {
     }
   })
 })
+
+const TUI_SUITE_HEADING = '### Suíte da TUI (U-01..U-13)'
+const TUI_TEST_ROOT = resolve(TEST_ROOT, 'tui')
+
+function tuiPlanCases(): PlanCase[] {
+  return sectionOf(readPlan(), TUI_SUITE_HEADING)
+    .split('\n')
+    .filter((line) => /^\| U-\d{2} \|/.test(line))
+    .map((line) => {
+      const cells = cellsOf(line)
+      const caseName = cells[1] ?? ''
+      return { id: cells[0] ?? '', caseName, manual: caseName.includes('(manual)') }
+    })
+}
+
+function tuiTestFiles(): TestFile[] {
+  const files: TestFile[] = []
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = resolve(dir, entry.name)
+      if (entry.isDirectory()) {
+        walk(path)
+        continue
+      }
+      if (!entry.name.endsWith('.test.ts')) continue
+      files.push({ path, text: readFileSync(path, 'utf8') })
+    }
+  }
+  walk(TUI_TEST_ROOT)
+  return files
+}
+
+describe('rastreabilidade U-nn do CLI', () => {
+  const cases = tuiPlanCases()
+  const files = tuiTestFiles()
+
+  it('plan-u-nn-forma: a subseção tem 13 ids contíguos, únicos, e marca só o U-13 como manual', () => {
+    const ids = cases.map((entry) => entry.id)
+    const expected = Array.from(
+      { length: 13 },
+      (_, index) => `U-${String(index + 1).padStart(2, '0')}`,
+    )
+
+    expect(ids).toEqual(expected)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(cases.filter((entry) => entry.manual).map((entry) => entry.id)).toEqual(['U-13'])
+  })
+
+  it('plan-u-nn-vinculo: todo U-nn não manual tem token num arquivo de apps/cli/test/tui', () => {
+    const required = cases.filter((entry) => !entry.manual)
+    expect(required).toHaveLength(12)
+
+    for (const entry of required) {
+      const found = files.some((file) => hasToken(file.text, entry.id))
+      expect(found, `${entry.id} (${entry.caseName}) sem token em apps/cli/test/tui`).toBe(true)
+    }
+  })
+})
