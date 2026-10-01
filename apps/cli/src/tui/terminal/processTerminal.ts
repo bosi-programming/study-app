@@ -1,6 +1,30 @@
 import { type TuiEvent, type TuiSize, type TuiTerminal } from '../loop/index.ts'
 
-export function processTerminal(): TuiTerminal {
+export type TerminalInput = {
+  setEncoding(encoding: BufferEncoding): unknown
+  on(event: string, listener: (...args: never[]) => void): unknown
+}
+
+export type TerminalOutput = {
+  on(event: string, listener: (...args: never[]) => void): unknown
+  write(chunk: string): unknown
+  readonly columns: number | undefined
+  readonly rows: number | undefined
+}
+
+export type TerminalStreams = {
+  readonly input: TerminalInput
+  readonly output: TerminalOutput
+  readonly error: { write(chunk: string): unknown }
+}
+
+const PROCESS_STREAMS: TerminalStreams = {
+  input: process.stdin,
+  output: process.stdout,
+  error: process.stderr,
+}
+
+export function processTerminal(streams: TerminalStreams = PROCESS_STREAMS): TuiTerminal {
   const queue: TuiEvent[] = []
   let pending: ((event: TuiEvent | null) => void) | null = null
   let ended = false
@@ -20,7 +44,7 @@ export function processTerminal(): TuiTerminal {
   }
 
   const onResize = (): void => {
-    deliver({ kind: 'resize', columns: process.stdout.columns ?? 0, rows: process.stdout.rows ?? 0 })
+    deliver({ kind: 'resize', columns: streams.output.columns ?? 0, rows: streams.output.rows ?? 0 })
   }
 
   const onEnd = (): void => {
@@ -33,14 +57,14 @@ export function processTerminal(): TuiTerminal {
   }
 
   const size = (): TuiSize => ({
-    columns: process.stdout.columns ?? 0,
-    rows: process.stdout.rows ?? 0,
+    columns: streams.output.columns ?? 0,
+    rows: streams.output.rows ?? 0,
   })
 
-  process.stdin.setEncoding('utf8')
-  process.stdin.on('data', onData)
-  process.stdin.on('end', onEnd)
-  process.stdout.on('resize', onResize)
+  streams.input.setEncoding('utf8')
+  streams.input.on('data', onData)
+  streams.input.on('end', onEnd)
+  streams.output.on('resize', onResize)
 
   return {
     size,
@@ -58,10 +82,10 @@ export function processTerminal(): TuiTerminal {
         pending = resolve
       }),
     write: (frame) => {
-      process.stdout.write(frame)
+      streams.output.write(frame)
     },
     error: (message) => {
-      process.stderr.write(`${message}\n`)
+      streams.error.write(`${message}\n`)
     },
   }
 }

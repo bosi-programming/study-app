@@ -55,6 +55,7 @@ export type QueueWindow = {
   readonly above: number
   readonly below: number
   readonly clipped: boolean
+  readonly capacity: number
 }
 
 export type ScrollBars = {

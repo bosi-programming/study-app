@@ -273,8 +273,22 @@ describe('AC4 — a tabela de teclas', () => {
       ])
 
       expect(markersOf(writes)).toEqual([
-        '> 1.', '> 2.', '> 3.', '> 2.', '> 1.', '> 2.', '> 3.', '> 1.', '> 2.', '> 1.',
+        '> 1.', '> 2.', '> 3.', '> 2.', '> 1.', '> 2.', '> 3.', '> 1.', '> 3.', '> 1.',
       ])
+    })
+  })
+
+  it('laco-pagina-por-capacidade: PgDn/PgUp andam a página da janela e param na ponta', async () => {
+    await withTempDb(async (dbPath) => {
+      const items = Array.from({ length: 15 }, (_value, index) =>
+        makeItem({ id: `I${index + 1}`, due_date: TODAY }),
+      )
+      seed(dbPath, { items })
+      const { writes } = await runScript(dbPath, fakeDeps(TODAY).deps, [
+        key(`${CSI}6~`), key(`${CSI}6~`), key(`${CSI}5~`), key('q'),
+      ], { size: { columns: 84, rows: 16 } })
+
+      expect(markersOf(writes)).toEqual(['> 1.', '> 11.', '> 15.', '> 5.'])
     })
   })
 
@@ -372,18 +386,21 @@ describe('AC4 — a tabela de teclas', () => {
     })
   })
 
-  it('laco-q-e-ctrl-c: q devolve quit e Ctrl-C devolve interrupt em qualquer tela', async () => {
+  const OUTCOME_STEPS: readonly (readonly [string, readonly Step[], string])[] = [
+    ['q na fila', [key('q')], 'quit'],
+    ['q no detalhe', [key('i'), key('q')], 'quit'],
+    ['q na ajuda', [key('?'), key('q')], 'quit'],
+    ['q na reavaliação', [key('\r'), key('q')], 'quit'],
+    ['Ctrl-C na fila', [key(CTRL_C)], 'interrupt'],
+    ['Ctrl-C no detalhe', [key('i'), key(CTRL_C)], 'interrupt'],
+  ]
+
+  it.each(OUTCOME_STEPS)('laco-q-e-ctrl-c: %s devolve %s', async (_name, steps, outcome) => {
     await withTempDb(async (dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'A', due_date: TODAY })] })
-      for (const steps of [[key('q')], [key('i'), key('q')], [key('?'), key('q')], [key('\r'), key('q')]]) {
-        const result = await runScript(dbPath, fakeDeps(TODAY).deps, steps)
-        expect(result.outcome).toBe('quit')
-      }
+      const result = await runScript(dbPath, fakeDeps(TODAY).deps, steps)
 
-      for (const steps of [[key(CTRL_C)], [key('i'), key(CTRL_C)]]) {
-        const result = await runScript(dbPath, fakeDeps(TODAY).deps, steps)
-        expect(result.outcome).toBe('interrupt')
-      }
+      expect(result.outcome).toBe(outcome)
     })
   })
 })
@@ -528,6 +545,10 @@ describe('AC5 — RenderState e frame', () => {
       expect(isUtf8Locale({})).toBe(true)
       expect(isUtf8Locale({ LANG: 'C' })).toBe(false)
       expect(isUtf8Locale({ LANG: 'en_US.UTF-8' })).toBe(true)
+      expect(isUtf8Locale({ LC_ALL: 'C', LANG: 'en_US.UTF-8' })).toBe(false)
+      expect(isUtf8Locale({ LC_ALL: '', LC_CTYPE: 'C', LANG: 'en_US.UTF-8' })).toBe(false)
+      expect(isUtf8Locale({ LC_ALL: '', LC_CTYPE: '', LANG: 'en_US.UTF-8' })).toBe(true)
+      expect(isUtf8Locale({ LC_ALL: '', LC_CTYPE: 'pt_BR.UTF-8' })).toBe(true)
     })
   })
 })

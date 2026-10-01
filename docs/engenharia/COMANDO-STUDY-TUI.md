@@ -19,7 +19,7 @@ study tui [--db <path>] [--no-color]
 ```
 
 - Exige stdin e stdout TTY. Sem isso, a porta de linha continua sendo a saída: `study due`, `study review`, `study show`.
-- Não aceita posicional; argumento extra é `usage`.
+- Não aceita posicional nem flag de outro comando (`--status`, `--subject`, `--difficulty`, `--history`, `--yes`); qualquer um dos dois é `usage`.
 - `--json` não tem envelope de TUI — o desenho é a saída — e por isso é recusado como entrada.
 - `--no-color`/`NO_COLOR`/`TERM=dumb` desligam a cor; sem cor o atraso ganha `!` e a geometria não muda. Locale não-UTF-8 cai para bordas ASCII.
 
@@ -36,6 +36,7 @@ study tui [--db <path>] [--no-color]
 - Abre o contexto uma vez por `openContext` e injeta o mesmo `OpenedContext` em `openSession` por `SessionOptions.open` — o `RenderState.detail` exige o store para `getItem` e `listReviewLogs`.
 - Escreve o primeiro frame (`beforeRender()` → `RenderState` → `render`) e consome eventos: tecla → `beforeRender()` → `parseKeys(chunk, tela, pending)` → `quit`/`interrupt` encerram e o resto vai a `applyAction`; `resize` atualiza o `viewport`.
 - Depois de cada comando o frame é remontado e escrito só se a string mudou; `resize` escreve sempre.
+- `PgUp`/`PgDn` chegam do parser como `page-prev`/`page-next` e o laço repete o foco a capacidade da janela (de `tui/render/`), parando na ponta: uma página é um frame só.
 - Troca de tela no meio de um chunk: o parser vale para a tela do início; o laço aplica um comando, acha o menor prefixo que o produz e reparseia o sufixo com a tela nova (`i` seguido de `Esc` fecha o detalhe que acabou de abrir).
 - `RenderState`: copia `today`, `screen`, `queue`, `focusId`, `reevaluation`, `streak`, `banner` e `fatal` da sessão; resolve `detail` e guarda `confirmation`; resolve `viewport`, `color` (`colorEnabled()`) e `utf8` do locale.
 

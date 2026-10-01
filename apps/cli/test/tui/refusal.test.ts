@@ -4,14 +4,15 @@ import { refuseTui } from '../../src/tui/loop/index.ts'
 const REFUSAL = 'a TUI exige um terminal interativo'
 
 describe('AC2 — a recusa fora de um terminal interativo', () => {
-  it('tui-recusa-sem-tty: stdin ou stdout não-TTY devolvem usage/1/mensagem', () => {
-    for (const [stdinTty, stdoutTty] of [[false, true], [true, false]] as const) {
-      const error = refuseTui({ stdinTty, stdoutTty, noInput: false, json: false })
+  it.each([
+    ['stdin não-TTY', false, true],
+    ['stdout não-TTY', true, false],
+  ] as const)('tui-recusa-sem-tty: %s devolve usage/1/mensagem', (_name, stdinTty, stdoutTty) => {
+    const error = refuseTui({ stdinTty, stdoutTty, noInput: false, json: false })
 
-      expect(error?.code, `stdin=${stdinTty} stdout=${stdoutTty}`).toBe('usage')
-      expect(error?.exitCode, `stdin=${stdinTty} stdout=${stdoutTty}`).toBe(1)
-      expect(error?.message, `stdin=${stdinTty} stdout=${stdoutTty}`).toBe(REFUSAL)
-    }
+    expect(error?.code).toBe('usage')
+    expect(error?.exitCode).toBe(1)
+    expect(error?.message).toBe(REFUSAL)
   })
 
   it('tui-recusa-no-input: --no-input devolve a mesma recusa', () => {

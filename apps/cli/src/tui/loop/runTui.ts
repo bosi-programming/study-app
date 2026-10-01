@@ -1,6 +1,6 @@
 import { openContext } from '../../context.ts'
 import { type KeyCommand } from '../keys.ts'
-import { render, type RenderViewport } from '../render/index.ts'
+import { queuePageSize, render, type RenderViewport } from '../render/index.ts'
 import {
   openSession,
   type Session,
@@ -9,6 +9,7 @@ import {
 } from '../session/index.ts'
 import { buildRenderState } from './buildRenderState.ts'
 import { isUtf8Locale } from './isUtf8Locale.ts'
+import { pageMoveOf } from './pageMove.ts'
 import { peel } from './peel.ts'
 import { type TuiOptions, type TuiOutcome } from './types.ts'
 
@@ -95,6 +96,19 @@ export async function runTui(options: TuiOptions): Promise<TuiOutcome> {
           if (command.kind === 'quit') return 'quit'
           if (command.kind === 'interrupt') return 'interrupt'
 
+          const page = pageMoveOf(
+            command,
+            queuePageSize(buildRenderState({ state, store, confirmed, viewport, color, utf8 })),
+          )
+          if (page !== null) {
+            for (let index = 0; index < page.steps; index += 1) {
+              state = session.applyAction({ kind: page.action })
+            }
+            const painted = paint(state, false)
+            if (painted !== null) return painted
+            continue
+          }
+
           const action = sessionActionOf(command)
           if (action === null) continue
           state = session.applyAction(action)
@@ -111,6 +125,7 @@ export async function runTui(options: TuiOptions): Promise<TuiOutcome> {
 
 function sessionActionOf(command: KeyCommand): SessionAction | null {
   if (command.kind === 'quit' || command.kind === 'interrupt') return null
+  if (command.kind === 'page-prev' || command.kind === 'page-next') return null
   return command
 }
 

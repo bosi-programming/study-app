@@ -19,5 +19,6 @@ export function windowRows(rows: readonly QueueRow[], state: RenderState, chrome
     above: rows.slice(0, start).filter((row) => row.kind === 'item').length,
     below: rows.slice(start + capacity).filter((row) => row.kind === 'item').length,
     clipped: !fits,
+    capacity,
   }
 }

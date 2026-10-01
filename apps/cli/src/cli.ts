@@ -1,4 +1,4 @@
-import { ALL_FLAGS, type ParsedArgs, assertPositionals, hasFlag, parseArgs, valueOf } from './args.ts'
+import { ALL_FLAGS, type ParsedArgs, assertAllowedFlags, assertPositionals, hasFlag, parseArgs, valueOf } from './args.ts'
 import { addCommand } from './commands/add.ts'
 import { archiveCommand } from './commands/archive.ts'
 import { coldCommand } from './commands/cold.ts'
@@ -143,6 +143,7 @@ function runTuiCommand(args: ParsedArgs, json: boolean): void {
 
   try {
     assertPositionals(commandArgs, 0, 0, 'tui')
+    assertAllowedFlags(commandArgs, [], 'tui')
   } catch (error) {
     printError(error, { json })
     process.exitCode = exitCodeFor(error)
@@ -171,11 +172,12 @@ function runTuiCommand(args: ParsedArgs, json: boolean): void {
   })
     .then((outcome) => {
       process.exitCode = exitCodeOf(outcome)
-      process.stdin.pause()
     })
     .catch((error: unknown) => {
       printError(error, { json })
       process.exitCode = exitCodeFor(error)
+    })
+    .finally(() => {
       process.stdin.pause()
     })
 }

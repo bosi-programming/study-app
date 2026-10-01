@@ -454,6 +454,15 @@ describe('AC1/AC2 — o comando study tui', () => {
     expect(errorOf(result).code).toBe('usage')
   })
 
+  it('tui-recusa-flag-de-outro-comando: flag de outro comando devolve usage', () => {
+    const result = runStudy(['tui', '--status', 'active', '--json'])
+
+    expect(result.status).toBe(1)
+    expect(result.stdout).toBe('')
+    expect(errorOf(result).code).toBe('usage')
+    expect(errorOf(result).message).toContain('--status')
+  })
+
   it('tui-recusa-json: --json devolve a mesma recusa no envelope e nada é desenhado', () => {
     const result = runStudy(['tui', '--json'])
 
