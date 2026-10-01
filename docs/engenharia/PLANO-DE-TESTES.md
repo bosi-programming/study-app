@@ -1,12 +1,13 @@
 # Plano de Testes — App de Estudo Espaçado
 
-Versão: 4 | Data: 2026-09-28 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 4 | Data: 2026-09-30 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Estratégia
 
 - A regra de agendamento é o ativo crítico; ela concentra os testes.
 - Golden fixtures são a fonte única de verdade da regra para todos os apps TS: CLI, web, mobile e desktop comparam contra elas, e o runner do core (`packages/core/test/golden.test.ts`) também. A suíte `C-nn` do core continua repetindo alguns desses vetores no nível de unidade — de propósito, e sem substituir os `T-nn`.
 - UI testada por comportamento essencial, sem perseguir cobertura.
+- A fila do web é medida por `pnpm bench:web` (`scripts/bench-web.ts`), fora do CI, como o `pnpm bench` do CLI: semeia 5.000 itens sobre o `fake-indexeddb` e mede a mediana de `dueItems` contra os 200ms da RNF-03; o número fica no `VERIFICACAO-FASE-2.md`.
 
 | Camada | Ferramenta | Meta |
 | --- | --- | --- |
@@ -147,6 +148,33 @@ As camadas novas usam faixas próprias de IDs, reservadas para não colidir com 
 | D-03 | Paridade com as telas do web | Desktop com Electron reaproveitando o web |
 
 Os `RF-nn` de tela do web continuam com a fonte em `REQUISITOS.md` e o comportamento em `WEB.md`; as linhas acima são o vínculo do caso ao requisito, não uma segunda lista de requisitos.
+
+### Detalhe do W-11
+
+Os 20 casos `W-11.1`..`W-11.20` desmembram a persistência IndexedDB do web em unidade: o schema pinado ao documento, o round-trip por entidade, a fila com 5.000 itens, a ausência de rede e a falha alta nas bordas. Todos rodam no projeto `web` do `vitest.config.ts`, em `apps/web/test/store/**`, com um `IdbEnvironment` de `fake-indexeddb` injetado por teste — nenhum toca rede.
+
+| Caso | O que prova | Arquivo |
+| --- | --- | --- |
+| W-11.1 | Abrir um banco novo cria os quatro stores com os `keyPath` e índices do documento e semeia `meta.schema_version = '1'` | `apps/web/test/store/schema.test.ts` |
+| W-11.2 | A tabela `## IndexedDB (web e desktop)` do `MODELO-DE-DADOS.md` é lida e reprova a divergência de `IDB_SCHEMA` | `apps/web/test/store/schema.test.ts` |
+| W-11.3 | `itemToRow`/`rowToItem` preservam todos os campos, incluindo `note`/`link` nulos e preenchidos | `apps/web/test/store/mapping.test.ts` |
+| W-11.4 | `late` é gravado como 1/0 na linha e lido como boolean na entidade, nas duas direções | `apps/web/test/store/mapping.test.ts` |
+| W-11.5 | `title_key`/`subject_key` saem da mesma normalização do core (`titleKey`/`subjectKey`) | `apps/web/test/store/mapping.test.ts` |
+| W-11.6 | `saveItem`/`getItem` e `saveReviewLog`/`listReviewLogs` fazem round-trip por entidade | `apps/web/test/store/store.test.ts` |
+| W-11.7 | Num banco novo `schemaVersion()` devolve 1 e `setMeta`/`getMeta` faz round-trip de outra chave | `apps/web/test/store/store.test.ts` |
+| W-11.8 | `dueItems` é só ativo com `due_date <= today` ordenado `due_date, id`; `listItems` filtra por status/matéria; `countItems` conta ativos | `apps/web/test/store/queue.test.ts` |
+| W-11.9 | Com 5.000 itens (vencidos, de hoje, futuros e arquivados) a fila devolve exatamente o conjunto vencido, na ordem | `apps/web/test/store/queue.test.ts` |
+| W-11.10 | `pnpm bench:web` mede a mediana de `dueItems` com 5.000 itens e sai 1 acima dos 200ms (`manual`) | `scripts/bench-web.ts` |
+| W-11.11 | `src/store/**` não cita API de rede nem DOM, não importa react/react-dom e não alcança `features/*` | `apps/web/test/architecture.test.ts` |
+| W-11.12 | `rowToReviewLog` lança quando `late` não é 0 nem 1 | `apps/web/test/store/mapping.test.ts` |
+| W-11.13 | `rowToItem` lança `InvalidDifficultyError` para dificuldade fora de 1–5 | `apps/web/test/store/mapping.test.ts` |
+| W-11.14 | `rowToItem` lança para `status` fora de `active\|archived\|cold` | `apps/web/test/store/mapping.test.ts` |
+| W-11.15 | `browserIdb()` lança `IndexedDbUnavailableError` com mensagem clara sem `globalThis.indexedDB` | `apps/web/test/store/store.test.ts` |
+| W-11.16 | `openStore` rejeita banco com `schema_version` ≠ 1, store faltando ou índice a mais | `apps/web/test/store/schema.test.ts` |
+| W-11.17 | `transaction` commita item + log juntos, desfaz os dois quando o corpo falha e recusa aninhamento | `apps/web/test/store/store.test.ts` |
+| W-11.18 | `deleteItem` remove o item e os `review_logs` dele, sem tocar nos de outro item | `apps/web/test/store/store.test.ts` |
+| W-11.19 | `listColdArchive` ordena por `cold_archived_at, id`, o purge remove a entrada e o restore devolve o item a ativo | `apps/web/test/store/store.test.ts` |
+| W-11.20 | `listReviewLogs(itemId)` devolve só os logs do item ordenados `reviewed_at, id`; sem argumento, todos | `apps/web/test/store/store.test.ts` |
 
 ## Rastreabilidade
 
