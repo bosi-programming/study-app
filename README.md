@@ -35,14 +35,23 @@ Não há build de produção nesta fase: o deploy da URL pública fica com o tic
 
 ### Rodar o app desktop
 
-O desktop não tem bundle nem `dist`: ele abre o renderer do `apps/web` pelo dev server do Vite, na porta fixa 4173. Com o dev server no ar, o Electron abre a janela sobre ele:
+Em produção o desktop abre o renderer do `apps/web` a partir do bundle, servido pelo protocolo próprio `study://app` — sem dev server e sem backend. Gere o bundle e aponte o desktop para ele:
+
+```bash
+pnpm --filter @study/web build                                       # bundle do web em apps/web/dist
+STUDY_WEB_DIST="$PWD/apps/web/dist" pnpm --filter @study/desktop dev # janela do Electron sobre study://app
+```
+
+`STUDY_WEB_DIST` (caminho absoluto, porque o script roda em `apps/desktop`) é o que faz a janela abrir sobre `study://app` fora do pacote; empacotado, o default é `process.resourcesPath/web`. Sem ele e fora do pacote, a janela cai no dev server do Vite em `http://localhost:4173`. `STUDY_USER_DATA` troca o perfil do Electron e isola os dados entre execuções.
+
+O dev loop continua valendo: `STUDY_WEB_URL` tem precedência sobre o bundle e aponta a janela para o dev server do Vite.
 
 ```bash
 pnpm --filter @study/web dev        # renderer do web, em http://localhost:4173
 pnpm --filter @study/desktop dev    # janela do Electron sobre esse renderer
 ```
 
-`STUDY_WEB_URL` troca o endereço que a janela carrega, quando o renderer não está na porta padrão. O smoke do projeto `desktop` sobe o dev server sozinho dentro do `pnpm test`; instaladores assinados e bundle de produção ficam para o ticket de empacotamento da fase 5.
+O smoke do projeto `desktop` builda o web, abre a janela sobre o bundle e prova que um item criado sobrevive a fechar e reabrir com o mesmo `STUDY_USER_DATA`; instaladores assinados ficam para o ticket de empacotamento da fase 5.
 
 ## Instalar o comando `study`
 
@@ -70,7 +79,7 @@ O `pnpm install` continua criando `node_modules/.bin/study` para rodar o CLI de 
 | `apps/desktop` | `@study/desktop` | Casca Electron da fase 5; abre o renderer do `apps/web` no desktop, sem UI própria. |
 | `fixtures/golden` | `@study/golden` | Golden fixtures importáveis, vetores de regressão de todos os apps. |
 
-Não existe `dist/` para `core` e `golden`: eles exportam `./src/index.ts` e o Node 24 consome o TypeScript direto. O `apps/web` consome o core pelo symlink do workspace, sem alias e sem pré-build. O `apps/desktop` carrega o renderer do `apps/web` a partir do dev server do Vite (`STUDY_WEB_URL`, porta 4173), sem bundle de produção. O `@bosi-programming/study-cli` gera um bundle em `apps/cli/dist/` no `prepare`, para o artefato publicado.
+Não existe `dist/` para `core` e `golden`: eles exportam `./src/index.ts` e o Node 24 consome o TypeScript direto. O `apps/web` consome o core pelo symlink do workspace, sem alias e sem pré-build. O `apps/desktop` carrega o renderer do `apps/web` pelo bundle de produção (`study://app`, `STUDY_WEB_DIST`) ou pelo dev server do Vite (`STUDY_WEB_URL`, porta 4173), sem UI própria. O `@bosi-programming/study-cli` gera um bundle em `apps/cli/dist/` no `prepare`, para o artefato publicado.
 
 ## Documentos
 
