@@ -193,7 +193,7 @@ As seis telas do BOS-43 são teste de comportamento no projeto `web`, montando o
 - `W-04` (check-in) — `apps/web/test/features/review.test.tsx`: o check-in recalcula o vencimento pelo core, grava item e log na mesma transação e pede a reavaliação com a atual como padrão; manter não escreve e item não ativo é recusado.
 - `W-06` (ciclo de vida) — `apps/web/test/features/itemDetail.test.tsx` e `packages/core/test/lifecycle.test.ts`: arquivar e desarquivar tiram e devolvem o item à fila e às contagens, e a transição repetida é recusada.
 - `W-10` (stats) — `apps/web/test/features/stats.test.tsx`: o streak de fila zerada, as contagens por status e os check-ins do dia pela data local.
-- `W-12` (estados) — `apps/web/test/features/*.test.tsx` e `apps/web/test/app.test.tsx`: vazio, carregando e erro por tela, com a mensagem pt-BR da tabela de erros e sem stack nem `kind` cru; o offline é satisfeito por construção, com a varredura de `src/**` recusando API de rede.
+- `W-12` (estados) — `apps/web/test/features/*.test.tsx`, `apps/web/test/app.test.tsx` e `apps/web/test/main.test.tsx`: vazio, carregando e erro nas telas de leitura, carregando e erro no formulário de adicionar e na abertura do `main.tsx`, com a mensagem pt-BR da tabela de erros e sem stack nem `kind` cru; o offline é satisfeito por construção, com a varredura de `src/**` recusando API de rede.
 - `W-13` (strings) — `apps/web/test/strings.test.ts`: não há literal pt-BR fora de `apps/web/src/strings.ts`, com a varredura cobrindo `src/**`.
 
 O shell tem suíte própria: `apps/web/test/routing.test.ts` prova o `parseHash`/`hrefFor` das seis rotas e `apps/web/test/app.test.tsx` prova a montagem, a navegação por hash e a queda na fila com hash desconhecido.
