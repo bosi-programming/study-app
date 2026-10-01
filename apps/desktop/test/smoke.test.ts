@@ -40,8 +40,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await app.close()
-  stopWebServer()
+  await app?.close()
+  stopWebServer?.()
 })
 
 describe('S-50 desktop-smoke', () => {
