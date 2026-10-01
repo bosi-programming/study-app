@@ -22,6 +22,17 @@ pnpm bench         # stub: declara o bloqueio da RNF-03, ainda não mede
 pnpm sqlite:probe  # prova o schema canônico no engine do CLI (Engine SQLite do CLI)
 ```
 
+### Rodar o app desktop
+
+O desktop não tem bundle nem `dist`: ele abre o renderer do `apps/web` pelo dev server do Vite, na porta fixa 4173. Com o dev server no ar, o Electron abre a janela sobre ele:
+
+```bash
+pnpm --filter @study/web dev        # renderer do web, em http://localhost:4173
+pnpm --filter @study/desktop dev    # janela do Electron sobre esse renderer
+```
+
+`STUDY_WEB_URL` troca o endereço que a janela carrega, quando o renderer não está na porta padrão. O smoke do projeto `desktop` sobe o dev server sozinho dentro do `pnpm test`; instaladores assinados e bundle de produção ficam para o ticket de empacotamento da fase 5.
+
 ## Instalar o comando `study`
 
 O CLI é publicado como `@bosi-programming/study-cli` e instala global pelo npm:
