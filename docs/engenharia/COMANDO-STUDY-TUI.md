@@ -1,6 +1,6 @@
 # Comando `study tui` e o laço da TUI
 
-Versão: 1 | Data: 2026-10-01 | Base: `docs/especificacao/TUI.md`, `docs/especificacao/TUI-RENDER.md` e os ADRs [Porta de terminal injetada e a zona do laço da TUI](../adr/porta-de-terminal-injetada-e-zona-do-laco-da-tui.md) e [Reavaliação após check-in na sessão da TUI](../adr/reavaliacao-apos-check-in-na-sessao-da-tui.md)
+Versão: 1 | Data: 2026-10-01 | Base: `docs/especificacao/TUI.md`, `docs/especificacao/TUI-RENDER.md` e os ADRs [Porta de terminal injetada e a zona do laço da TUI](../adr/porta-de-terminal-injetada-e-zona-do-laco-da-tui.md), [Reavaliação após check-in na sessão da TUI](../adr/reavaliacao-apos-check-in-na-sessao-da-tui.md) e [Superfície da TUI: zero-dep, raw mode, tela alternativa e saída](../adr/superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md)
 
 Registro do comando `study tui` (BOS-53, ENG-28): a segunda superfície do CLI, que liga a sessão (BOS-50), o desenho puro (BOS-51) e o parser de teclas (BOS-52) num laço de terminal. O contrato observável é o do `TUI.md`; esta nota registra o que a unidade entrega, como usar e como o laço funciona por dentro. PR: https://github.com/bosi-programming/study-app/pull/36
 
@@ -29,7 +29,7 @@ study tui [--db <path>] [--no-color]
 
 - `TuiTerminal = { size(), next(), write(frame), error(message) }`; `next()` devolve `{ kind: 'key', chunk }`, `{ kind: 'resize', columns, rows }` ou `null` (fim da entrada, tratado como `interrupt`).
 - O laço mora em `apps/cli/src/tui/loop/` (zona `root` da composição) e nunca lê `stdin`, nunca ouve `SIGWINCH` e nunca chama `process.exit`. Nenhum arquivo de `tui/loop/**` toca `process.`/`node:*`.
-- `apps/cli/src/tui/terminal/` é o binding fino de processo (`process.stdin`/`stdout`/`stderr`, tamanho e evento de `resize`) que implementa a porta. A ENG-29 (BOS-54) endurece esse binding (raw mode, tela alternativa, cursor, sinais, restauração) sem mudar a porta.
+- `apps/cli/src/tui/terminal/` é o adaptador de processo que implementa a porta: `openTerminal` entra em raw mode, na tela alternativa e esconde o cursor numa chamada, registra `data`/`end`/`resize` e `SIGTERM`/`SIGHUP`, e mantém a fila e o `size()` do binding. `close()` é idempotente — restaura tela e cursor, desliga o raw mode, desregistra os cinco listeners e pausa o `stdin` — e `withTerminal` compõe abertura, execução e fechamento no `finally`. `processEnvironment()` é o único arquivo que toca `process.`, e a porta `TuiTerminal` não mudou.
 
 ### O laço
 
@@ -51,13 +51,15 @@ study tui [--db <path>] [--no-color]
 
 ### Desfecho e exit codes
 
-- `runTui` devolve `quit`/`interrupt`/`fatal`; o root mapeia quit→0, interrupt→130, fatal→1 e aplica `process.exitCode`. O laço fecha a sessão em todos os desfechos; `q` e `Ctrl-C` não são `exit` do laço. A ENG-29 reusa o mesmo mapeamento quando é dona do ciclo de vida.
+- `runTui` devolve `quit`/`interrupt`/`fatal`; o root mapeia quit→0, interrupt→130, fatal→1 e aplica `process.exitCode`. O laço fecha a sessão em todos os desfechos; `q` e `Ctrl-C` não são `exit` do laço.
+- O adaptador restaura o terminal em todo caminho (`q`, `Ctrl-C`, fatal, `end` e sinais) e só encerra o processo no sinal, com `128 + sinal` (`SIGTERM` 143, `SIGHUP` 129); os exit codes normais seguem na raiz.
 
 ## Verificação
 
 - Laço provado sem PTY: `apps/cli/test/tui/loop.test.ts` injeta um terminal com roteiro de eventos (chunks de teclas e resize) e captura os frames e o desfecho; `apps/cli/test/tui/refusal.test.ts` cobre o predicado puro.
+- Adaptador de terminal provado sem PTY: `apps/cli/test/tui/terminal.test.ts` injeta streams e um emissor de sinais falsos e cobre a abertura (raw mode, tela alternativa e cursor), `SIGTERM`/`SIGHUP`, a idempotência do `close()` e o `withTerminal` no sucesso e na falha; `apps/cli/test/architecture.test.ts` pina o ADR da superfície e a fronteira de `process.`.
 - O PTY real segue verificação manual (`T-26`): exercitado no bin construído (a fila desenha, `j`/`i` respondem, `q` sai 0).
-- Fora desta unidade: o ciclo de vida do terminal e os exit codes de processo (BOS-54), a suíte `U-nn` e o spawn sem TTY (BOS-55).
+- Fora desta unidade: a suíte `U-nn` e o spawn sem TTY (BOS-55).
 
 ## Em aberto
 
