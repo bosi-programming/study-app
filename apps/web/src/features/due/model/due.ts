@@ -13,3 +13,11 @@ export function initialDueEstimate(difficulty: number, createdOn: string): DueEs
     intervalDays: intervalFor(resolved, 0),
   }
 }
+
+export function tryInitialDueEstimate(difficulty: number, createdOn: string): DueEstimate | null {
+  try {
+    return initialDueEstimate(difficulty, createdOn)
+  } catch {
+    return null
+  }
+}

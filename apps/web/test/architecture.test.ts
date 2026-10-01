@@ -113,6 +113,21 @@ describe('S-38 web-layer-direction', () => {
     expect(domOffenders).toEqual([])
   })
 
+  it('arch-model-nao-importa-a-borda: o model não alcança deps.ts nem store', () => {
+    const offenders = filesInZone('model')
+      .flatMap((file) =>
+        specifiersOf(file).flatMap((specifier) => {
+          const target = resolveTarget(file, specifier)
+          if (target === null) return []
+          const name = rel(target)
+          const isBorder = name === 'deps.ts' || name.startsWith('store/')
+          return isBorder ? [`${rel(file)} -> ${specifier}`] : []
+        }),
+      )
+
+    expect(offenders).toEqual([])
+  })
+
   it('arch-root-compõe: a feature tem model, view, controller e o barrel ligando as três', () => {
     const zones = new Set(sourceFiles(SRC).map(zoneOf))
 
@@ -176,6 +191,28 @@ describe('S-38 web-store-separation', () => {
     const offenders = filesInZone('store')
       .filter((file) => relative(SRC, file) !== 'store/idb.ts')
       .filter((file) => GLOBAL_READ_PATTERN.test(readFileSync(file, 'utf8')))
+      .map(rel)
+
+    expect(offenders).toEqual([])
+  })
+})
+
+type WebManifest = {
+  readonly dependencies?: Record<string, string>
+}
+
+describe('AC-12 web-integridade', () => {
+  it('web-manifesto-sem-dependencia-nova-de-runtime', () => {
+    const manifest = JSON.parse(
+      readFileSync(resolve(import.meta.dirname, '../package.json'), 'utf8'),
+    ) as WebManifest
+
+    expect(Object.keys(manifest.dependencies ?? {}).sort()).toEqual(['react', 'react-dom'])
+  })
+
+  it('web-src-sem-api-de-rede', () => {
+    const offenders = sourceFiles(SRC)
+      .filter((file) => NETWORK_PATTERN.test(readFileSync(file, 'utf8')))
       .map(rel)
 
     expect(offenders).toEqual([])
