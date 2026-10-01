@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { addDays } from '@study/core'
@@ -14,6 +14,7 @@ import {
 } from './commands/helpers.ts'
 import { makeItem, makeLog } from './persistence/helpers.ts'
 import { withDb } from './persistence/helpers/db.ts'
+import { USAGE } from '../src/output/usage.ts'
 
 const repoRoot = resolve(import.meta.dirname, '../../..')
 const binPath = resolve(repoRoot, 'node_modules/.bin/study')
@@ -418,5 +419,56 @@ describe('AC5 — study sem comando', () => {
     expect(result.stdout).toContain('Uso:')
     expect(result.stderr).toBe('')
     expect(() => JSON.parse(result.stdout)).toThrow()
+  })
+})
+
+describe('AC1/AC2 — o comando study tui', () => {
+  it('tui-uso-lista: o USAGE ganha a linha de tui e mantém as demais', () => {
+    expect(USAGE).toMatch(/^\s+tui\s+abre a TUI/m)
+    expect(USAGE).toContain('review <ref>')
+    expect(USAGE).toContain('difficulty <ref> <1-5>')
+    expect(USAGE).toContain('import <path>')
+  })
+
+  it('tui-help-global: study --help lista tui e continua imprimindo o bloco global', () => {
+    const result = runStudy(['--help'])
+
+    expect(result.status).toBe(0)
+    expect(result.stdout).toContain('Uso:')
+    expect(result.stdout).toContain('tui')
+  })
+
+  it('tui-recusa-sem-tty: sem TTY o stdout fica vazio, sai 1 e a mensagem vai ao stderr', () => {
+    const result = runStudy(['tui'])
+
+    expect(result.status).toBe(1)
+    expect(result.stdout).toBe('')
+    expect(result.stderr).toContain('a TUI exige um terminal interativo')
+  })
+
+  it('tui-recusa-posicional: posicional extra devolve usage', () => {
+    const result = runStudy(['tui', 'extra', '--json'])
+
+    expect(result.status).toBe(1)
+    expect(result.stdout).toBe('')
+    expect(errorOf(result).code).toBe('usage')
+  })
+
+  it('tui-recusa-json: --json devolve a mesma recusa no envelope e nada é desenhado', () => {
+    const result = runStudy(['tui', '--json'])
+
+    expect(result.status).toBe(1)
+    expect(result.stdout).toBe('')
+    expect(errorOf(result)).toEqual({ code: 'usage', message: 'a TUI exige um terminal interativo' })
+  })
+
+  it('tui-recusa-antes-do-contexto: o cli.ts recusa antes de abrir o banco', () => {
+    const source = readFileSync(resolve(repoRoot, 'apps/cli/src/cli.ts'), 'utf8')
+    const branchAt = source.indexOf('runTuiCommand(args, json)')
+    const contextAt = source.indexOf('withContext(')
+
+    expect(branchAt).toBeGreaterThan(-1)
+    expect(branchAt).toBeLessThan(contextAt)
+    expect(source.indexOf('refuseTui(', branchAt)).toBeGreaterThan(-1)
   })
 })

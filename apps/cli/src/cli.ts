@@ -1,4 +1,4 @@
-import { ALL_FLAGS, type ParsedArgs, hasFlag, parseArgs, valueOf } from './args.ts'
+import { ALL_FLAGS, type ParsedArgs, assertPositionals, hasFlag, parseArgs, valueOf } from './args.ts'
 import { addCommand } from './commands/add.ts'
 import { archiveCommand } from './commands/archive.ts'
 import { coldCommand } from './commands/cold.ts'
@@ -18,10 +18,13 @@ import { statsCommand } from './commands/stats.ts'
 import { unarchiveCommand } from './commands/unarchive.ts'
 import { type Command } from './commands/types.ts'
 import { withContext } from './context.ts'
+import { systemDeps } from './deps.ts'
 import { CliError, exitCodeFor } from './errors.ts'
-import { resolveColorEnabled, setColorEnabled } from './output/color.ts'
+import { colorEnabled, resolveColorEnabled, setColorEnabled } from './output/color.ts'
 import { printError, printSuccess } from './output/index.ts'
 import { USAGE } from './output/usage.ts'
+import { exitCodeOf, refuseTui, runTui } from './tui/loop/index.ts'
+import { processTerminal } from './tui/terminal/index.ts'
 
 const COMMANDS: Record<string, Command> = {
   init: initCommand,
@@ -99,6 +102,11 @@ export function runCli(argv: readonly string[]): void {
     return
   }
 
+  if (commandName === 'tui') {
+    runTuiCommand(args, json)
+    return
+  }
+
   const command = COMMANDS[commandName]
   if (command === undefined) {
     const error = CliError.usage(`comando desconhecido: ${commandName}`)
@@ -128,4 +136,46 @@ export function runCli(argv: readonly string[]): void {
     printError(error, { json })
     process.exitCode = exitCodeFor(error)
   }
+}
+
+function runTuiCommand(args: ParsedArgs, json: boolean): void {
+  const commandArgs: ParsedArgs = { positionals: args.positionals.slice(1), flags: args.flags }
+
+  try {
+    assertPositionals(commandArgs, 0, 0, 'tui')
+  } catch (error) {
+    printError(error, { json })
+    process.exitCode = exitCodeFor(error)
+    return
+  }
+
+  const refusal = refuseTui({
+    stdinTty: process.stdin.isTTY === true,
+    stdoutTty: process.stdout.isTTY === true,
+    noInput: hasFlag(args, 'no-input'),
+    json,
+  })
+  if (refusal !== null) {
+    printError(refusal, { json })
+    process.exitCode = refusal.exitCode
+    return
+  }
+
+  void runTui({
+    dbPath: valueOf(args, 'db'),
+    exportDir: valueOf(args, 'export-dir'),
+    deps: systemDeps,
+    env: process.env,
+    color: colorEnabled(),
+    terminal: processTerminal(),
+  })
+    .then((outcome) => {
+      process.exitCode = exitCodeOf(outcome)
+      process.stdin.pause()
+    })
+    .catch((error: unknown) => {
+      printError(error, { json })
+      process.exitCode = exitCodeFor(error)
+      process.stdin.pause()
+    })
 }
