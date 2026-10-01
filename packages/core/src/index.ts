@@ -49,3 +49,5 @@ export { advanceQueueStreak, hasDueItems } from './streak.ts'
 export type { QueueStreak } from './streak.ts'
 
 export { resolveRef } from './ref.ts'
+
+export { archiveItem, unarchiveItem } from './lifecycle.ts'
