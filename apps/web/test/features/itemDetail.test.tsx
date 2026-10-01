@@ -1,10 +1,12 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { type Deps } from '@study/core'
+import { type ItemDetailController } from '../../src/features/items/model/itemDetail.ts'
+import { ItemDetailView } from '../../src/features/items/view/ItemDetailView.tsx'
 import { type Store } from '../../src/store/index.ts'
 import { strings } from '../../src/strings.ts'
-import { makeItem, openTestStore, renderApp, seed, testDeps } from '../helpers.tsx'
+import { makeItem, openTestStore, renderApp, seed, storeWith, testDeps } from '../helpers.tsx'
 
 afterEach(cleanup)
 
@@ -94,5 +96,32 @@ describe('AC-7 ciclo de vida e detalhe', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.itemCold)
     expect((await store.getItem('a-1'))?.status).toBe('cold')
+  })
+})
+
+describe('AC-9 estados do detalhe', () => {
+  it('screen-detalhe-mostra-carregando-enquanto-o-item-chega', () => {
+    const controller: ItemDetailController = {
+      state: { status: 'loading' },
+      error: null,
+      archive: () => undefined,
+      unarchive: () => undefined,
+    }
+
+    render(<ItemDetailView controller={controller} />)
+
+    expect(screen.getByRole('status')).toHaveTextContent(strings.notice.loading)
+  })
+
+  it('screen-erro-do-detalhe-vira-mensagem-pt-br', async () => {
+    const { store } = await openTestStore()
+
+    renderApp(
+      storeWith(store, { getItem: () => Promise.reject(new Error('IndexedDB explodiu')) }),
+      testDeps(),
+      '#/items/a-1',
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.store)
   })
 })

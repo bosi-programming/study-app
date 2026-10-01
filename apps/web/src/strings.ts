@@ -5,7 +5,6 @@ export const strings = {
     navAdd: 'Adicionar',
     navItems: 'Lista',
     navStats: 'Stats',
-    bootFailure: 'não foi possível abrir os dados; recarregue a página',
   },
   notice: {
     loading: 'carregando…',

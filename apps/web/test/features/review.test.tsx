@@ -1,10 +1,12 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { type Deps } from '@study/core'
+import { type ReviewController } from '../../src/features/review/model/reviewState.ts'
+import { ReviewView } from '../../src/features/review/view/ReviewView.tsx'
 import { type Store } from '../../src/store/index.ts'
 import { strings } from '../../src/strings.ts'
-import { makeItem, openTestStore, renderApp, seed, testDeps } from '../helpers.tsx'
+import { makeItem, openTestStore, renderApp, seed, storeWith, testDeps } from '../helpers.tsx'
 
 afterEach(cleanup)
 
@@ -181,5 +183,36 @@ describe('AC-6 recusa de check-in', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     expect(await store.getItem('a-1')).toEqual(before)
     expect(await store.listReviewLogs('a-1')).toEqual([])
+  })
+})
+
+describe('AC-9 estados do check-in', () => {
+  it('screen-check-in-mostra-carregando-enquanto-o-item-chega', () => {
+    const controller: ReviewController = {
+      state: { status: 'loading' },
+      phase: 'idle',
+      difficulty: '',
+      error: null,
+      setDifficulty: () => undefined,
+      checkin: () => undefined,
+      applyDifficulty: () => undefined,
+      keepDifficulty: () => undefined,
+    }
+
+    render(<ReviewView controller={controller} />)
+
+    expect(screen.getByRole('status')).toHaveTextContent(strings.notice.loading)
+  })
+
+  it('screen-erro-do-check-in-vira-mensagem-pt-br', async () => {
+    const { store } = await openTestStore()
+
+    renderApp(
+      storeWith(store, { getItem: () => Promise.reject(new Error('IndexedDB explodiu')) }),
+      testDeps(),
+      '#/review/a-1',
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.store)
   })
 })

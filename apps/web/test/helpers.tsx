@@ -59,3 +59,7 @@ export async function openApp(
   const view = renderApp(harness.store, deps, options.hash ?? '#/')
   return { ...harness, deps, view }
 }
+
+export function storeWith(store: Store, overrides: Partial<Store>): Store {
+  return { ...store, ...overrides }
+}

@@ -1,10 +1,15 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { type Deps } from '@study/core'
+import {
+  DEFAULT_ITEMS_FILTER,
+  type ItemsController,
+} from '../../src/features/items/model/listItems.ts'
+import { ItemsView } from '../../src/features/items/view/ItemsView.tsx'
 import { type Store } from '../../src/store/index.ts'
 import { strings } from '../../src/strings.ts'
-import { makeItem, openTestStore, renderApp, seed, testDeps } from '../helpers.tsx'
+import { makeItem, openTestStore, renderApp, seed, storeWith, testDeps } from '../helpers.tsx'
 
 afterEach(cleanup)
 
@@ -97,5 +102,35 @@ describe('AC-3 lista e busca', () => {
 
     expect(await screen.findByText(strings.items.empty)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: strings.items.emptyAction })).toHaveAttribute('href', '#/add')
+  })
+})
+
+describe('AC-9 estados da lista', () => {
+  it('screen-lista-mostra-carregando-na-abertura', () => {
+    const controller: ItemsController = {
+      state: { status: 'loading' },
+      filter: DEFAULT_ITEMS_FILTER,
+      setStatus: () => undefined,
+      setSubject: () => undefined,
+      setTerm: () => undefined,
+    }
+
+    render(<ItemsView controller={controller} />)
+
+    expect(screen.getByRole('status')).toHaveTextContent(strings.notice.loading)
+  })
+
+  it('screen-erro-na-busca-vira-mensagem-pt-br', async () => {
+    const { store } = await openTestStore()
+    renderApp(
+      storeWith(store, { findItems: () => Promise.reject(new Error('IndexedDB explodiu')) }),
+      testDeps(),
+      '#/items',
+    )
+    await screen.findByRole('heading', { name: strings.items.heading })
+
+    fireEvent.change(screen.getByLabelText(strings.items.searchLabel), { target: { value: 'analise' } })
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.store)
   })
 })

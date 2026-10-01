@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { strings } from '../src/strings.ts'
-import { makeItem, openTestStore, renderApp, seed, testDeps } from './helpers.tsx'
+import { makeItem, openTestStore, renderApp, seed, storeWith, testDeps } from './helpers.tsx'
 
 afterEach(cleanup)
 
@@ -43,5 +43,27 @@ describe('S-43 web-root-composition', () => {
       'href',
       '#/review/a-1',
     )
+  })
+})
+
+describe('AC-9 estados do shell', () => {
+  it('screen-shell-mostra-carregando-enquanto-o-store-abre', async () => {
+    const { store } = await openTestStore()
+
+    renderApp(storeWith(store, { getMeta: () => new Promise<never>(() => {}) }), testDeps(), '#/')
+
+    expect(await screen.findByRole('status')).toHaveTextContent(strings.notice.loading)
+  })
+
+  it('screen-erro-na-abertura-vira-mensagem-pt-br', async () => {
+    const { store } = await openTestStore()
+
+    renderApp(
+      storeWith(store, { getMeta: () => Promise.reject(new Error('IndexedDB explodiu')) }),
+      testDeps(),
+      '#/',
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.store)
   })
 })

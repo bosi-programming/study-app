@@ -17,7 +17,7 @@ function renderFailure(): void {
   root.render(
     <main>
       <h1>{strings.app.title}</h1>
-      <p role="alert">{strings.app.bootFailure}</p>
+      <p role="alert">{strings.errors.store}</p>
     </main>,
   )
 }

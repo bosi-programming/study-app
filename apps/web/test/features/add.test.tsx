@@ -3,7 +3,7 @@ import { type InitialDueFixture, goldenFixtures } from '@study/golden'
 import { cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { strings } from '../../src/strings.ts'
-import { openTestStore, renderApp, testDeps } from '../helpers.tsx'
+import { openTestStore, renderApp, storeWith, testDeps } from '../helpers.tsx'
 
 afterEach(cleanup)
 
@@ -105,6 +105,20 @@ describe('AC-2 adicionar item', () => {
     submit()
 
     expect(await screen.findByRole('alert')).toHaveTextContent('matéria deve ter no máximo 60 caracteres')
+    expect(await store.listItems()).toEqual([])
+  })
+
+  it('add-erro-ao-salvar-vira-mensagem-pt-br', async () => {
+    const { store } = await openTestStore()
+    await openAdd(
+      storeWith(store, { saveItem: () => Promise.reject(new Error('IndexedDB explodiu')) }),
+      testDeps(),
+    )
+
+    fill({ title: 'Derivadas parciais', subject: 'Cálculo' })
+    submit()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.store)
     expect(await store.listItems()).toEqual([])
   })
 })

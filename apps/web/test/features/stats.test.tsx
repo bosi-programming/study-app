@@ -1,10 +1,11 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import { type Deps, type Item, type ReviewLog } from '@study/core'
+import { StatsView } from '../../src/features/stats/view/StatsView.tsx'
 import { type Store } from '../../src/store/index.ts'
 import { strings } from '../../src/strings.ts'
-import { makeItem, makeLog, openTestStore, renderApp, seed, testDeps } from '../helpers.tsx'
+import { makeItem, makeLog, openTestStore, renderApp, seed, storeWith, testDeps } from '../helpers.tsx'
 
 const originalTimezone = process.env.TZ
 process.env.TZ = 'America/Sao_Paulo'
@@ -104,5 +105,25 @@ describe('AC-8 stats', () => {
     await openStats(store, deps)
 
     expect(screen.getByText(`${strings.stats.streak}: 1`)).toBeInTheDocument()
+  })
+})
+
+describe('AC-9 estados do stats', () => {
+  it('screen-stats-mostra-carregando-enquanto-o-historico-chega', () => {
+    render(<StatsView state={{ status: 'loading' }} />)
+
+    expect(screen.getByRole('status')).toHaveTextContent(strings.notice.loading)
+  })
+
+  it('screen-erro-do-stats-vira-mensagem-pt-br', async () => {
+    const { store } = await openTestStore()
+
+    renderApp(
+      storeWith(store, { listReviewLogs: () => Promise.reject(new Error('IndexedDB explodiu')) }),
+      testDeps(),
+      '#/stats',
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(strings.errors.store)
   })
 })

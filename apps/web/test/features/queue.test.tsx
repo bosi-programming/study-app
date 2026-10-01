@@ -1,15 +1,12 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
+import { QueueView } from '../../src/features/queue/view/QueueView.tsx'
 import { type Store } from '../../src/store/index.ts'
 import { strings } from '../../src/strings.ts'
 import { makeItem, openTestStore, renderApp, seed, testDeps } from '../helpers.tsx'
 
 afterEach(cleanup)
-
-function pendingDueItems(store: Store): Store {
-  return { ...store, dueItems: () => new Promise<never>(() => {}) }
-}
 
 function failingDueItems(store: Store): Store {
   return { ...store, dueItems: () => Promise.reject(new Error('IndexedDB explodiu')) }
@@ -88,11 +85,10 @@ describe('AC-9 estados da fila', () => {
     expect(action).toHaveAttribute('href', '#/add')
   })
 
-  it('screen-fila-mostra-carregando-enquanto-o-store-responde', async () => {
-    const { store } = await openTestStore()
-    renderApp(pendingDueItems(store), testDeps(), '#/')
+  it('screen-fila-mostra-carregando-enquanto-o-store-responde', () => {
+    render(<QueueView state={{ status: 'loading' }} />)
 
-    expect(await screen.findByText(strings.notice.loading)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(strings.notice.loading)
   })
 
   it('screen-erro-de-store-vira-mensagem-pt-br', async () => {
