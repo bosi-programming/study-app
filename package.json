@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck && tsc --noEmit -p tsconfig.json",
     "bench": "node scripts/bench.ts",
+    "bench:web": "node scripts/bench-web.ts",
     "sqlite:probe": "node scripts/sqlite-probe.ts"
   },
   "devDependencies": {
@@ -20,6 +21,7 @@
     "@types/node": "24.13.4",
     "@vitest/coverage-v8": "4.1.11",
     "eslint": "10.11.0",
+    "fake-indexeddb": "6.2.5",
     "@bosi-programming/study-cli": "workspace:*",
     "typescript": "5.9.3",
     "typescript-eslint": "8.70.1",
