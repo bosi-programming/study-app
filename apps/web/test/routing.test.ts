@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { hrefFor, parseHash } from '../src/routing.ts'
 
 describe('AC-1 roteamento por hash', () => {
-  it('routing-le-as-seis-rotas-com-e-sem-parametro', () => {
+  it('routing-le-as-sete-rotas-com-e-sem-parametro', () => {
     expect(parseHash('')).toEqual({ name: 'queue' })
     expect(parseHash('#/')).toEqual({ name: 'queue' })
     expect(parseHash('#/add')).toEqual({ name: 'add' })
@@ -10,6 +10,7 @@ describe('AC-1 roteamento por hash', () => {
     expect(parseHash('#/items/abc')).toEqual({ name: 'item', id: 'abc' })
     expect(parseHash('#/review/abc')).toEqual({ name: 'review', id: 'abc' })
     expect(parseHash('#/stats')).toEqual({ name: 'stats' })
+    expect(parseHash('#/data')).toEqual({ name: 'data' })
   })
 
   it('routing-formata-o-hash-de-cada-tela', () => {
@@ -17,6 +18,7 @@ describe('AC-1 roteamento por hash', () => {
     expect(hrefFor({ name: 'add' })).toBe('#/add')
     expect(hrefFor({ name: 'items' })).toBe('#/items')
     expect(hrefFor({ name: 'stats' })).toBe('#/stats')
+    expect(hrefFor({ name: 'data' })).toBe('#/data')
     expect(hrefFor({ name: 'item', id: 'abc' })).toBe('#/items/abc')
     expect(hrefFor({ name: 'review', id: 'abc' })).toBe('#/review/abc')
   })

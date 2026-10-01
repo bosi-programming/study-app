@@ -5,6 +5,7 @@ export type Route =
   | { readonly name: 'item'; readonly id: string }
   | { readonly name: 'review'; readonly id: string }
   | { readonly name: 'stats' }
+  | { readonly name: 'data' }
 
 function decode(segment: string): string {
   try {
@@ -21,6 +22,7 @@ export function parseHash(hash: string): Route {
 
   if (first === 'add') return { name: 'add' }
   if (first === 'stats') return { name: 'stats' }
+  if (first === 'data') return { name: 'data' }
   if (first === 'items') {
     return second === undefined ? { name: 'items' } : { name: 'item', id: decode(second) }
   }
@@ -44,6 +46,8 @@ export function hrefFor(route: Route): string {
       return '#/items'
     case 'stats':
       return '#/stats'
+    case 'data':
+      return '#/data'
     case 'item':
       return `#/items/${encodeURIComponent(route.id)}`
     case 'review':

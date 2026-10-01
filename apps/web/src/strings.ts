@@ -5,6 +5,7 @@ export const strings = {
     navAdd: 'Adicionar',
     navItems: 'Lista',
     navStats: 'Stats',
+    navData: 'Dados',
   },
   notice: {
     loading: 'carregando…',
@@ -102,5 +103,20 @@ export const strings = {
   },
   deps: {
     invalidInstant: 'instante inválido: use ISO 8601',
+  },
+  data: {
+    heading: 'Export e import',
+    export: 'exportar',
+    import: 'importar',
+    exported: 'export concluído',
+    imported: 'import concluído',
+    countsItems: 'itens',
+    countsCheckins: 'check-ins',
+    countsCold: 'arquivo morto',
+    countsWritten: 'gravados',
+    countsSkipped: 'ignorados',
+    exportFailed: 'não foi possível exportar o arquivo',
+    invalidFile: 'arquivo inválido',
+    unsupportedSchema: (version: number) => `schema_version ${version} não suportado`,
   },
 } as const
