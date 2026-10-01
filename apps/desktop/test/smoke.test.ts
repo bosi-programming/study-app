@@ -1,11 +1,13 @@
+import { spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { type ElectronApplication, type Page, _electron } from 'playwright-core'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vitest'
 import { startWebServer, webUrl } from './web-server.ts'
 
 const require = createRequire(import.meta.url)
 const desktopDir = resolve(import.meta.dirname, '..')
+const smokePort = 4174
 
 let app: ElectronApplication
 let page: Page
@@ -29,11 +31,11 @@ function chromiumFlags(): string[] {
 }
 
 beforeAll(async () => {
-  stopWebServer = await startWebServer()
+  stopWebServer = await startWebServer(smokePort)
   app = await _electron.launch({
     executablePath: electronBinary(),
     args: [...chromiumFlags(), desktopDir],
-    env: { ...process.env, STUDY_WEB_URL: webUrl },
+    env: { ...process.env, STUDY_WEB_URL: webUrl(smokePort) },
   })
   page = await app.firstWindow()
   await page.locator('h1').waitFor()
@@ -99,5 +101,21 @@ describe('S-50 desktop-smoke', () => {
       contextIsolation: true,
       sandbox: true,
     })
+  })
+})
+
+describe('S-50 desktop-falha-do-renderer', () => {
+  it('sai com erro quando o renderer do web não responde', { timeout: 30_000 }, async () => {
+    const child = spawn(electronBinary(), [...chromiumFlags(), desktopDir], {
+      env: { ...process.env, STUDY_WEB_URL: 'http://127.0.0.1:9' },
+      stdio: 'ignore',
+    })
+    onTestFinished(() => {
+      child.kill('SIGKILL')
+    })
+
+    const code = await new Promise<number | null>((settle) => child.once('exit', settle))
+
+    expect(code).toBe(1)
   })
 })

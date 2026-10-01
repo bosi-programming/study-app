@@ -3,15 +3,17 @@ import { createConnection } from 'node:net'
 import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '../..')
-const webPort = 4173
+export const defaultWebPort = 4173
 const startTimeoutMs = 30_000
 const pollIntervalMs = 100
 
-export const webUrl = `http://localhost:${webPort}`
+export function webUrl(port: number = defaultWebPort): string {
+  return `http://localhost:${port}`
+}
 
-function portIsOpen(): Promise<boolean> {
+function portIsOpen(port: number): Promise<boolean> {
   return new Promise((settle) => {
-    const socket = createConnection({ host: 'localhost', port: webPort })
+    const socket = createConnection({ host: 'localhost', port })
     socket.once('connect', () => {
       socket.destroy()
       settle(true)
@@ -27,18 +29,22 @@ function delay(ms: number): Promise<void> {
   return new Promise((settle) => setTimeout(settle, ms))
 }
 
-async function waitUntilListening(child: ChildProcess, output: string[]): Promise<void> {
+async function waitUntilListening(
+  child: ChildProcess,
+  output: string[],
+  port: number,
+): Promise<void> {
   const deadline = Date.now() + startTimeoutMs
 
   while (Date.now() < deadline) {
     if (child.exitCode !== null) {
       throw new Error(`dev server do web saiu com código ${child.exitCode}:\n${output.join('')}`)
     }
-    if (await portIsOpen()) return
+    if (await portIsOpen(port)) return
     await delay(pollIntervalMs)
   }
 
-  throw new Error(`dev server do web não abriu a porta ${webPort}:\n${output.join('')}`)
+  throw new Error(`dev server do web não abriu a porta ${port}:\n${output.join('')}`)
 }
 
 function stop(child: ChildProcess): void {
@@ -50,12 +56,12 @@ function stop(child: ChildProcess): void {
   }
 }
 
-export async function startWebServer(): Promise<() => void> {
-  if (await portIsOpen()) {
-    throw new Error(`a porta ${webPort} já está ocupada: pare o processo que a usa antes do smoke`)
+export async function startWebServer(port: number = defaultWebPort): Promise<() => void> {
+  if (await portIsOpen(port)) {
+    throw new Error(`a porta ${port} já está ocupada: pare o processo que a usa antes do smoke`)
   }
 
-  const child = spawn('pnpm', ['--filter', '@study/web', 'dev'], {
+  const child = spawn('pnpm', ['--filter', '@study/web', 'exec', 'vite', `--port=${port}`], {
     cwd: root,
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -66,6 +72,6 @@ export async function startWebServer(): Promise<() => void> {
   child.stdout?.on('data', (chunk: string) => output.push(chunk))
   child.stderr?.on('data', (chunk: string) => output.push(chunk))
 
-  await waitUntilListening(child, output)
+  await waitUntilListening(child, output, port)
   return () => stop(child)
 }

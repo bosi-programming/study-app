@@ -26,12 +26,20 @@ async function createWindow(): Promise<void> {
   await window.loadURL(webUrl())
 }
 
-void app.whenReady().then(async () => {
-  await createWindow()
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) void createWindow()
+function reportFailure(cause: unknown): void {
+  console.error(cause)
+  app.exit(1)
+}
+
+void app
+  .whenReady()
+  .then(async () => {
+    await createWindow()
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) void createWindow().catch(reportFailure)
+    })
   })
-})
+  .catch(reportFailure)
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
