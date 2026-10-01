@@ -28,7 +28,8 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/engenharia/COMANDO-STUDY-TUI.md` | Registro do comando `study tui`, suas recusas, o laço da TUI e o ciclo de vida do terminal | Rascunho v1 |
 | `docs/engenharia/VERIFICACAO-FASE-2.md` | Registro datado da camada de persistência IndexedDB do web e das telas, com o `W-11` | Rascunho v2 |
 | `docs/engenharia/COMANDO-STUDY-TUI.md` | Registro do comando `study tui`, suas recusas e o laço da TUI | Rascunho v1 |
-| `docs/adr/` | ADRs com contexto, decisão e consequências | Rascunho v1 |
+| `docs/engenharia/VERIFICACAO-FASE-5.md` | Registro datado dos instaladores assinados do desktop, com o que ficou deferido ao release | Rascunho v1 |
+| `docs/adr/` | ADRs com contexto, decisão e consequências; índice em `docs/adr/README.md` | Rascunho v1 |
 
 ## Ordem de leitura
 
@@ -50,4 +51,5 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 16. `docs/engenharia/ROADMAP.md` — em que ordem construir.
 17. `docs/engenharia/VERIFICACAO-FASE-2.md` — o que a persistência e as telas do web fecham, com o `W-11` medido.
 18. `docs/engenharia/COMANDO-STUDY-TUI.md` — o comando `study tui` e o laço da TUI.
-19. `docs/adr/` — por que as escolhas técnicas foram feitas.
+19. `docs/engenharia/VERIFICACAO-FASE-5.md` — o que os instaladores assinados do desktop fecham, com o que ficou para o release.
+20. `docs/adr/` — por que as escolhas técnicas foram feitas.

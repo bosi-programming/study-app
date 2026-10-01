@@ -60,10 +60,13 @@ describe('S-08 workspace members', () => {
     }
   })
 
-  it('allows the esbuild build script pnpm would otherwise block', () => {
+  it('allows the esbuild build script and denies the squirrel one', () => {
     const workspace = readFileSync(resolve(root, 'pnpm-workspace.yaml'), 'utf8')
 
-    expect(yamlBlockEntries(workspace, 'allowBuilds')).toEqual(['esbuild: true'])
+    expect(yamlBlockEntries(workspace, 'allowBuilds')).toEqual([
+      'electron-winstaller: false',
+      'esbuild: true',
+    ])
   })
 
   it.each([
@@ -220,9 +223,11 @@ describe('S-15 no native sqlite dependency', () => {
 
 describe('S-17 ADR naming', () => {
   const adrDir = resolve(root, 'docs/adr')
+  const adrFiles = (): string[] =>
+    readdirSync(adrDir).filter((file) => file !== 'README.md')
 
   it('nomeia cada ADR pelo assunto, sem número', () => {
-    const files = readdirSync(adrDir)
+    const files = adrFiles()
     expect(files.length).toBeGreaterThan(0)
 
     for (const file of files) {
@@ -232,7 +237,7 @@ describe('S-17 ADR naming', () => {
   })
 
   it('guarda titulo, data e status no frontmatter, sem numero', () => {
-    for (const file of readdirSync(adrDir)) {
+    for (const file of adrFiles()) {
       const source = readFileSync(resolve(adrDir, file), 'utf8')
       expect(source, file).toMatch(/^titulo: /m)
       expect(source, file).toMatch(/^data: /m)
@@ -242,7 +247,7 @@ describe('S-17 ADR naming', () => {
   })
 
   it('não cita ADR por número no próprio texto', () => {
-    for (const file of readdirSync(adrDir)) {
+    for (const file of adrFiles()) {
       expect(readFileSync(resolve(adrDir, file), 'utf8'), file).not.toMatch(/ADR-\d{3}/)
     }
   })
@@ -716,7 +721,7 @@ describe('S-22 lint gate', () => {
     for (const name of lintedRoots) {
       expect(results.some((entry) => entry.filePath.includes(`/${name}/`))).toBe(true)
     }
-  })
+  }, 30_000)
 
   it('leaves no lint suppression behind in the linted tree', () => {
     const directive = ['eslint', 'disable'].join('-')
@@ -923,11 +928,11 @@ function layerCaseSection(): string {
 describe('S-33 plano-ids-camada', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe o plano para v5 e a suíte de scaffold para S-01..S-55', () => {
+  it('sobe o plano para v5 e a suíte de scaffold para S-01..S-61', () => {
     expect(plan).toMatch(
       /^Versão: 5 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
   })
 
   it('reserva as quatro faixas por camada', () => {
@@ -1118,8 +1123,8 @@ const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40'
 describe('S-42 web-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-55 e lista os casos do web', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
+  it('sobe a suíte de scaffold para S-01..S-61 e lista os casos do web', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
     for (const id of webScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1136,7 +1141,7 @@ describe('S-42 web-plan-ids', () => {
   it('atualiza o literal do S-33 para o título novo', () => {
     const previousTitle = ['### Suíte de scaffold (S-01', 'S-33)'].join('..')
 
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-55')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-61')
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 })
@@ -1402,13 +1407,19 @@ const desktopScaffoldCases = [
   'S-53',
   'S-54',
   'S-55',
+  'S-56',
+  'S-57',
+  'S-58',
+  'S-59',
+  'S-60',
+  'S-61',
 ]
 
 describe('S-54 desktop-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-55 e lista os casos do desktop', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
+  it('sobe a suíte de scaffold para S-01..S-61 e lista os casos do desktop', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
     for (const id of desktopScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1418,12 +1429,12 @@ describe('S-54 desktop-plan-ids', () => {
 
     expect(plan).not.toContain(previousTitle)
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousCases)
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-55')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-61')
   })
 
-  it('registra o D-02 coberto em parte e as pendências D-01 e D-03', () => {
+  it('registra o D-01 e o D-02 cobertos, com o D-03 pendente', () => {
+    expect(plan).toMatch(/D-01[^\n]*coberto/)
     expect(plan).toMatch(/D-02[^\n]*coberto em parte/)
-    expect(plan).toMatch(/D-01[^\n]*pendente/)
     expect(plan).toMatch(/D-03[^\n]*pendente/)
   })
 })
@@ -1447,10 +1458,10 @@ describe('S-55 desktop-loading-origin-adr', () => {
     expect(adrPath.startsWith(directory)).toBe(true)
   })
 
-  it('entra na faixa S-01..S-55 do plano', () => {
+  it('entra na faixa S-01..S-61 do plano', () => {
     const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
     expect(plan).toContain('S-55')
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-55)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
   })
 })

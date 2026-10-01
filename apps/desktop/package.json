@@ -9,11 +9,14 @@
   },
   "scripts": {
     "dev": "electron .",
+    "package": "node scripts/package.ts",
+    "sign:appimage": "node scripts/sign-appimage.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
     "@study/core": "workspace:*",
     "electron": "44.5.0",
+    "electron-builder": "26.15.3",
     "playwright-core": "1.63.0"
   }
 }

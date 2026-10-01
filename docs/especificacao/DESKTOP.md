@@ -15,7 +15,8 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/engenharia/ROADMAP.md`
 - Instaladores assinados: dmg (macOS), nsis (Windows) e AppImage (Linux).
 - O pacote carrega o bundle do renderer do web; a persistência continua no IndexedDB do renderer.
 - Sem servidor local e sem backend: o app é o web embalado (Local-first com backend adiado, Desktop com Electron reaproveitando o web).
-- A versão do instalador acompanha a versão do app web empacotado.
+- A versão do instalador acompanha a versão do app web empacotado, e a config única fica em `apps/desktop/electron-builder.yml`.
+- Antes de empacotar, suba `apps/web/package.json` e mantenha `apps/desktop/package.json` em paridade; `0.0.0` e versão fora de semver são recusados no pacote.
 
 ## Carregamento em produção
 

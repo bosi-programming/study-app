@@ -1,0 +1,33 @@
+appId: com.bosiprogramming.study
+productName: Study
+directories:
+  output: dist
+  buildResources: build
+files:
+  - src/**
+  - package.json
+asar: true
+extraResources:
+  from: ../web/dist
+  to: web
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+mac:
+  target:
+    - dmg
+  category: public.app-category.education
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  notarize: true
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+linux:
+  target:
+    - AppImage
+  category: Education

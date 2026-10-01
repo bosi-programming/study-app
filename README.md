@@ -51,7 +51,18 @@ pnpm --filter @study/web dev        # renderer do web, em http://localhost:4173
 pnpm --filter @study/desktop dev    # janela do Electron sobre esse renderer
 ```
 
-O smoke do projeto `desktop` builda o web, abre a janela sobre o bundle e prova que um item criado sobrevive a fechar e reabrir com o mesmo `STUDY_USER_DATA`; instaladores assinados ficam para o ticket de empacotamento da fase 5.
+O smoke do projeto `desktop` builda o web, abre a janela sobre o bundle e prova que um item criado sobrevive a fechar e reabrir com o mesmo `STUDY_USER_DATA`.
+
+### Gerar os instaladores
+
+O `electron-builder` usa a config única em `apps/desktop/electron-builder.yml` e gera os três instaladores — `dmg` (macOS), `nsis`/`.exe` (Windows) e `.AppImage` (Linux) — em `apps/desktop/dist`:
+
+```bash
+pnpm --filter @study/desktop package        # builda o web e empacota para o SO atual
+pnpm --filter @study/desktop sign:appimage  # assinatura GPG destacada do AppImage
+```
+
+A versão do instalador sai de `apps/web/package.json` e é injetada no pacote; `0.0.0` e versão fora de semver são recusados, então a release precisa de um número real — a regra de bump está no `docs/especificacao/DESKTOP.md`. A assinatura vem de variável de ambiente, nunca do repositório: sem os segredos, o empacotamento local avisa e sai não assinado, enquanto um build de release (`STUDY_RELEASE=1`) falha alto. No CI, o workflow `Release` roda em matrix nativa por tag (`v*`) ou `workflow_dispatch`, assina cada plataforma e sobe os instaladores como artifacts, com release draft só na tag.
 
 ## Instalar o comando `study`
 
