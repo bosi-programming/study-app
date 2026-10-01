@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { type TuiTerminal } from '../../src/tui/loop/index.ts'
-import { openTerminal } from '../../src/tui/terminal/openTerminal.ts'
-import { signalExitCode } from '../../src/tui/terminal/signalExitCode.ts'
-import { type TerminalEnvironment } from '../../src/tui/terminal/types.ts'
-import { withTerminal } from '../../src/tui/terminal/withTerminal.ts'
+import {
+  openTerminal,
+  signalExitCode,
+  withTerminal,
+  type TerminalEnvironment,
+} from '../../src/tui/terminal/index.ts'
 
 type Listener = (...args: unknown[]) => void
 
