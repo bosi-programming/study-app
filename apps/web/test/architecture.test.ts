@@ -181,3 +181,25 @@ describe('S-38 web-store-separation', () => {
     expect(offenders).toEqual([])
   })
 })
+
+type WebManifest = {
+  readonly dependencies?: Record<string, string>
+}
+
+describe('AC-12 web-integridade', () => {
+  it('web-manifesto-sem-dependencia-nova-de-runtime', () => {
+    const manifest = JSON.parse(
+      readFileSync(resolve(import.meta.dirname, '../package.json'), 'utf8'),
+    ) as WebManifest
+
+    expect(Object.keys(manifest.dependencies ?? {}).sort()).toEqual(['react', 'react-dom'])
+  })
+
+  it('web-src-sem-api-de-rede', () => {
+    const offenders = sourceFiles(SRC)
+      .filter((file) => NETWORK_PATTERN.test(readFileSync(file, 'utf8')))
+      .map(rel)
+
+    expect(offenders).toEqual([])
+  })
+})
