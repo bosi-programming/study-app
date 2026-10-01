@@ -36,7 +36,7 @@ function Confirmation({ title, counts }: { readonly title: string; readonly coun
     [strings.data.countsSkipped, counts.skipped],
   ]
   return (
-    <div>
+    <div role="status">
       <p>{title}</p>
       <ul>
         {rows.map(([label, value]) => (
