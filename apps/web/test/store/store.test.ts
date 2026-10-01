@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { type Item } from '@study/core'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { makeItem, makeLog, openTestStore, type TestStore } from './helpers.ts'
 import { IndexedDbUnavailableError, browserIdb } from '../../src/store/idb.ts'
 
@@ -59,6 +60,29 @@ describe('W-11.15 store-sem-indexeddb', () => {
       expect(() => browserIdb()).toThrow(IndexedDbUnavailableError)
       expect(() => browserIdb()).toThrow('IndexedDB indisponível')
     })
+  })
+})
+
+describe('browserIdb com os globais do navegador', () => {
+  it('devolve o factory e o keyRange de globalThis quando existem', () => {
+    const scope = globalThis as MutableGlobal
+    const hadFactory = 'indexedDB' in scope
+    const factory = scope.indexedDB
+    const hadKeyRange = 'IDBKeyRange' in scope
+    const keyRange = scope.IDBKeyRange
+    scope.indexedDB = new IDBFactory()
+    scope.IDBKeyRange = IDBKeyRange
+    try {
+      const environment = browserIdb()
+
+      expect(environment.factory).toBe(scope.indexedDB)
+      expect(environment.keyRange).toBe(IDBKeyRange)
+    } finally {
+      if (hadFactory) scope.indexedDB = factory
+      else delete scope.indexedDB
+      if (hadKeyRange) scope.IDBKeyRange = keyRange
+      else delete scope.IDBKeyRange
+    }
   })
 })
 

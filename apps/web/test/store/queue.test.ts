@@ -47,6 +47,17 @@ describe('W-11.8 fila-filtra-e-ordena', () => {
   it('countItems conta os ativos', async () => {
     expect(await context.store.countItems('active')).toBe(4)
   })
+
+  it('dueItems aceita filtro por matéria', async () => {
+    expect((await context.store.dueItems(TODAY, { subjectKey: 'calculo' })).map((item) => item.id)).toEqual([
+      'a',
+      'e',
+    ])
+  })
+
+  it('countItems aceita filtro por matéria', async () => {
+    expect(await context.store.countItems('active', { subjectKey: 'calculo' })).toBe(3)
+  })
 })
 
 function bigQueue(): Item[] {
@@ -69,5 +80,35 @@ describe('W-11.9 fila-5000-correcao', () => {
     const expected = Array.from({ length: 3500 }, (_, index) => `item-${String(index).padStart(4, '0')}`)
 
     expect(queue.map((item) => item.id)).toEqual(expected)
+  })
+})
+
+describe('findItems', () => {
+  beforeEach(async () => {
+    await seed(context.store, [
+      makeItem('calc-1', { title: 'Derivadas Parciais', subject: 'Cálculo', due_date: '2026-09-10' }),
+      makeItem('calc-2', { title: 'Cálculo Vetorial', subject: 'Cálculo', due_date: '2026-09-15' }),
+      makeItem('alg-1', { title: 'Autovalores', subject: 'Álgebra Linear', due_date: '2026-09-20' }),
+      makeItem('arch-1', {
+        title: 'Derivadas Direcionais',
+        subject: 'Cálculo',
+        status: 'archived',
+        due_date: '2026-09-01',
+      }),
+    ])
+  })
+
+  it('busca substring sem caixa, ordenado por vencimento e id', async () => {
+    expect((await context.store.findItems('DERIVADAS')).map((item) => item.id)).toEqual(['arch-1', 'calc-1'])
+  })
+
+  it('normaliza acento no termo', async () => {
+    expect((await context.store.findItems('calculo')).map((item) => item.id)).toEqual(['calc-2'])
+  })
+
+  it('aplica o filtro de matéria junto do termo', async () => {
+    expect((await context.store.findItems('a', { subjectKey: 'algebra linear' })).map((item) => item.id)).toEqual([
+      'alg-1',
+    ])
   })
 })
