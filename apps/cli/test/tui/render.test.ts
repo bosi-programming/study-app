@@ -127,7 +127,7 @@ describe('AC1 — pureza', () => {
 })
 
 describe('AC2 — os frames', () => {
-  it('frame-fila: 84x24 desenha o retrato de referência', () => {
+  it('frame-fila: 84x24 desenha o retrato de referência (U-01)', () => {
     expect(render(state())).toBe(REFERENCE_FRAME)
   })
 
@@ -135,7 +135,7 @@ describe('AC2 — os frames', () => {
     expect(render(state({ viewport: { columns: 60, rows: 15 } }))).toBe(NARROW_FRAME)
   })
 
-  it('frame-detalhe: a tela de detalhe desenha a caixa com campos e histórico', () => {
+  it('frame-detalhe: a tela de detalhe desenha a caixa com campos e histórico (U-05)', () => {
     const frame = render(state({ screen: 'detail', detail: { item: QUEUE[6] as Item, history: [makeLog()] } }))
 
     expect(frame).toContain('Detalhe')
@@ -144,7 +144,7 @@ describe('AC2 — os frames', () => {
     expect(frame).toContain('Histórico (1)')
   })
 
-  it('frame-reavaliacao: a reavaliação desenha o corpo da fila e o rodapé de quatro linhas', () => {
+  it('frame-reavaliacao: a reavaliação desenha o corpo da fila e o rodapé de quatro linhas (U-06)', () => {
     const frame = render(state({
       screen: 'reevaluate',
       confirmation: 'Ciclo de Krebs e fosforilação oxidativa',
@@ -158,7 +158,7 @@ describe('AC2 — os frames', () => {
     expect(frame).toContain('Esc cancela · Enter mantém · 1–5 recalcula')
   })
 
-  it('frame-ajuda: a ajuda desenha a caixa com os comandos de linha', () => {
+  it('frame-ajuda: a ajuda desenha a caixa com os comandos de linha (U-08)', () => {
     const frame = render(state({ screen: 'help' }))
 
     expect(frame).toContain('Ajuda')
@@ -181,13 +181,13 @@ describe('AC2 — os frames', () => {
     expect(render(state({ screen: 'help' }))).toContain(`│ ${label.padEnd(14)}${description}`)
   })
 
-  it('frame-vazia: fila vazia desenha o estado vazio explícito', () => {
+  it('frame-vazia: fila vazia desenha o estado vazio explícito (U-07)', () => {
     const frame = render(state({ queue: [], focusId: null }))
 
     expect(frame).toContain('Fila zerada')
   })
 
-  it('frame-pequeno: abaixo de 60x15 só sai a mensagem de janela pequena', () => {
+  it('frame-pequeno: abaixo de 60x15 só sai a mensagem de janela pequena (U-04)', () => {
     const small = 'Aumente a janela para pelo menos\n60 colunas e 15 linhas.'
 
     expect(render(state({ viewport: { columns: 59, rows: 24 } }))).toBe(small)
@@ -302,7 +302,7 @@ describe('AC5 — truncamento', () => {
 })
 
 describe('AC6 — janela pequena', () => {
-  it('limite-60x15: 60x15 desenha; 59 colunas ou 14 linhas caem na mensagem', () => {
+  it('limite-60x15: 60x15 desenha; 59 colunas ou 14 linhas caem na mensagem (U-04)', () => {
     expect(render(state({ viewport: { columns: 60, rows: 15 } }))).toContain('Fila de hoje')
     expect(render(state({ viewport: { columns: 59, rows: 15 } }))).not.toContain('Fila de hoje')
     expect(render(state({ viewport: { columns: 60, rows: 14 } }))).not.toContain('Fila de hoje')
@@ -342,7 +342,7 @@ describe('AC7 — bordas', () => {
 })
 
 describe('AC8 — cor', () => {
-  it('sem-cor-marcador: sem cor o atraso traz o marcador textual e nenhum escape', () => {
+  it('sem-cor-marcador: sem cor o atraso traz o marcador textual e nenhum escape (U-03)', () => {
     const frame = render(state({ color: false }))
 
     expect(frame).toContain('! venceu 2026-08-22 (37d)')
@@ -359,7 +359,7 @@ describe('AC8 — cor', () => {
     expect(plain).toContain('! venceu 2026-08-22 (37d)')
   })
 
-  it('cor-mesma-largura: com e sem cor as larguras batem depois de remover o ANSI', () => {
+  it('cor-mesma-largura: com e sem cor as larguras batem depois de remover o ANSI (U-03)', () => {
     const colored = linesOf(render(state({ color: true }))).map(visibleWidth)
     const plain = linesOf(render(state({ color: false }))).map(visibleWidth)
 
@@ -368,7 +368,7 @@ describe('AC8 — cor', () => {
 })
 
 describe('AC9 — contrato de estado', () => {
-  it('detalhe-campos: os campos e o histórico saem do estado', () => {
+  it('detalhe-campos: os campos e o histórico saem do estado (U-05)', () => {
     const item = makeItem({
       id: 'd1',
       title: 'Detalhe',
@@ -446,7 +446,7 @@ describe('AC9 — contrato de estado', () => {
 })
 
 describe('AC10 — rolagem', () => {
-  it('rolagem-indicadores: o recorte mostra os indicadores e o intervalo', () => {
+  it('rolagem-indicadores: o recorte mostra os indicadores e o intervalo (U-02)', () => {
     const frame = render(state({ focusId: 'a8', viewport: { columns: 84, rows: 15 } }))
 
     expect(frame).toContain('↑ 3 acima')
@@ -463,7 +463,7 @@ describe('AC10 — rolagem', () => {
   })
 
   it.each(['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'b1', 'b2', 'b3', 'b4'])(
-    'rolagem-foco-visivel: o foco %s fica na janela quando ela recorta',
+    'rolagem-foco-visivel: o foco %s fica na janela quando ela recorta (U-02)',
     (focusId) => {
       const frame = render(state({ focusId, viewport: { columns: 84, rows: 15 } }))
 
@@ -489,7 +489,7 @@ describe('AC11 — casos de borda', () => {
     },
   )
 
-  it('vazia-teclas: a fila vazia só oferece ? e q', () => {
+  it('vazia-teclas: a fila vazia só oferece ? e q (U-07)', () => {
     const frame = render(state({ queue: [], focusId: null }))
 
     expect(frame).toContain('? ajuda · q sair')
