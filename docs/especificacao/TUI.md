@@ -166,7 +166,6 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 - Barra de status com streak e contagens do dia.
 - Filtro por matéria (`-s`) dentro da fila.
 - Onde a TUI entra no `ROADMAP.md`: item da Fase 1 ou fase própria antes do web.
-- Um ADR para a superfície: zero-dep, raw mode, tela alternativa e semântica de saída.
 
 ## Notas de implementação
 

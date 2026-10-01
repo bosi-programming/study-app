@@ -163,3 +163,32 @@ describe('AC9 — a zona do laço da TUI', () => {
     }
   })
 })
+
+describe('AC7 — o ADR da superfície da TUI', () => {
+  it('adr-superficie-aceito: o ADR da superfície existe, nomeado pelo assunto, e aceito', () => {
+    const adr = readFileSync(
+      resolve(ADR_DIR, 'superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md'),
+      'utf8',
+    )
+
+    expect(adr).toContain("status: 'aceito'")
+  })
+
+  it('adr-superficie-indexado: a linha docs/adr/ do índice cobre a pasta dos ADRs', () => {
+    const index = readFileSync(resolve(import.meta.dirname, '../../../docs/README.md'), 'utf8')
+
+    expect(index).toContain('| `docs/adr/` |')
+  })
+})
+
+describe('AC8 — o adaptador de terminal sem process.', () => {
+  it('terminal-nucleo-sem-process: só processEnvironment.ts usa process. ou node:', () => {
+    const terminalDir = resolve(SRC, 'tui/terminal')
+    const offenders = sourceFiles(terminalDir)
+      .filter((file) => file !== resolve(terminalDir, 'processEnvironment.ts'))
+      .filter((file) => /process\.|node:/.test(readFileSync(file, 'utf8')))
+      .map(rel)
+
+    expect(offenders).toEqual([])
+  })
+})
