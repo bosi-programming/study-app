@@ -1,6 +1,6 @@
 export { browserIdb, IndexedDbUnavailableError, type IdbEnvironment } from './idb.ts'
 export { openStore, SchemaMismatchError, SchemaVersionError } from './store.ts'
-export type { ColdArchiveEntry, ItemFilter, Store } from './store.ts'
+export type { ColdArchiveEntry, ItemFilter, OpenStoreOptions, Store } from './store.ts'
 export { applySchema, IDB_NAME, IDB_SCHEMA, IDB_VERSION, SCHEMA_VERSION } from './schema.ts'
 export type { IndexSpec, StoreSpec } from './schema.ts'
 export { itemToRow, reviewLogToRow, rowToItem, rowToReviewLog } from './mapping.ts'

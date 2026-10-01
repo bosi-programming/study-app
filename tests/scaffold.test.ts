@@ -791,7 +791,7 @@ describe('S-29 docs-index-novos', () => {
   it('sobe a linha do plano de testes para v4', () => {
     const row = indexRows().find((line) => line.includes('docs/engenharia/PLANO-DE-TESTES.md'))
     expect(row).toBeDefined()
-    expect(row).toContain('Rascunho v5')
+    expect(row).toContain('Rascunho v6')
   })
 })
 
@@ -930,7 +930,7 @@ describe('S-33 plano-ids-camada', () => {
 
   it('sobe o plano para v5 e a suíte de scaffold para S-01..S-61', () => {
     expect(plan).toMatch(
-      /^Versão: 5 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
+      /^Versão: 6 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
     expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
   })

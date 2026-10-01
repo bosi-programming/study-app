@@ -1,11 +1,13 @@
 import { type RefObject, useEffect, useRef, useState } from 'react'
 import { type Deps } from '@study/core'
 import { AddView, useAdd } from './features/add/index.ts'
+import { DataView, useData } from './features/data/index.ts'
 import { ItemDetailView, ItemsView, useItemDetail, useItems } from './features/items/index.ts'
 import { QueueView, useQueue } from './features/queue/index.ts'
 import { ReviewView, useReview } from './features/review/index.ts'
 import { StatsView, useStats } from './features/stats/index.ts'
 import { messageForError } from './errors.ts'
+import { type FileGateway } from './files.ts'
 import { ErrorNotice, LoadingNotice } from './notices.tsx'
 import { rollQueueStreak } from './queueStreak.ts'
 import { hrefFor, routeKey, type Route } from './routing.ts'
@@ -16,6 +18,7 @@ import { type HashNavigation, useHashRoute } from './useHashRoute.ts'
 export type AppProps = {
   readonly store: Store
   readonly deps: Deps
+  readonly files: FileGateway
 }
 
 type BootState =
@@ -28,9 +31,10 @@ const NAV: readonly { readonly route: Route; readonly label: string }[] = [
   { route: { name: 'add' }, label: strings.app.navAdd },
   { route: { name: 'items' }, label: strings.app.navItems },
   { route: { name: 'stats' }, label: strings.app.navStats },
+  { route: { name: 'data' }, label: strings.app.navData },
 ]
 
-export function App({ store, deps }: AppProps) {
+export function App({ store, deps, files }: AppProps) {
   const navigation = useHashRoute()
   const boot = useBoot(store, deps)
   const heading = useNavigationFocus(routeKey(navigation.route))
@@ -42,7 +46,13 @@ export function App({ store, deps }: AppProps) {
       {boot.status === 'loading' ? <LoadingNotice /> : null}
       {boot.status === 'error' ? <ErrorNotice message={boot.message} /> : null}
       {boot.status === 'ready' ? (
-        <Screen route={navigation.route} navigate={navigation.navigate} store={store} deps={deps} />
+        <Screen
+          route={navigation.route}
+          navigate={navigation.navigate}
+          store={store}
+          deps={deps}
+          files={files}
+        />
       ) : null}
     </main>
   )
@@ -109,9 +119,10 @@ type ScreenProps = {
   readonly navigate: HashNavigation['navigate']
   readonly store: Store
   readonly deps: Deps
+  readonly files: FileGateway
 }
 
-function Screen({ route, navigate, store, deps }: ScreenProps) {
+function Screen({ route, navigate, store, deps, files }: ScreenProps) {
   switch (route.name) {
     case 'queue':
       return <QueueRoute store={store} deps={deps} />
@@ -125,6 +136,8 @@ function Screen({ route, navigate, store, deps }: ScreenProps) {
       return <ReviewRoute store={store} deps={deps} id={route.id} />
     case 'stats':
       return <StatsRoute store={store} deps={deps} />
+    case 'data':
+      return <DataRoute store={store} deps={deps} files={files} />
   }
 }
 
@@ -180,4 +193,17 @@ function ReviewRoute({
 function StatsRoute({ store, deps }: { readonly store: Store; readonly deps: Deps }) {
   const state = useStats(store, deps)
   return <StatsView state={state} />
+}
+
+function DataRoute({
+  store,
+  deps,
+  files,
+}: {
+  readonly store: Store
+  readonly deps: Deps
+  readonly files: FileGateway
+}) {
+  const controller = useData(store, deps, files)
+  return <DataView controller={controller} />
 }
