@@ -788,10 +788,10 @@ describe('S-29 docs-index-novos', () => {
     for (const path of layerDocuments) expect(order, path).toContain(path)
   })
 
-  it('sobe a linha do plano de testes para v4', () => {
+  it('sobe a linha do plano de testes para v7', () => {
     const row = indexRows().find((line) => line.includes('docs/engenharia/PLANO-DE-TESTES.md'))
     expect(row).toBeDefined()
-    expect(row).toContain('Rascunho v6')
+    expect(row).toContain('Rascunho v7')
   })
 })
 
@@ -928,11 +928,11 @@ function layerCaseSection(): string {
 describe('S-33 plano-ids-camada', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe o plano para v5 e a suíte de scaffold para S-01..S-61', () => {
+  it('sobe o plano para v7 e a suíte de scaffold para S-01..S-62', () => {
     expect(plan).toMatch(
-      /^Versão: 6 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
+      /^Versão: 7 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
   })
 
   it('reserva as quatro faixas por camada', () => {
@@ -1123,8 +1123,8 @@ const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40'
 describe('S-42 web-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-61 e lista os casos do web', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
+  it('sobe a suíte de scaffold para S-01..S-62 e lista os casos do web', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
     for (const id of webScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1141,7 +1141,7 @@ describe('S-42 web-plan-ids', () => {
   it('atualiza o literal do S-33 para o título novo', () => {
     const previousTitle = ['### Suíte de scaffold (S-01', 'S-33)'].join('..')
 
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-61')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-62')
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 })
@@ -1418,8 +1418,8 @@ const desktopScaffoldCases = [
 describe('S-54 desktop-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-61 e lista os casos do desktop', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
+  it('sobe a suíte de scaffold para S-01..S-62 e lista os casos do desktop', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
     for (const id of desktopScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1429,7 +1429,7 @@ describe('S-54 desktop-plan-ids', () => {
 
     expect(plan).not.toContain(previousTitle)
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousCases)
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-61')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-62')
   })
 
   it('registra o D-01 e o D-02 cobertos, com o D-03 pendente', () => {
@@ -1458,10 +1458,94 @@ describe('S-55 desktop-loading-origin-adr', () => {
     expect(adrPath.startsWith(directory)).toBe(true)
   })
 
-  it('entra na faixa S-01..S-61 do plano', () => {
+  it('entra na faixa S-01..S-62 do plano', () => {
     const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
     expect(plan).toContain('S-55')
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-61)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
+  })
+})
+
+describe('S-62 tui-surface-adr', () => {
+  const adrPath = 'docs/adr/superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md'
+
+  const adrSource = (): string => readFileSync(resolve(root, adrPath), 'utf8')
+
+  it('adr-surface-existe-aceito: registra o ADR da superfície como aceito', () => {
+    expect(existsSync(resolve(root, adrPath)), adrPath).toBe(true)
+    expect(adrSource()).toMatch(/^status: 'aceito'/m)
+  })
+
+  it('adr-index-dois-novos: indexa os dois ADRs mergeados sem linha no índice', () => {
+    const index = textAt('docs/adr/README.md')
+
+    expect(index).toContain('export-import-do-json-v1-no-web.md')
+    expect(index).toContain('rastreabilidade-u-nn-da-tui.md')
+  })
+
+  it('adr-surface-marcadores: cobre zero-dep, raw mode e tela alternativa', () => {
+    const source = adrSource()
+
+    expect(source).toContain('setRawMode')
+    expect(source).toContain('1049h')
+    expect(source).toContain('dependencies')
+  })
+
+  it('adr-surface-exit-codes: cobre a recusa sem TTY e o Ctrl-C=130', () => {
+    const source = adrSource()
+
+    expect(source).toContain('TTY')
+    expect(source).toContain('usage')
+    expect(source).toContain('130')
+  })
+
+  it('plano-cita-S-62: o plano descreve o caso e sobe o título da suíte', () => {
+    const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+
+    expect(plan).toContain('S-62')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
+  })
+
+  it('topo-antigo-removido: o teste não guarda mais o título anterior', () => {
+    const previousTitle = ['### Suíte de scaffold (S-01', 'S-61)'].join('..')
+
+    expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
+  })
+
+  it('docs-index-adr-v2: o índice de documentos sobe a linha de ADRs', () => {
+    const row = indexRows().find((line) => line.includes('`docs/adr/`'))
+
+    expect(row, 'linha docs/adr/ ausente no índice').toBeDefined()
+    expect(row).toContain('Rascunho v2')
+  })
+
+  it('docs-index-sem-duplicata: o comando da TUI tem uma linha só no índice', () => {
+    const rows = indexRows().filter((line) =>
+      line.includes('docs/engenharia/COMANDO-STUDY-TUI.md'),
+    )
+
+    expect(rows).toHaveLength(1)
+  })
+
+  it('roadmap-fase-1-tui: a fase 1 entrega a TUI como item da checklist', () => {
+    const delivered = phaseOneChecklistLines().filter(
+      (line) => line.startsWith('- [x]') && line.includes('TUI'),
+    )
+
+    expect(roadmapPhaseOneSection()).toMatch(/TUI/)
+    expect(delivered).toHaveLength(1)
+  })
+
+  it('roadmap-versao-v4: o roadmap sobe para v4', () => {
+    expect(textAt('docs/engenharia/ROADMAP.md')).toMatch(
+      /^Versão: 4 \| Data: \d{4}-\d{2}-\d{2} \| Ritmo: menos de 10h\/semana$/m,
+    )
+  })
+
+  it('docs-index-roadmap-v4: o índice de documentos sobe a linha do roadmap', () => {
+    const row = indexRows().find((line) => line.includes('docs/engenharia/ROADMAP.md'))
+
+    expect(row, 'linha do roadmap ausente no índice').toBeDefined()
+    expect(row).toContain('Rascunho v4')
   })
 })

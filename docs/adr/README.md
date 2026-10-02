@@ -18,6 +18,7 @@
 | [`empacotador-do-desktop.md`](empacotador-do-desktop.md) | Empacotador do desktop | aceito |
 | [`engine-de-dados-por-plataforma.md`](engine-de-dados-por-plataforma.md) | Engine de dados por plataforma | aceito |
 | [`engine-sqlite-do-cli-node-sqlite.md`](engine-sqlite-do-cli-node-sqlite.md) | Engine SQLite do CLI | aceito |
+| [`export-import-do-json-v1-no-web.md`](export-import-do-json-v1-no-web.md) | Export/import do JSON v1 no web: leitor próprio, abertura relaxada e prova cruzada | aceito |
 | [`export-import-do-json-v1.md`](export-import-do-json-v1.md) | Export/import do JSON v1: isenções do contexto e merge por updated_at | aceito |
 | [`finditems-com-filtro-porta-de-consulta-do-store.md`](finditems-com-filtro-porta-de-consulta-do-store.md) | findItems com filtro: a porta de consulta do store | aceito |
 | [`gancho-do-streak-de-fila-zerada.md`](gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |
@@ -35,6 +36,7 @@
 | [`porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md`](porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md) | Porta de abertura do contexto e a sessão longa da TUI: limite de ação e contrato de estado | aceito |
 | [`porta-de-terminal-injetada-e-zona-do-laco-da-tui.md`](porta-de-terminal-injetada-e-zona-do-laco-da-tui.md) | Porta de terminal injetada e a zona do laço da TUI | aceito |
 | [`rastreabilidade-t-nn-do-cli-verificacao-manual-e-medicao-da-rnf-03.md`](rastreabilidade-t-nn-do-cli-verificacao-manual-e-medicao-da-rnf-03.md) | Rastreabilidade T-nn do CLI, verificação manual e medição da RNF-03 | aceito |
+| [`rastreabilidade-u-nn-da-tui.md`](rastreabilidade-u-nn-da-tui.md) | Rastreabilidade U-nn da TUI por token literal | aceito |
 | [`reavaliacao-apos-check-in-na-sessao-da-tui.md`](reavaliacao-apos-check-in-na-sessao-da-tui.md) | Reavaliação após o check-in na sessão da TUI | aceito |
 | [`reavaliacao-de-dificuldade-a-cada-check-in.md`](reavaliacao-de-dificuldade-a-cada-check-in.md) | Reavaliação de dificuldade a cada check-in | aceito |
 | [`referencia-de-item-por-uuid-prefixo-ou-titulo.md`](referencia-de-item-por-uuid-prefixo-ou-titulo.md) | Referência de item por UUID, prefixo ou título | aceito |
