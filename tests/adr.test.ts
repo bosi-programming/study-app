@@ -54,3 +54,53 @@ describe('S-61 desktop-adrs-de-pacote', () => {
     expect(sourceAt(indexPath)).not.toMatch(/ADR-\d{3}/)
   })
 })
+
+describe('identidade visual da TUI fora do design system', () => {
+  const identity = 'docs/adr/identidade-visual-da-tui-fora-do-design-system.md'
+  const surface = 'docs/adr/superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md'
+
+  const identitySource = (): string => sourceAt(identity)
+
+  it('adr-compara-tres-opcoes: compara tokens, camada agnóstica e manter fora', () => {
+    const source = identitySource()
+
+    expect(source).toContain('Compartilhar só tokens')
+    expect(source).toContain('Expor camada agnóstica')
+    expect(source).toContain('Manter a TUI fora')
+  })
+
+  it('adr-colisao-zero-dep-e-s28: liga cada opção ao zero-dep e ao S-28', () => {
+    const source = identitySource()
+
+    expect(source).toContain('superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md')
+    expect(source).toContain('S-28')
+    expect(source).toContain('dependencies')
+  })
+
+  it('adr-recomendacao-unica-com-custo: registra a recomendação e o custo', () => {
+    const source = identitySource()
+
+    expect(source).toContain('não adotar')
+    expect(source).toContain('ADR novo')
+    expect(source).toContain('referência cruzada')
+  })
+
+  it('adr-licenca-mit: registra a licença MIT resolvida e que ela não é obstáculo', () => {
+    const source = identitySource()
+
+    expect(source).toContain('MIT')
+    expect(source).toContain('não é obstáculo')
+  })
+
+  it('adr-sem-ticket-derivado: dispensa ticket derivado e nomeia o gatilho', () => {
+    const source = identitySource()
+
+    expect(source).toContain('nenhum ticket')
+    expect(source).toContain('camada agnóstica')
+    expect(source).toContain('BOS-64')
+  })
+
+  it('adr-novo-referenciado-pela-superficie: o ADR da superfície aponta para o novo', () => {
+    expect(sourceAt(surface)).toContain('identidade-visual-da-tui-fora-do-design-system.md')
+  })
+})
