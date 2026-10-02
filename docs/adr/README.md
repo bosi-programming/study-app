@@ -20,6 +20,7 @@
 | [`engine-sqlite-do-cli-node-sqlite.md`](engine-sqlite-do-cli-node-sqlite.md) | Engine SQLite do CLI | aceito |
 | [`export-import-do-json-v1-no-web.md`](export-import-do-json-v1-no-web.md) | Export/import do JSON v1 no web: leitor próprio, abertura relaxada e prova cruzada | aceito |
 | [`export-import-do-json-v1.md`](export-import-do-json-v1.md) | Export/import do JSON v1: isenções do contexto e merge por updated_at | aceito |
+| [`filtro-por-materia-na-tui-adiado.md`](filtro-por-materia-na-tui-adiado.md) | Filtro por matéria na TUI adiado | aceito |
 | [`finditems-com-filtro-porta-de-consulta-do-store.md`](finditems-com-filtro-porta-de-consulta-do-store.md) | findItems com filtro: a porta de consulta do store | aceito |
 | [`gancho-do-streak-de-fila-zerada.md`](gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |
 | [`golden-fixtures-formato-e-quem-valida.md`](golden-fixtures-formato-e-quem-valida.md) | Golden fixtures: formato do vetor e quem valida | aceito |
@@ -32,6 +33,7 @@
 | [`nome-publicado-do-cli-sob-o-escopo-bosi-programming.md`](nome-publicado-do-cli-sob-o-escopo-bosi-programming.md) | Nome publicado do CLI sob o escopo @bosi-programming | aceito |
 | [`ordem-de-construcao-com-gates.md`](ordem-de-construcao-com-gates.md) | Ordem de construção com gates | aceito |
 | [`origem-de-carregamento-do-renderer-no-desktop.md`](origem-de-carregamento-do-renderer-no-desktop.md) | Origem de carregamento do renderer no desktop | aceito |
+| [`painel-de-stats-da-tui-na-tecla-s.md`](painel-de-stats-da-tui-na-tecla-s.md) | Painel de stats da TUI na tecla s | aceito |
 | [`persistencia-do-web-porta-assincrona-sobre-indexeddb.md`](persistencia-do-web-porta-assincrona-sobre-indexeddb.md) | Persistência do web: porta assíncrona sobre IndexedDB | aceito |
 | [`porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md`](porta-de-abertura-do-contexto-e-sessao-longa-da-tui.md) | Porta de abertura do contexto e a sessão longa da TUI: limite de ação e contrato de estado | aceito |
 | [`porta-de-terminal-injetada-e-zona-do-laco-da-tui.md`](porta-de-terminal-injetada-e-zona-do-laco-da-tui.md) | Porta de terminal injetada e a zona do laço da TUI | aceito |
@@ -49,4 +51,5 @@
 | [`shell-do-web-hash-proprio-e-injecao-de-store-e-deps.md`](shell-do-web-hash-proprio-e-injecao-de-store-e-deps.md) | Shell do web: hash próprio e injeção de store e deps | aceito |
 | [`superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md`](superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md) | Superfície da TUI: zero-dep, raw mode, tela alternativa e saída | aceito |
 | [`teclas-da-tui-como-adaptador-de-entrada-puro.md`](teclas-da-tui-como-adaptador-de-entrada-puro.md) | Teclas da TUI como adaptador de entrada puro: vocabulário próprio e pending entre reads | aceito |
+| [`tui-sem-subcomando-em-terminal-interativo.md`](tui-sem-subcomando-em-terminal-interativo.md) | TUI sem subcomando em terminal interativo | aceito |
 | [`vocabulario-de-error-code-e-envelope-sem-comando.md`](vocabulario-de-error-code-e-envelope-sem-comando.md) | Vocabulário fechado de error.code e envelope no study sem comando | aceito |

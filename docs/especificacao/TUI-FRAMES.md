@@ -1,6 +1,6 @@
 # Frames da TUI — Referência
 
-Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/TUI.md`
+Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/TUI.md`
 
 Blocos das telas da `study tui` para conferência visual. O texto sem os escapes é a fonte; a cor é decoração do ADR Cores da saída humana do CLI.
 
@@ -19,7 +19,6 @@ Blocos das telas da `study tui` para conferência visual. O texto sem os escapes
 - O terminal dos frames de tela cheia tem 84 colunas.
 - `>` marca o item em foco e não muda a largura da linha.
 - Sem cor, o atraso vira `!` e nada muda de posição.
-- Os frames de `Stats` e `Fila rolada` são proposta: dependem do BOS-57.
 - Estes frames não criam requisito: eles ilustram o `TUI.md`.
 
 ## Fila cheia
@@ -165,15 +164,15 @@ Fila de hoje — 2026-09-28
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-## Stats e streak
+## Stats
 
-Proposta para o BOS-57: barra de streak e contagens do dia numa tecla s. A barra tem 10 blocos, um por dia, e a dica diz como ela fecha.
+O painel do `s` na fila: streak de fila zerada, contagens de hoje e por status e o recorte por matéria. Abre e fecha com `s`, `Esc` ou `q`, inclusive na fila vazia.
 
 ```text
 ╭─ Stats ──────────────────────────────────────────────────────────────────────────╮
 │                                                                                  │
 │ Streak de fila zerada                                                            │
-│ 4 dias        ████░░░░░░   últimos 10 dias                                       │
+│ 4 dias        último dia 2026-09-24                                              │
 │                                                                                  │
 │ Hoje             3 check-ins              Ativos         12                      │
 │ Atrasados        8                        Arquivados     3                       │
