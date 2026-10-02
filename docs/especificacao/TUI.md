@@ -1,6 +1,6 @@
 # TUI — App de Estudo Espaçado
 
-Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
+Versão: 3 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -15,10 +15,12 @@ Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especi
 
 ## Decisões desta spec
 
-- Escopo da v1: fila do dia (RF-05), check-in (RF-08) e reavaliação de dificuldade (RF-11, RF-12, RF-13), mais o detalhe somente-leitura (RF-06, RF-10).
+- Escopo da v1: fila do dia (RF-05), check-in (RF-08), reavaliação de dificuldade (RF-11, RF-12, RF-13), o detalhe somente-leitura (RF-06, RF-10) e a escrita devolvida pelo BOS-69 — `add`, `edit`, `archive`/`unarchive`, `remove`, `cold`, `config`, `export` e `import` (Escrita na TUI com campo de texto em raw mode).
 - Zero dependência de runtime: `node:readline`, `process.stdin.setRawMode`, `SIGWINCH` e escapes ANSI na mão. O `S-28` pina `dependencies` vazio no pacote publicado.
 - Nenhuma regra nova: `recordReview`, `reevaluateDifficulty` e as leituras do store são as mesmas funções do CLI (Core TS compartilhado).
-- Teclado de uma linha: setas ou `j`/`k` movem; `Enter` faz check-in; `1`–`5` reavaliam; `i` abre o detalhe; `?` abre a ajuda; `q` sai.
+- Teclado: setas ou `j`/`k` movem; `Enter` faz check-in; `1`–`5` reavaliam; `i` abre o detalhe; `?` abre a ajuda; `q` sai; as teclas de `## Escrita` abrem as telas de item, arquivo morto, config e export/import.
+- O campo de texto em raw mode é a única entrada de texto da v1: valor, cursor, `←`/`→`/`Home`/`End`, `Backspace`, `Delete`, `Enter` confirma e `Esc` cancela; a largura trunca com `…` como as tabelas (Escrita na TUI com campo de texto em raw mode).
+- Escrita destrutiva — `remove`, `cold purge` e o `export` sobre arquivo existente — nunca executa sem a confirmação explícita da TUI; o `--yes` continua sendo a flag do CLI.
 - `Ctrl-C` sai com 130, mantendo o significado de aborto da tabela do `CLI.md`. O check-in já gravado permanece.
 - Cor é decoração (Cores da saída humana do CLI): sem cor, o atraso ganha marcador textual e nada deixa de ser legível.
 
@@ -49,7 +51,7 @@ Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especi
 ### Fila vazia
 
 - Estado vazio explícito: `Fila zerada`, com o streak de fila zerada (RF-21) e a dica de teclas.
-- Continua aceitando `q` e `?`.
+- Continua aceitando `q`, `?` e `a` (item novo); editar, arquivar ou remover exigem um item em foco.
 
 ### Stats
 
@@ -63,6 +65,55 @@ Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especi
 - Lista de teclas da v1 e o lembrete de que os comandos de linha fazem o resto.
 - Fecha com `Esc`, `?` ou `q`.
 
+## Escrita
+
+Os comandos de escrita são telas da mesma sessão, sobre as mesmas funções que o CLI já chama, sem regra nova no core (Escrita na TUI com campo de texto em raw mode). O campo de texto é a peça comum: valor, cursor, `←`/`→`/`Home`/`End`, `Backspace`, `Delete`, `Enter` confirma e `Esc` cancela; a largura trunca com `…` como as tabelas. O contrato de render e os frames dessas telas entram na implementação do BOS-69; esta spec fixa o escopo, a tecla de entrada e o reuso.
+
+### Item novo (`add`)
+
+- `a` na fila, inclusive a vazia, abre o formulário com os campos do `study add`: título, matéria, dificuldade, nota e link.
+- Título e matéria são obrigatórios, e dificuldade vazia é inválida, como o prompt do `CLI.md`.
+- `Enter` no último campo grava pela mesma função do `add`; a barra confirma `Item criado: <título> (<id8>)` e a fila é relida.
+- `Esc` cancela sem escrever.
+
+### Edição (`edit`)
+
+- `e` no item em foco abre o formulário com os valores atuais; só o que mudou vai para a função do `edit`.
+- Sem pergunta, como o `edit` do `CLI.md`: `Enter` grava e a fila é relida, `Esc` cancela sem escrever.
+
+### Arquivar e desarquivar (`archive`, `unarchive`)
+
+- `x` arquiva e `X` desarquiva o item em foco; são imediatos e não pedem confirmação.
+- A barra confirma `Item arquivado: <título> (<id8>)` ou `Item desarquivado: <título> (<id8>)` e a fila é relida.
+
+### Remover (`remove`)
+
+- `D` no item em foco abre a confirmação `Remover <título>? (y/n)`.
+- Só `y` chama a função do `remove`; `n` ou `Esc` cancela sem escrever, no lugar do `--yes` do CLI.
+
+### Arquivo morto (`cold`)
+
+- `c` abre a tela do arquivo morto com a lista do `cold list`, a data de migração e o item em foco.
+- `R` restaura o item em foco; `P` pede a confirmação `Remover do arquivo morto? (y/n)` antes do `cold purge`.
+- `Esc`, `q` ou `c` fecha e volta à fila.
+
+### Config (`config`)
+
+- `C` abre a tela de config com a única chave da v1 (`cold_archive_after_days`) e o valor atual, como o `config get`.
+- `Enter` abre o campo; `Enter` de novo grava o valor novo pela função do `config set`, a barra confirma `<chave>: <valor>` e a tela é relida.
+- `Esc` cancela sem escrever.
+
+### Export e import (`export`, `import`)
+
+- `E` abre o campo do caminho e exporta o acervo no JSON v1; se o arquivo de destino já existir, uma confirmação própria substitui o `--yes` do `export`.
+- `I` abre o campo do caminho e importa o JSON v1; a barra mostra o `written` e o `skipped` do merge.
+- O caminho é digitado no campo de texto: a v1 zero-dep não tem seletor de arquivo nativo.
+
+### Confirmação
+
+- Tela única de confirmação para `remove`, `cold purge` e o `export` sobre arquivo existente: `y` confirma, `n` ou `Esc` cancela.
+- Nenhuma dessas ações escreve sem o `y` explícito.
+
 ## Teclas
 
 | Tecla | Efeito | Onde |
@@ -74,6 +125,15 @@ Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especi
 | `1`–`5` | reavalia a dificuldade do item em foco | fila, reavaliação |
 | `i` | abre o detalhe | fila |
 | `s` | abre o painel de stats; no painel, fecha | fila, painel |
+| `a` | abre o formulário de item novo | fila, fila vazia |
+| `e` | abre a edição do item em foco | fila, detalhe |
+| `x` `X` | arquiva e desarquiva o item em foco | fila, detalhe |
+| `D` | pede confirmação para remover o item em foco | fila, detalhe |
+| `c` | abre o arquivo morto; na tela, fecha | fila |
+| `C` | abre a config | fila |
+| `E` `I` | exporta e importa pelo caminho digitado | fila |
+| `R` `P` | restaura e purga o item em foco do arquivo morto | arquivo morto |
+| `y` `n` | confirma e cancela a ação destrutiva | confirmação |
 | `Esc` | fecha painel ou cancela a reavaliação | detalhe, reavaliação, ajuda |
 | `?` | abre a ajuda | fila, detalhe |
 | `q` | sai (na reavaliação, cancela e sai) | todas |
@@ -163,9 +223,10 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 
 ## Fora de escopo (v1)
 
-- `add`, `edit`, `archive`, `remove`, `cold`, `config`, `export` e `import` dentro da TUI.
-- Busca e filtro por matéria (RF-24, recorte do RF-07).
+- Busca e filtro por matéria (RF-24, recorte do RF-07): o campo de texto destrava o item, mas ele segue no BOS-68.
 - Barra de streak permanente.
+- `init` e `init --reset`, que continuam só no CLI.
+- Seletor de arquivo nativo em `export`/`import`; o caminho é campo de texto.
 - Mouse, temas, i18n e notificações.
 
 ## Em aberto
@@ -177,3 +238,4 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 - `apps/cli/src/output/human.ts` continua a ser a saída dos comandos; a TUI não o reusa para desenhar.
 - Sem dependência nova de runtime: o bundle do `prepare` continua um arquivo só, com o core inlinado.
 - `study tui` entra em `COMMANDS` e no bloco de uso do `cli.ts`, com `--help` inalterado.
+- O campo de texto é uma peça pura do render (`field.ts`), testada sem PTY; o `RenderState` e os frames das telas de escrita entram na implementação do BOS-69.

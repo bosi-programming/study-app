@@ -13,7 +13,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/REQUISITOS.md` | Requisitos funcionais, regras e critérios de aceite | Rascunho v3 |
 | `docs/especificacao/MODELO-DE-DADOS.md` | Entidades, schema e contrato JSON | Rascunho v1 |
 | `docs/especificacao/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v7 |
-| `docs/especificacao/TUI.md` | Superfície interativa: telas, teclas, sessão e estados | Rascunho v2 |
+| `docs/especificacao/TUI.md` | Superfície interativa: telas, teclas, sessão e estados | Rascunho v3 |
 | `docs/especificacao/TUI-FRAMES.md` | Frames de referência das telas da TUI | Rascunho v2 |
 | `docs/especificacao/TUI-RENDER.md` | Contrato de entrada do renderizador puro e mapeamento de estado para frame | Rascunho v2 |
 | `docs/especificacao/CORE.md` | API do domínio: portas, item, regra de agendamento, erros | Rascunho v1 |
@@ -22,7 +22,7 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/MOBILE.md` | Expo, `expo-sqlite`, telas e lojas do app mobile | Rascunho v1 |
 | `docs/especificacao/DESKTOP.md` | Electron sobre o renderer do web, empacotamento e smoke | Rascunho v1 |
 | `docs/engenharia/INVENTARIO-DE-REQUISITOS.md` | Onde faltam requisitos, por fase, e onde cada documento mora | Rascunho v1 |
-| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v8 |
+| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v9 |
 | `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v4 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
 | `docs/engenharia/COMANDO-STUDY-TUI.md` | Registro do comando `study tui`, suas recusas, o laço da TUI e o ciclo de vida do terminal | Rascunho v1 |

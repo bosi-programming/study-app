@@ -18,6 +18,7 @@
 | [`empacotador-do-desktop.md`](empacotador-do-desktop.md) | Empacotador do desktop | aceito |
 | [`engine-de-dados-por-plataforma.md`](engine-de-dados-por-plataforma.md) | Engine de dados por plataforma | aceito |
 | [`engine-sqlite-do-cli-node-sqlite.md`](engine-sqlite-do-cli-node-sqlite.md) | Engine SQLite do CLI | aceito |
+| [`escrita-na-tui-com-campo-de-texto-em-raw-mode.md`](escrita-na-tui-com-campo-de-texto-em-raw-mode.md) | Escrita na TUI com campo de texto em raw mode | aceito |
 | [`export-import-do-json-v1-no-web.md`](export-import-do-json-v1-no-web.md) | Export/import do JSON v1 no web: leitor próprio, abertura relaxada e prova cruzada | aceito |
 | [`export-import-do-json-v1.md`](export-import-do-json-v1.md) | Export/import do JSON v1: isenções do contexto e merge por updated_at | aceito |
 | [`filtro-por-materia-na-tui-adiado.md`](filtro-por-materia-na-tui-adiado.md) | Filtro por matéria na TUI adiado | aceito |
