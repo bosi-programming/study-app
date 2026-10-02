@@ -1527,7 +1527,12 @@ describe('S-62 tui-surface-adr', () => {
     expect(rows).toHaveLength(1)
   })
 
-  it('roadmap-fase-1-tui: a fase 1 do roadmap nomeia a TUI', () => {
+  it('roadmap-fase-1-tui: a fase 1 entrega a TUI como item da checklist', () => {
+    const delivered = phaseOneChecklistLines().filter(
+      (line) => line.startsWith('- [x]') && line.includes('TUI'),
+    )
+
     expect(roadmapPhaseOneSection()).toMatch(/TUI/)
+    expect(delivered).toHaveLength(1)
   })
 })
