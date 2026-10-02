@@ -153,6 +153,7 @@ Fila de hoje — 2026-09-28
 │ Enter         check-in do item em foco                                           │
 │ 1–5           reavaliar a dificuldade                                            │
 │ i             abrir o detalhe                                                    │
+│ s             abrir o painel de stats                                            │
 │ Esc           fechar painel ou cancelar                                          │
 │ ?             esta ajuda                                                         │
 │ q             sair                                                               │
@@ -180,7 +181,7 @@ O painel do `s` na fila: streak de fila zerada, contagens de hoje e por status e
 │                                                                                  │
 │ Por matéria      Cálculo 3 · Inglês 2 · Biologia 2 · Física 2 · Química 1        │
 │                                                                                  │
-│ s ou Esc fecha                                                                   │
+│ s · Esc · q fecha                                                                │
 │                                                                                  │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ```

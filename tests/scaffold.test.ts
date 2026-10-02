@@ -1662,6 +1662,14 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
     expect(source).toContain('último dia')
   })
 
+  it('frames-ajuda-tecla-s: a caixa Ajuda lista a tecla s entre as onze da v1', () => {
+    const source = sectionBetween(textAt('docs/especificacao/TUI-FRAMES.md'), '## Ajuda', '\n## ')
+
+    expect(source).toMatch(/^│ s /m)
+    expect(source).toContain('abrir o painel de stats')
+    expect(textAt('docs/especificacao/TUI-RENDER.md')).toContain('onze teclas da v1')
+  })
+
   it('cli-study-sem-comando: o CLI.md fixa a abertura condicionada aos dois TTY', () => {
     const source = sectionBetween(
       textAt('docs/especificacao/CLI.md'),
@@ -1673,6 +1681,10 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
     expect(source).toContain('`--no-input`')
     expect(source).toContain('`usage`')
     expect(source).toContain('exit 1')
+    expect(source).toContain('`--help`')
+    expect(source).toContain('stdout')
+    expect(source).toContain('exit 0')
+    expect(source).toContain('sem envelope')
   })
 
   it('cli-arquivo-morto: a linha do arquivo morto deixa de negar a abertura do banco', () => {
