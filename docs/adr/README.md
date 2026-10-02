@@ -23,6 +23,7 @@
 | [`finditems-com-filtro-porta-de-consulta-do-store.md`](finditems-com-filtro-porta-de-consulta-do-store.md) | findItems com filtro: a porta de consulta do store | aceito |
 | [`gancho-do-streak-de-fila-zerada.md`](gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |
 | [`golden-fixtures-formato-e-quem-valida.md`](golden-fixtures-formato-e-quem-valida.md) | Golden fixtures: formato do vetor e quem valida | aceito |
+| [`identidade-visual-da-tui-fora-do-design-system.md`](identidade-visual-da-tui-fora-do-design-system.md) | Identidade visual da TUI fora do design system | aceito |
 | [`init-destrutivo-com-backup-e-confirmacao-reforcada.md`](init-destrutivo-com-backup-e-confirmacao-reforcada.md) | Init destrutivo com backup e confirmação reforçada | aceito |
 | [`instalacao-local-do-cli-symlink-do-shim-no-path.md`](instalacao-local-do-cli-symlink-do-shim-no-path.md) | Instalação local do CLI por symlink do shim do pnpm no PATH | superado |
 | [`item-nao-ativo-e-legivel-e-editavel.md`](item-nao-ativo-e-legivel-e-editavel.md) | Item não ativo é legível e editável; só o check-in recusa | aceito |
