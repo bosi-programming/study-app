@@ -788,10 +788,10 @@ describe('S-29 docs-index-novos', () => {
     for (const path of layerDocuments) expect(order, path).toContain(path)
   })
 
-  it('sobe a linha do plano de testes para v7', () => {
+  it('sobe a linha do plano de testes para v8', () => {
     const row = indexRows().find((line) => line.includes('docs/engenharia/PLANO-DE-TESTES.md'))
     expect(row).toBeDefined()
-    expect(row).toContain('Rascunho v7')
+    expect(row).toContain('Rascunho v8')
   })
 })
 
@@ -928,11 +928,11 @@ function layerCaseSection(): string {
 describe('S-33 plano-ids-camada', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe o plano para v7 e a suíte de scaffold para S-01..S-62', () => {
+  it('sobe o plano para v8 e a suíte de scaffold para S-01..S-63', () => {
     expect(plan).toMatch(
-      /^Versão: 7 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
+      /^Versão: 8 \| Data: \d{4}-\d{2}-\d{2} \| Base: `docs\/especificacao\/REQUISITOS\.md`$/m,
     )
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-63)')
   })
 
   it('reserva as quatro faixas por camada', () => {
@@ -1123,8 +1123,8 @@ const webScaffoldCases = ['S-34', 'S-35', 'S-36', 'S-37', 'S-38', 'S-39', 'S-40'
 describe('S-42 web-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-62 e lista os casos do web', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
+  it('sobe a suíte de scaffold para S-01..S-63 e lista os casos do web', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-63)')
     for (const id of webScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1141,7 +1141,7 @@ describe('S-42 web-plan-ids', () => {
   it('atualiza o literal do S-33 para o título novo', () => {
     const previousTitle = ['### Suíte de scaffold (S-01', 'S-33)'].join('..')
 
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-62')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-63')
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 })
@@ -1418,8 +1418,8 @@ const desktopScaffoldCases = [
 describe('S-54 desktop-plan-ids', () => {
   const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
-  it('sobe a suíte de scaffold para S-01..S-62 e lista os casos do desktop', () => {
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
+  it('sobe a suíte de scaffold para S-01..S-63 e lista os casos do desktop', () => {
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-63)')
     for (const id of desktopScaffoldCases) expect(plan, id).toContain(id)
   })
 
@@ -1429,7 +1429,7 @@ describe('S-54 desktop-plan-ids', () => {
 
     expect(plan).not.toContain(previousTitle)
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousCases)
-    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-62')
+    expect(textAt('tests/scaffold.test.ts')).toContain('S-01..S-63')
   })
 
   it('registra o D-01 e o D-02 cobertos, com o D-03 pendente', () => {
@@ -1458,11 +1458,11 @@ describe('S-55 desktop-loading-origin-adr', () => {
     expect(adrPath.startsWith(directory)).toBe(true)
   })
 
-  it('entra na faixa S-01..S-62 do plano', () => {
+  it('entra na faixa S-01..S-63 do plano', () => {
     const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
     expect(plan).toContain('S-55')
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-63)')
   })
 })
 
@@ -1503,7 +1503,7 @@ describe('S-62 tui-surface-adr', () => {
     const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
 
     expect(plan).toContain('S-62')
-    expect(plan).toContain('### Suíte de scaffold (S-01..S-62)')
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-63)')
   })
 
   it('topo-antigo-removido: o teste não guarda mais o título anterior', () => {
@@ -1547,5 +1547,203 @@ describe('S-62 tui-surface-adr', () => {
 
     expect(row, 'linha do roadmap ausente no índice').toBeDefined()
     expect(row).toContain('Rascunho v4')
+  })
+})
+
+const bos57FilterAdr = 'docs/adr/filtro-por-materia-na-tui-adiado.md'
+const bos57StatsAdr = 'docs/adr/painel-de-stats-da-tui-na-tecla-s.md'
+const bos57NoSubcommandAdr = 'docs/adr/tui-sem-subcomando-em-terminal-interativo.md'
+const bos57AdrPaths = [bos57FilterAdr, bos57StatsAdr, bos57NoSubcommandAdr]
+
+describe('S-63 bos-57-decisoes-da-tui', () => {
+  const versionRow = (path: string): string => {
+    const row = indexRows().find((line) => line.includes(`\`${path}\``))
+    if (row === undefined) throw new Error(`linha ${path} ausente em docs/README.md`)
+    return row
+  }
+
+  it('adr-sem-subcomando-forma: o ADR da abertura sem subcomando é aceito e nomeia a condição', () => {
+    const source = textAt(bos57NoSubcommandAdr)
+
+    expect(source).toMatch(/^status: 'aceito'/m)
+    expect(source).toContain('TTY')
+    expect(source).toContain('--json')
+    expect(source).toContain('--no-input')
+    expect(source).toContain('exit 1')
+  })
+
+  it('adr-stats-forma: o ADR do painel é aceito e nomeia a tecla, as leituras e o streak', () => {
+    const source = textAt(bos57StatsAdr)
+
+    expect(source).toMatch(/^status: 'aceito'/m)
+    expect(source).toContain('`s`')
+    expect(source).toContain('checkins_today')
+    expect(source).toContain('readQueueStreak')
+    expect(source).toContain('N dias')
+  })
+
+  it('adr-filtro-forma: o ADR do adiamento é aceito e nomeia RF-24, raw mode e o gatilho', () => {
+    const source = textAt(bos57FilterAdr)
+
+    expect(source).toMatch(/^status: 'aceito'/m)
+    expect(source).toContain('RF-24')
+    expect(source).toContain('raw mode')
+    expect(source).toContain('Gatilho de revisão')
+  })
+
+  it('adr-sem-numero: nenhum dos três ADRs carrega numero: nem cita ADR-nnn', () => {
+    for (const path of bos57AdrPaths) {
+      expect(textAt(path), path).not.toMatch(/numero:/)
+      expect(textAt(path), path).not.toMatch(/ADR-\d{3}/)
+    }
+  })
+
+  it('adr-index-tres-nomes: o índice da pasta lista os três ADRs', () => {
+    const index = textAt('docs/adr/README.md')
+
+    for (const path of bos57AdrPaths) {
+      expect(index, path).toContain(path.split('/').pop())
+    }
+  })
+
+  it('docs-adr-v2-mantido: a linha docs/adr/ segue em Rascunho v2', () => {
+    expect(versionRow('docs/adr/')).toContain('Rascunho v2')
+  })
+
+  it('tui-sem-subcomando-fora: Abrir a TUI sem subcomando saiu do Fora de escopo', () => {
+    const source = sectionBetween(
+      textAt('docs/especificacao/TUI.md'),
+      '## Fora de escopo (v1)',
+      '\n## ',
+    )
+
+    expect(source).not.toContain('Abrir a TUI sem subcomando')
+  })
+
+  it('tui-study-sem-argumento: a spec documenta study sem argumento em TTY', () => {
+    const source = sectionBetween(textAt('docs/especificacao/TUI.md'), '## Convenções', '\n## ')
+
+    expect(source).toContain('`study` sem argumento')
+    expect(source).toContain('`stdin` e `stdout` são TTY')
+    expect(source).toContain('`--no-input`')
+  })
+
+  it('tui-tecla-s-stats: a tabela de teclas ganha s e a tela Stats existe', () => {
+    const source = textAt('docs/especificacao/TUI.md')
+
+    expect(sectionBetween(source, '## Teclas', '\n## ')).toMatch(/^\| `s` \|/m)
+    expect(sectionBetween(source, '### Stats', '\n### ')).toContain('somente-leitura')
+  })
+
+  it('tui-em-aberto-vazio: os quatro bullets saíram e a spec sobe para v2', () => {
+    const source = textAt('docs/especificacao/TUI.md')
+    const open = sectionBetween(source, '## Em aberto', '\n## Notas de implementação')
+    const bullets = open.split('\n').filter((line) => line.startsWith('- '))
+
+    expect(source).toMatch(/^Versão: 2 \|/m)
+    expect(bullets).toEqual([])
+  })
+
+  it('render-screen-stats: RenderScreen inclui stats e a precedência tem a linha do painel', () => {
+    const source = textAt('docs/especificacao/TUI-RENDER.md')
+
+    expect(source).toMatch(/^Versão: 2 \|/m)
+    expect(source).toContain("'stats'")
+    expect(source).toMatch(/^\| `screen: 'stats'` \|/m)
+  })
+
+  it('frames-stats-decidido: o frame Stats perde a proposta e a barra de 10 blocos', () => {
+    const source = textAt('docs/especificacao/TUI-FRAMES.md')
+
+    expect(source).toMatch(/^Versão: 2 \|/m)
+    expect(source.toLowerCase()).not.toContain('proposta')
+    expect(source).not.toContain('█')
+    expect(source).not.toContain('últimos 10 dias')
+    expect(source).toContain('último dia')
+  })
+
+  it('frames-ajuda-tecla-s: a caixa Ajuda lista a tecla s entre as onze da v1', () => {
+    const source = sectionBetween(textAt('docs/especificacao/TUI-FRAMES.md'), '## Ajuda', '\n## ')
+
+    expect(source).toMatch(/^│ s /m)
+    expect(source).toContain('abrir o painel de stats')
+    expect(textAt('docs/especificacao/TUI-RENDER.md')).toContain('onze teclas da v1')
+  })
+
+  it('cli-study-sem-comando: o CLI.md fixa a abertura condicionada aos dois TTY', () => {
+    const source = sectionBetween(
+      textAt('docs/especificacao/CLI.md'),
+      '### Sem subcomando',
+      '\n## ',
+    )
+
+    expect(source).toContain('TTY')
+    expect(source).toContain('`--no-input`')
+    expect(source).toContain('`usage`')
+    expect(source).toContain('exit 1')
+    expect(source).toContain('`--help`')
+    expect(source).toContain('stdout')
+    expect(source).toContain('exit 0')
+    expect(source).toContain('sem envelope')
+  })
+
+  it('cli-arquivo-morto: a linha do arquivo morto deixa de negar a abertura do banco', () => {
+    const source = sectionBetween(textAt('docs/especificacao/CLI.md'), '## Arquivo morto', '\n## ')
+
+    expect(source).not.toContain('`study` sem comando não abrem banco')
+    expect(source).toContain('`--no-input`')
+  })
+
+  it('docs-linhas-versao: o índice sobe os documentos mexidos e mantém o resto', () => {
+    expect(versionRow('docs/especificacao/CLI.md')).toContain('Rascunho v7')
+    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v2')
+    expect(versionRow('docs/especificacao/TUI-FRAMES.md')).toContain('Rascunho v2')
+    expect(versionRow('docs/especificacao/TUI-RENDER.md')).toContain('Rascunho v2')
+    expect(versionRow('docs/engenharia/PLANO-DE-TESTES.md')).toContain('Rascunho v8')
+    expect(versionRow('docs/engenharia/ROADMAP.md')).toContain('Rascunho v4')
+  })
+
+  it('docs-index-estudo-react-unico: a linha do ESTUDO-REACT não duplica', () => {
+    const rows = indexRows().filter((line) =>
+      line.includes('docs/engenharia/ESTUDO-REACT-NA-TUI.md'),
+    )
+
+    expect(rows.length).toBeLessThanOrEqual(1)
+  })
+
+  it('plano-v8-s63: o plano sobe para v8 com a faixa S-01..S-63 e o bullet do S-63', () => {
+    const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+
+    expect(plan).toMatch(/^Versão: 8 \|/m)
+    expect(plan).toContain('### Suíte de scaffold (S-01..S-63)')
+    expect(plan).toContain('- `S-63`')
+  })
+
+  it('scaffold-topo-antigo: o título S-01..S-62 sumiu do próprio teste', () => {
+    const previousTitle = ['### Suíte de scaffold (S-01', 'S-62)'].join('..')
+
+    expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
+  })
+
+  it('u-suite-intacta: a subseção da TUI segue U-01..U-13', () => {
+    const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
+    const ids = [...plan.matchAll(/^\| (U-\d{2}) \|/gm)].map((match) => match[1])
+
+    expect(plan).toContain('### Suíte da TUI (U-01..U-13)')
+    expect(ids).toEqual([
+      'U-01',
+      'U-02',
+      'U-03',
+      'U-04',
+      'U-05',
+      'U-06',
+      'U-07',
+      'U-08',
+      'U-09',
+      'U-10',
+      'U-11',
+      'U-12',
+      'U-13',
+    ])
   })
 })

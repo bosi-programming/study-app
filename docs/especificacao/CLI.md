@@ -1,6 +1,6 @@
 # CLI — App de Estudo Espaçado
 
-Versão: 6 | Data: 2026-09-28 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 7 | Data: 2026-10-02 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -42,6 +42,11 @@ Qualquer ambiguidade é erro de estado (exit 3) e lista os candidatos com id, ma
 - `edit` nunca pergunta: só aceita flags.
 - `add` pergunta apenas a dificuldade ausente; matéria continua obrigatória por flag.
 - `review` pergunta a dificuldade depois de registrar o check-in.
+
+### Sem subcomando
+
+- `study` sem subcomando abre a mesma TUI do `study tui` só quando `stdin` e `stdout` são TTY e não vêm `--json` nem `--no-input`; as flags globais (`--db`, `--export-dir`, `--no-color`) passam para a sessão.
+- Fora disso nada muda: sem TTY, com `--json` ou com `--no-input`, o uso vai para o stderr com `code: usage` e exit 1; `--help` segue no stdout, exit 0, sem envelope, mesmo com `--json`; o envelope de `study --json` sem comando continua `usage` (TUI sem subcomando em terminal interativo).
 
 ## Comandos
 
@@ -100,7 +105,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 
 ## Arquivo morto
 
-- A checagem roda no início de todo comando, depois de abrir o banco e antes da ação pedida, exceto em `export` e `import`. `--help`, erro de `parseArgs` e `study` sem comando não abrem banco e não migram.
+- A checagem roda no início de todo comando, depois de abrir o banco e antes da ação pedida, exceto em `export` e `import`. `--help`, erro de `parseArgs` e os caminhos de `study` sem subcomando sem TTY, com `--json` ou com `--no-input` não abrem banco e não migram; em TTY, o `study` nu abre a TUI e passa pelos ganchos.
 - `export` fica fora da checagem por ser o caminho de saída quando o banco está fora do contrato (RNF-07); `import` fica fora porque migrar o estado pré-restore não muda o resultado — a migração roda de novo no comando seguinte, já sobre os dados restaurados.
 - Itens arquivados há mais que `cold_archive_after_days` (padrão 180) migram com aviso no stderr.
 - O aviso de sucesso é `N itens migrados para o arquivo morto; export: <path>`; o de falha do export é `falha ao exportar o arquivo morto (<path>); nenhum item foi migrado`.
@@ -139,6 +144,7 @@ O ciclo é `active → archived → cold`: `archive` e `unarchive` movem entre `
 - Subcomando usa a palavra do comando como raiz (`cold`, `config`), não o par (`cold list`), e o payload carrega `action`.
 - Erros vão para o **stderr** como `{"error":{"code","message"}}`, com o exit code da tabela e o **stdout vazio**. O vocabulário de `code` é fechado e está em `## Erros`.
 - `study --json` **sem comando** responde no envelope com `code: usage` e exit 1, como `comando desconhecido`; sem `--json`, o bloco de uso continua no stderr, sem envelope.
+- O envelope de `study --json` sem comando não muda com a abertura da TUI em TTY: ali não há `--json`.
 - `--help` **não é comando**: segue no canal humano, com o uso no stdout, exit 0 e sem envelope, mesmo com `--json`.
 - Chaves em inglês, iguais às do contrato JSON v1 de `docs/especificacao/MODELO-DE-DADOS.md`.
 

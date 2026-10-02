@@ -1,10 +1,11 @@
 # TUI — App de Estudo Espaçado
 
-Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
+Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
 - Comando: `study tui`. É a segunda superfície do mesmo CLI, sobre o mesmo `packages/core` e o mesmo banco (Core TS compartilhado, Camada de persistência do CLI).
+- `study` sem argumento abre a mesma TUI do `study tui` só quando `stdin` e `stdout` são TTY e não vêm `--json` nem `--no-input`, com as mesmas flags globais; fora disso, o uso no stderr com exit 1 e, com `--json`, o envelope `usage` (Vocabulário de `error.code` e envelope sem comando; TUI sem subcomando em terminal interativo).
 - A TUI não cria contrato de dados: lê e escreve pelo `store` do CLI.
 - Abre só com terminal interativo (stdout e stdin TTY). Fora disso, exit 1 com `a TUI exige um terminal interativo`.
 - `--json` não tem envelope de TUI: o desenho é a saída. O erro continua honorando `--json` quando a flag vem junto (RNF-08).
@@ -50,6 +51,13 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/CLI.md` e `docs/especi
 - Estado vazio explícito: `Fila zerada`, com o streak de fila zerada (RF-21) e a dica de teclas.
 - Continua aceitando `q` e `?`.
 
+### Stats
+
+- Painel somente-leitura do contexto do dia: streak de fila zerada, `checkins_today`, atrasados e para hoje, ativos/arquivados/arquivo morto e a contagem da fila por matéria.
+- Abre com `s` a partir da fila (inclusive a fila vazia) e fecha com `s`, `Esc` ou `q`.
+- Fonte: as mesmas leituras dos comandos (`stats` e `due`), sem regra nova no core; o streak é `N dias` com o último dia (Painel de stats da TUI na tecla s).
+- Sem cor e sem UTF-8 o painel continua legível; as contagens zeradas desenham zeros.
+
 ### Ajuda
 
 - Lista de teclas da v1 e o lembrete de que os comandos de linha fazem o resto.
@@ -65,6 +73,7 @@ Versão: 1 | Data: 2026-09-28 | Base: `docs/especificacao/CLI.md` e `docs/especi
 | `Enter` | check-in do item em foco; na reavaliação, mantém a dificuldade | fila, reavaliação |
 | `1`–`5` | reavalia a dificuldade do item em foco | fila, reavaliação |
 | `i` | abre o detalhe | fila |
+| `s` | abre o painel de stats; no painel, fecha | fila, painel |
 | `Esc` | fecha painel ou cancela a reavaliação | detalhe, reavaliação, ajuda |
 | `?` | abre a ajuda | fila, detalhe |
 | `q` | sai (na reavaliação, cancela e sai) | todas |
@@ -156,16 +165,10 @@ A TUI mantém o store aberto por minutos ou horas, e o CLI supõe um processo po
 
 - `add`, `edit`, `archive`, `remove`, `cold`, `config`, `export` e `import` dentro da TUI.
 - Busca e filtro por matéria (RF-24, recorte do RF-07).
-- Painel de stats e barra de streak permanente.
+- Barra de streak permanente.
 - Mouse, temas, i18n e notificações.
-- Abrir a TUI sem subcomando.
 
 ## Em aberto
-
-- `study` sem argumento abrir a TUI em TTY: mexe no ADR Vocabulário de `error.code` e envelope sem comando e no exit 1 atual; exige ADR.
-- Barra de status com streak e contagens do dia.
-- Filtro por matéria (`-s`) dentro da fila.
-- Onde a TUI entra no `ROADMAP.md`: item da Fase 1 ou fase própria antes do web.
 
 ## Notas de implementação
 

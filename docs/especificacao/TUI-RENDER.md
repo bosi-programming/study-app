@@ -1,6 +1,6 @@
 # TUI — Contrato do renderizador puro
 
-Versão: 1 | Data: 2026-09-30 | Base: `docs/especificacao/TUI.md` e `docs/especificacao/TUI-FRAMES.md`
+Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/TUI.md` e `docs/especificacao/TUI-FRAMES.md`
 
 O `TUI.md` descreve as telas e a `TUI-FRAMES.md` mostra os retratos. Este documento fixa o que falta entre os dois: o contrato de entrada do desenho — o `RenderState` que o loop monta — e o mapeamento de estado para frame. É o que o comando `study tui` e o loop (BOS-53) consomem para ligar a sessão (BOS-50) ao desenho sem importar a view.
 
@@ -15,12 +15,13 @@ O `TUI.md` descreve as telas e a `TUI-FRAMES.md` mostra os retratos. Este docume
 | Campo | Tipo | O que é |
 | --- | --- | --- |
 | `today` | `string` | data local corrente, usada no cabeçalho e no cálculo de atraso |
-| `screen` | `RenderScreen` | discriminante: `queue`, `detail`, `reevaluate` ou `help` |
+| `screen` | `RenderScreen` | discriminante: `queue`, `detail`, `reevaluate`, `help` ou `stats` |
 | `queue` | `readonly Item[]` | itens da fila do dia, já na ordem de exibição |
 | `focusId` | `string \| null` | id do item em foco |
 | `detail` | `RenderDetail \| null` | item mais histórico, na tela `detail` |
 | `reevaluation` | `RenderReevaluation \| null` | item mais dificuldade atual, na tela `reevaluate` |
 | `confirmation` | `string \| null` | título do check-in recém-registrado, para o rodapé da reavaliação |
+| `stats` | `RenderStats \| null` | dados do painel, na tela `stats` |
 | `streak` | `QueueStreak` | streak de fila zerada, para o frame vazio |
 | `banner` | `string \| null` | aviso não fatal; vira uma linha do frame |
 | `fatal` | `string \| null` | erro fatal; `render` devolve string vazia |
@@ -33,9 +34,10 @@ Tipos de apoio:
 - `RenderViewport` — `{ columns, rows }`.
 - `RenderDetail` — `{ item: Item, history: readonly ReviewLog[] }`.
 - `RenderReevaluation` — `{ item: Item, currentDifficulty: Difficulty }`.
-- `RenderScreen` — `'queue' | 'detail' | 'reevaluate' | 'help'`.
+- `RenderStats` — `{ streak: QueueStreak, checkinsToday: number, items: { active: number, archived: number, cold: number }, due: { overdue: number, today: number }, bySubject: Readonly<Record<string, number>> }`.
+- `RenderScreen` — `'queue' | 'detail' | 'reevaluate' | 'help' | 'stats'`.
 
-O `RenderState` é declarado sobre tipos do core e não carrega o `SessionState`. Quem faz a conversão é o loop: copia `today`, `queue`, `focusId`, `reevaluation`, `streak`, `banner` e `fatal` da sessão; resolve `detail` a partir do `detailItemId` mais o store; guarda `confirmation` no check-in; tira `viewport` do tamanho inicial e do `SIGWINCH`; resolve `color` por `resolveColorEnabled` e `utf8` pelo locale.
+O `RenderState` é declarado sobre tipos do core e não carrega o `SessionState`. Quem faz a conversão é o loop: copia `today`, `queue`, `focusId`, `reevaluation`, `streak`, `banner` e `fatal` da sessão; resolve `detail` a partir do `detailItemId` mais o store; guarda `confirmation` no check-in; monta `stats` com as mesmas leituras dos comandos (`stats` e `due`) quando a tela é `stats`; tira `viewport` do tamanho inicial e do `SIGWINCH`; resolve `color` por `resolveColorEnabled` e `utf8` pelo locale.
 
 ## Estado para frame
 
@@ -50,6 +52,7 @@ A ordem de precedência é `fatal`, janela pequena, `screen`.
 | `screen: 'detail'` | caixa `Detalhe`; `detail: null` cai na fila |
 | `screen: 'reevaluate'` | corpo da fila mais o rodapé de reavaliação |
 | `screen: 'help'` | caixa `Ajuda` |
+| `screen: 'stats'` | caixa `Stats`; somente-leitura |
 
 Banner e confirmação de check-in são linhas dentro de um frame, nunca frames próprios.
 
@@ -59,7 +62,8 @@ Banner e confirmação de check-in são linhas dentro de um frame, nunca frames 
 - **Fila vazia.** Cabeçalho, filete, `Fila zerada — streak de N dia(s)` e `? ajuda · q sair` centralizados no corpo, filete.
 - **Detalhe.** Caixa com o título do item e `Esc · i · q` à direita, `[matéria]` e prefixo do id, campos (Dificuldade, Vencimento, Intervalo, Check-ins, Nota, Link, Status), `Histórico (n)` com as linhas de check-in ou `nenhum check-in` e a nota de rolagem. O histórico que passa da altura é cortado.
 - **Reavaliação.** Corpo da fila mais o rodapé de quatro linhas: a confirmação `✓ Check-in registrado: <título>` (só com `confirmation`), a dificuldade atual, os cinco valores com rótulo e `Esc cancela · Enter mantém · 1–5 recalcula`.
-- **Ajuda.** Caixa com as dez teclas da v1, o lembrete dos comandos de linha e `Esc · ? · q para fechar`.
+- **Ajuda.** Caixa com as onze teclas da v1, o lembrete dos comandos de linha e `Esc · ? · q para fechar`.
+- **Stats.** Caixa `Stats` com o streak `N dias` e o último dia, `checkins_today`, atrasados e para hoje, ativos/arquivados/arquivo morto e a contagem da fila por matéria, mais `s · Esc · q fecha`.
 - **Janela pequena.** `Aumente a janela para pelo menos` e `60 colunas e 15 linhas.`, cada linha truncada com `…` se `columns` for menor. 60x15 desenha.
 
 ## Geometria das colunas
