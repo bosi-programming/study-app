@@ -22,14 +22,13 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/MOBILE.md` | Expo, `expo-sqlite`, telas e lojas do app mobile | Rascunho v1 |
 | `docs/especificacao/DESKTOP.md` | Electron sobre o renderer do web, empacotamento e smoke | Rascunho v1 |
 | `docs/engenharia/INVENTARIO-DE-REQUISITOS.md` | Onde faltam requisitos, por fase, e onde cada documento mora | Rascunho v1 |
-| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v6 |
-| `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v3 |
+| `docs/engenharia/PLANO-DE-TESTES.md` | Estratégia, golden fixtures e cobertura | Rascunho v7 |
+| `docs/engenharia/ROADMAP.md` | Fases, tarefas, gates e calendário | Rascunho v4 |
 | `docs/engenharia/VERIFICACAO-FASE-1.md` | Registro datado do DoD e das verificações manuais da fase 1 | Rascunho v1 |
 | `docs/engenharia/COMANDO-STUDY-TUI.md` | Registro do comando `study tui`, suas recusas, o laço da TUI e o ciclo de vida do terminal | Rascunho v1 |
 | `docs/engenharia/VERIFICACAO-FASE-2.md` | Registro datado da camada de persistência IndexedDB do web, das telas e do export/import JSON v1, com o `W-11` | Rascunho v3 |
-| `docs/engenharia/COMANDO-STUDY-TUI.md` | Registro do comando `study tui`, suas recusas e o laço da TUI | Rascunho v1 |
 | `docs/engenharia/VERIFICACAO-FASE-5.md` | Registro datado dos instaladores assinados do desktop, com o que ficou deferido ao release | Rascunho v1 |
-| `docs/adr/` | ADRs com contexto, decisão e consequências; índice em `docs/adr/README.md` | Rascunho v1 |
+| `docs/adr/` | ADRs com contexto, decisão e consequências; índice em `docs/adr/README.md` | Rascunho v2 |
 
 ## Ordem de leitura
 
