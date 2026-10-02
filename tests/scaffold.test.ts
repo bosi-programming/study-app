@@ -1535,4 +1535,17 @@ describe('S-62 tui-surface-adr', () => {
     expect(roadmapPhaseOneSection()).toMatch(/TUI/)
     expect(delivered).toHaveLength(1)
   })
+
+  it('roadmap-versao-v4: o roadmap sobe para v4', () => {
+    expect(textAt('docs/engenharia/ROADMAP.md')).toMatch(
+      /^Versão: 4 \| Data: \d{4}-\d{2}-\d{2} \| Ritmo: menos de 10h\/semana$/m,
+    )
+  })
+
+  it('docs-index-roadmap-v4: o índice de documentos sobe a linha do roadmap', () => {
+    const row = indexRows().find((line) => line.includes('docs/engenharia/ROADMAP.md'))
+
+    expect(row, 'linha do roadmap ausente no índice').toBeDefined()
+    expect(row).toContain('Rascunho v4')
+  })
 })
