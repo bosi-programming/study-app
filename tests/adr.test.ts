@@ -85,13 +85,11 @@ describe('identidade visual da TUI fora do design system', () => {
     expect(source).toContain('referência cruzada')
   })
 
-  it('adr-licenca-avaliada: registra GPLv3 vs MIT e a decisão de não derivar', () => {
+  it('adr-licenca-mit: registra a licença MIT resolvida e que ela não é obstáculo', () => {
     const source = identitySource()
 
-    expect(source).toContain('GPLv3')
     expect(source).toContain('MIT')
-    expect(source).toContain('Rayyamhk')
-    expect(source).toContain('não derivar')
+    expect(source).toContain('não é obstáculo')
   })
 
   it('adr-sem-ticket-derivado: dispensa ticket derivado e nomeia o gatilho', () => {
