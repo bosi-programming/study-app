@@ -1,6 +1,6 @@
 # Roadmap — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-09-27 | Ritmo: menos de 10h/semana
+Versão: 4 | Data: 2026-10-01 | Ritmo: menos de 10h/semana
 
 ## Fases e gates
 
@@ -22,6 +22,7 @@ Versão: 3 | Data: 2026-09-27 | Ritmo: menos de 10h/semana
 - [x] Comandos de `docs/especificacao/CLI.md` (ENG-6, ENG-7, ENG-11).
 - [x] Export/import JSON v1 idempotente (ENG-9).
 - [x] Stats e arquivo morto (ENG-8, ENG-10).
+- [x] TUI `study tui`: laço interativo sobre a porta de terminal e o ciclo de vida da sessão (ENG-29..ENG-34).
 - [ ] Testes T-01..T-27 verdes.
 
 Definition of done: instalar, criar itens, zerar a fila por 1 semana, exportar e reimportar sem perda.
