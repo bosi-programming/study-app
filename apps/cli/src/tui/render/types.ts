@@ -24,7 +24,7 @@ export type RenderReevaluation = {
   readonly currentDifficulty: Difficulty
 }
 
-export type RenderScreen = 'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm'
+export type RenderScreen = 'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm' | 'items'
 
 export type RenderForm = {
   readonly mode: 'add' | 'edit'
@@ -58,6 +58,16 @@ export type RenderConfirm = {
   readonly message: string
 }
 
+export type RenderItemsItem = {
+  readonly item: Item
+  readonly focused: boolean
+}
+
+export type RenderItems = {
+  readonly focusId: string | null
+  readonly items: readonly RenderItemsItem[]
+}
+
 export type RenderState = {
   readonly today: string
   readonly screen: RenderScreen
@@ -71,6 +81,7 @@ export type RenderState = {
   readonly config: RenderConfig | null
   readonly path: RenderPath | null
   readonly confirm: RenderConfirm | null
+  readonly items: RenderItems | null
   readonly streak: QueueStreak
   readonly banner: string | null
   readonly fatal: string | null

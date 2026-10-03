@@ -1635,19 +1635,19 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
     expect(sectionBetween(source, '### Stats', '\n### ')).toContain('somente-leitura')
   })
 
-  it('tui-em-aberto-vazio: os quatro bullets saíram e a spec sobe para v4', () => {
+  it('tui-em-aberto-vazio: os quatro bullets saíram e a spec sobe para v5', () => {
     const source = textAt('docs/especificacao/TUI.md')
     const open = sectionBetween(source, '## Em aberto', '\n## Notas de implementação')
     const bullets = open.split('\n').filter((line) => line.startsWith('- '))
 
-    expect(source).toMatch(/^Versão: 4 \|/m)
+    expect(source).toMatch(/^Versão: 5 \|/m)
     expect(bullets).toEqual([])
   })
 
   it('render-screen-stats: RenderScreen inclui stats e a precedência tem a linha do painel', () => {
     const source = textAt('docs/especificacao/TUI-RENDER.md')
 
-    expect(source).toMatch(/^Versão: 3 \|/m)
+    expect(source).toMatch(/^Versão: 4 \|/m)
     expect(source).toContain("'stats'")
     expect(source).toMatch(/^\| `screen: 'stats'` \|/m)
   })
@@ -1655,7 +1655,7 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
   it('frames-stats-decidido: o frame Stats perde a proposta e a barra de 10 blocos', () => {
     const source = textAt('docs/especificacao/TUI-FRAMES.md')
 
-    expect(source).toMatch(/^Versão: 3 \|/m)
+    expect(source).toMatch(/^Versão: 4 \|/m)
     expect(source.toLowerCase()).not.toContain('proposta')
     expect(source).not.toContain('█')
     expect(source).not.toContain('últimos 10 dias')
@@ -1698,9 +1698,9 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
 
   it('docs-linhas-versao: o índice sobe os documentos mexidos e mantém o resto', () => {
     expect(versionRow('docs/especificacao/CLI.md')).toContain('Rascunho v7')
-    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v4')
-    expect(versionRow('docs/especificacao/TUI-FRAMES.md')).toContain('Rascunho v3')
-    expect(versionRow('docs/especificacao/TUI-RENDER.md')).toContain('Rascunho v3')
+    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v5')
+    expect(versionRow('docs/especificacao/TUI-FRAMES.md')).toContain('Rascunho v4')
+    expect(versionRow('docs/especificacao/TUI-RENDER.md')).toContain('Rascunho v4')
     expect(versionRow('docs/engenharia/PLANO-DE-TESTES.md')).toContain('Rascunho v9')
     expect(versionRow('docs/engenharia/ROADMAP.md')).toContain('Rascunho v4')
   })
@@ -1727,11 +1727,11 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 
-  it('u-suite-intacta: a subseção da TUI segue U-01..U-25', () => {
+  it('u-suite-intacta: a subseção da TUI segue U-01..U-27', () => {
     const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
     const ids = [...plan.matchAll(/^\| (U-\d{2}) \|/gm)].map((match) => match[1])
 
-    expect(plan).toContain('### Suíte da TUI (U-01..U-25)')
+    expect(plan).toContain('### Suíte da TUI (U-01..U-27)')
     expect(ids).toEqual([
       'U-01',
       'U-02',
@@ -1758,11 +1758,14 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
       'U-23',
       'U-24',
       'U-25',
+      'U-26',
+      'U-27',
     ])
   })
 })
 
 const bos69Adr = 'docs/adr/escrita-na-tui-com-campo-de-texto-em-raw-mode.md'
+const bos69FichasAdr = 'docs/adr/fichas-da-tui-na-tecla-l.md'
 
 describe('S-64 bos-69-escrita-da-tui', () => {
   const versionRow = (path: string): string => {
@@ -1771,11 +1774,11 @@ describe('S-64 bos-69-escrita-da-tui', () => {
     return row
   }
 
-  it('tui-v4: a spec sobe para v4 e mantém o Em aberto vazio', () => {
+  it('tui-v5: a spec sobe para v5 e mantém o Em aberto vazio', () => {
     const source = textAt('docs/especificacao/TUI.md')
     const open = sectionBetween(source, '## Em aberto', '\n## Notas de implementação')
 
-    expect(source).toMatch(/^Versão: 4 \|/m)
+    expect(source).toMatch(/^Versão: 5 \|/m)
     expect(open.split('\n').filter((line) => line.startsWith('- '))).toEqual([])
   })
 
@@ -1861,8 +1864,37 @@ describe('S-64 bos-69-escrita-da-tui', () => {
     )
   })
 
-  it('docs-index-tui-v4: a linha da TUI sobe para Rascunho v4', () => {
-    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v4')
+  it('tui-fichas-no-escopo: a spec ganha a seção Fichas e a linha l em Teclas', () => {
+    const source = textAt('docs/especificacao/TUI.md')
+    const fichas = sectionBetween(source, '### Fichas', '\n### ')
+
+    expect(fichas).toContain('arquivadas')
+    expect(fichas).toContain('`l`')
+    expect(sectionBetween(source, '## Teclas', '\n## ')).toMatch(/^\| `l` \|/m)
+  })
+
+  it('adr-fichas-forma: o ADR da lista é aceito e nomeia a tecla, as funções e o core', () => {
+    const source = textAt(bos69FichasAdr)
+
+    expect(source).toMatch(/^titulo: /m)
+    expect(source).toMatch(/^data: /m)
+    expect(source).toMatch(/^status: 'aceito'/m)
+    expect(source).toContain('`l`')
+    expect(source).toContain('archiveItem')
+    expect(source).toContain('packages/core')
+  })
+
+  it('adr-fichas-sem-numero: o ADR não carrega numero: nem cita ADR-nnn', () => {
+    expect(textAt(bos69FichasAdr)).not.toMatch(/numero:/)
+    expect(textAt(bos69FichasAdr)).not.toMatch(/ADR-\d{3}/)
+  })
+
+  it('adr-fichas-indexado: o índice da pasta lista o ADR', () => {
+    expect(textAt('docs/adr/README.md')).toContain('fichas-da-tui-na-tecla-l.md')
+  })
+
+  it('docs-index-tui-v5: a linha da TUI sobe para Rascunho v5', () => {
+    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v5')
   })
 
   it('plano-v9-s64: o plano sobe para v9 com a faixa S-01..S-64 e o bullet do S-64', () => {

@@ -3,6 +3,7 @@ import { type ContextHookTarget } from '../../context.ts'
 import { COLD_ARCHIVE_AFTER_DAYS, readColdArchiveWindow } from '../../model/config.ts'
 import { backspaceField, deleteForward, insertText, moveFieldCursor, startField } from '../field.ts'
 import { type TextField } from '../fieldTypes.ts'
+import { listableItems } from '../items.ts'
 import { checkIn } from './checkIn.ts'
 import { emptyForm, formOfItem, moveFormFocus, withField } from './forms.ts'
 import { messageOf } from './messageOf.ts'
@@ -35,19 +36,21 @@ export function dispatch(
 ): SessionState {
   switch (action.kind) {
     case 'focus-next':
-      return withFocus(state, moveFocus(state.queue, state.focusId, 'next'))
+      return moveQueueOrItems(target, state, 'next')
     case 'focus-prev':
-      return withFocus(state, moveFocus(state.queue, state.focusId, 'prev'))
+      return moveQueueOrItems(target, state, 'prev')
     case 'focus-first':
-      return withFocus(state, moveFocus(state.queue, state.focusId, 'first'))
+      return moveQueueOrItems(target, state, 'first')
     case 'focus-last':
-      return withFocus(state, moveFocus(state.queue, state.focusId, 'last'))
-    case 'open-detail':
-      return state.focusId === null
-        ? state
-        : { ...state, screen: 'detail', detailItemId: state.focusId }
+      return moveQueueOrItems(target, state, 'last')
+    case 'open-detail': {
+      const id = state.screen === 'items' ? state.items?.focusId ?? null : state.focusId
+      return id === null ? state : { ...state, screen: 'detail', detailItemId: id }
+    }
     case 'close-detail':
-      return { ...state, screen: 'queue', detailItemId: null }
+      return state.items === null
+        ? { ...state, screen: 'queue', detailItemId: null }
+        : { ...state, screen: 'items', detailItemId: null }
     case 'start-reevaluate':
       return startReevaluation(state)
     case 'cancel-reevaluate':
@@ -90,6 +93,16 @@ export function dispatch(
     }
     case 'close-cold':
       return { ...state, screen: 'queue', cold: null }
+    case 'open-items': {
+      const items = listableItems(target.store.listItems())
+      const focusId =
+        state.focusId !== null && items.some((item) => item.id === state.focusId)
+          ? state.focusId
+          : items[0]?.id ?? null
+      return { ...state, screen: 'items', items: { focusId }, banner: null }
+    }
+    case 'close-items':
+      return { ...state, screen: 'queue', items: null }
     case 'cold-focus-prev':
       return { ...state, cold: { focusId: moveCold(target, state.cold?.focusId ?? null, -1) } }
     case 'cold-focus-next':
@@ -142,8 +155,25 @@ export function dispatch(
 }
 
 function focusItem(target: ContextHookTarget, state: SessionState): Item | null {
-  const id = state.focusId ?? state.detailItemId
+  const id =
+    state.screen === 'detail'
+      ? state.detailItemId
+      : state.screen === 'items'
+        ? state.items?.focusId ?? null
+        : state.focusId
   return id === null ? null : target.store.getItem(id)
+}
+
+function moveQueueOrItems(
+  target: ContextHookTarget,
+  state: SessionState,
+  step: 'next' | 'prev' | 'first' | 'last',
+): SessionState {
+  if (state.screen === 'items') {
+    const items = listableItems(target.store.listItems())
+    return { ...state, items: { focusId: moveFocus(items, state.items?.focusId ?? null, step) } }
+  }
+  return withFocus(state, moveFocus(state.queue, state.focusId, step))
 }
 
 function coldItem(target: ContextHookTarget, state: SessionState): Item | null {

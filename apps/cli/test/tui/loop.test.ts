@@ -292,6 +292,25 @@ describe('AC4 — a tabela de teclas', () => {
     })
   })
 
+  it('laco-fichas-pagina: l abre as fichas e PgDn/PgUp usam a página da lista (U-26)', async () => {
+    await withTempDb(async (dbPath) => {
+      const items = Array.from({ length: 15 }, (_value, index) =>
+        makeItem({ id: `I${index + 1}`, due_date: TODAY }),
+      )
+      seed(dbPath, { items })
+      const { writes } = await runScript(dbPath, fakeDeps(TODAY).deps, [
+        key('l'), key(`${CSI}6~`), key(`${CSI}6~`), key(`${CSI}5~`), key('q'),
+      ], { size: { columns: 84, rows: 16 } })
+
+      const fichas = writes.filter((frame) => frame.includes('Fichas'))
+      expect(fichas.length).toBeGreaterThanOrEqual(4)
+      expect(fichas[0]).toContain('> 1.')
+      expect(fichas[1]).toContain('> 11.')
+      expect(fichas[2]).toContain('> 15.')
+      expect(fichas[3]).toContain('> 5.')
+    })
+  })
+
   it('laco-enter-checkin-abre-reavaliacao: Enter grava e abre a reavaliação do item revisado', async () => {
     await withTempDb(async (dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'A', title: 'Derivadas', due_date: TODAY })] })
@@ -435,6 +454,7 @@ describe('AC5 — RenderState e frame', () => {
           reevaluation: null,
           form: null,
           cold: null,
+          items: null,
           config: null,
           path: null,
           confirmation: null,

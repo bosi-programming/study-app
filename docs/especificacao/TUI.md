@@ -1,6 +1,6 @@
 # TUI — App de Estudo Espaçado
 
-Versão: 4 | Data: 2026-10-03 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
+Versão: 5 | Data: 2026-10-03 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -18,7 +18,7 @@ Versão: 4 | Data: 2026-10-03 | Base: `docs/especificacao/CLI.md` e `docs/especi
 - Escopo da v1: fila do dia (RF-05), check-in (RF-08), reavaliação de dificuldade (RF-11, RF-12, RF-13), o detalhe somente-leitura (RF-06, RF-10) e a escrita devolvida pelo BOS-69 — `add`, `edit`, `archive`/`unarchive`, `remove`, `cold`, `config`, `export` e `import` (Escrita na TUI com campo de texto em raw mode).
 - Zero dependência de runtime: `node:readline`, `process.stdin.setRawMode`, `SIGWINCH` e escapes ANSI na mão. O `S-28` pina `dependencies` vazio no pacote publicado.
 - Nenhuma regra nova: `recordReview`, `reevaluateDifficulty` e as leituras do store são as mesmas funções do CLI (Core TS compartilhado).
-- Teclado: setas ou `j`/`k` movem; `Enter` faz check-in; `1`–`5` reavaliam; `i` abre o detalhe; `?` abre a ajuda; `q` sai; as teclas de `## Escrita` abrem as telas de item, arquivo morto, config e export/import.
+- Teclado: setas ou `j`/`k` movem; `Enter` faz check-in; `1`–`5` reavaliam; `i` abre o detalhe; `l` abre a lista de todas as fichas; `?` abre a ajuda; `q` sai; as teclas de `## Escrita` abrem as telas de item, arquivo morto, config e export/import.
 - O campo de texto em raw mode é a única entrada de texto da v1: valor, cursor, `←`/`→`/`Home`/`End`, `Backspace`, `Delete`, `Enter` confirma e `Esc` cancela; a largura trunca com `…` como as tabelas (Escrita na TUI com campo de texto em raw mode).
 - Escrita destrutiva — `remove`, `cold purge` e o `export` sobre arquivo existente — nunca executa sem a confirmação explícita da TUI; o `--yes` continua sendo a flag do CLI.
 - `Ctrl-C` sai com 130, mantendo o significado de aborto da tabela do `CLI.md`. O check-in já gravado permanece.
@@ -51,7 +51,14 @@ Versão: 4 | Data: 2026-10-03 | Base: `docs/especificacao/CLI.md` e `docs/especi
 ### Fila vazia
 
 - Estado vazio explícito: `Fila zerada`, com o streak de fila zerada (RF-21) e a dica de teclas.
-- Continua aceitando `q`, `?` e `a` (item novo); editar, arquivar ou remover exigem um item em foco.
+- Continua aceitando `q`, `?`, `l` (lista de todas as fichas) e `a` (item novo); editar, arquivar ou remover exigem um item em foco.
+
+### Fichas
+
+- Lista as fichas ativas e arquivadas com o status de cada uma; o arquivo morto continua só na tela do `c`.
+- Abre com `l` a partir da fila, inclusive a vazia, e usa as colunas e a geometria da fila, com a mesma navegação (`↑` `↓`/`k` `j`, `PgUp` `PgDn`, `g` `G`).
+- `i` ou `Enter` abre o detalhe do item em foco; `x`/`X` arquivam e desarquivam pela mesma função do CLI, sem tela nova e sem confirmação.
+- Fecha com `Esc` ou `l`; `q` e `Ctrl-C` mantêm a saída da TUI.
 
 ### Stats
 
@@ -118,23 +125,24 @@ Os comandos de escrita são telas da mesma sessão, sobre as mesmas funções qu
 
 | Tecla | Efeito | Onde |
 | --- | --- | --- |
-| `↑` `↓` ou `k` `j` | move o foco | fila, ajuda |
-| `PgUp` `PgDn` | rola uma página | fila |
-| `g` `G` | primeiro e último item | fila |
-| `Enter` | check-in do item em foco; na reavaliação, mantém a dificuldade | fila, reavaliação |
+| `↑` `↓` ou `k` `j` | move o foco | fila, ajuda, fichas |
+| `PgUp` `PgDn` | rola uma página | fila, fichas |
+| `g` `G` | primeiro e último item | fila, fichas |
+| `Enter` | check-in do item em foco; na reavaliação, mantém a dificuldade; nas fichas, abre o detalhe | fila, reavaliação, fichas |
 | `1`–`5` | reavalia a dificuldade do item em foco | fila, reavaliação |
-| `i` | abre o detalhe | fila |
+| `i` | abre o detalhe | fila, fichas |
+| `l` | abre a lista de todas as fichas; na tela, fecha | fila, fila vazia |
 | `s` | abre o painel de stats; no painel, fecha | fila, painel |
 | `a` | abre o formulário de item novo | fila, fila vazia |
 | `e` | abre a edição do item em foco | fila, detalhe |
-| `x` `X` | arquiva e desarquiva o item em foco | fila, detalhe |
+| `x` `X` | arquiva e desarquiva o item em foco | fila, detalhe, fichas |
 | `D` | pede confirmação para remover o item em foco | fila, detalhe |
 | `c` | abre o arquivo morto; na tela, fecha | fila |
 | `C` | abre a config | fila |
 | `E` `I` | exporta e importa pelo caminho digitado | fila |
 | `R` `P` | restaura e purga o item em foco do arquivo morto | arquivo morto |
 | `y` `n` | confirma e cancela a ação destrutiva | confirmação |
-| `Esc` | fecha painel ou cancela a reavaliação | detalhe, reavaliação, ajuda |
+| `Esc` | fecha painel ou cancela a reavaliação | detalhe, reavaliação, ajuda, fichas |
 | `?` | abre a ajuda | fila, detalhe |
 | `q` | sai (na reavaliação, cancela e sai) | todas |
 | `Ctrl-C` | sai com 130 | todas |

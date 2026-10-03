@@ -13,9 +13,9 @@ Comandos, pré-requisitos e layout do workspace ficam no `README.md` da raiz.
 | `docs/especificacao/REQUISITOS.md` | Requisitos funcionais, regras e critérios de aceite | Rascunho v3 |
 | `docs/especificacao/MODELO-DE-DADOS.md` | Entidades, schema e contrato JSON | Rascunho v1 |
 | `docs/especificacao/CLI.md` | Comandos, flags, saídas e códigos de erro | Rascunho v7 |
-| `docs/especificacao/TUI.md` | Superfície interativa: telas, teclas, sessão e estados | Rascunho v4 |
-| `docs/especificacao/TUI-FRAMES.md` | Frames de referência das telas da TUI | Rascunho v3 |
-| `docs/especificacao/TUI-RENDER.md` | Contrato de entrada do renderizador puro e mapeamento de estado para frame | Rascunho v3 |
+| `docs/especificacao/TUI.md` | Superfície interativa: telas, teclas, sessão e estados | Rascunho v5 |
+| `docs/especificacao/TUI-FRAMES.md` | Frames de referência das telas da TUI | Rascunho v4 |
+| `docs/especificacao/TUI-RENDER.md` | Contrato de entrada do renderizador puro e mapeamento de estado para frame | Rascunho v4 |
 | `docs/especificacao/CORE.md` | API do domínio: portas, item, regra de agendamento, erros | Rascunho v1 |
 | `docs/especificacao/WEB.md` | Telas, estados e contrato com o core do app web | Rascunho v1 |
 | `docs/especificacao/PILOTO.md` | Aviso LGPD, eventos do Sentry e roteiro de entrevista do piloto | Rascunho v1 |

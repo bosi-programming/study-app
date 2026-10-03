@@ -1011,6 +1011,7 @@ function baseSessionState(today: string, overrides: Partial<SessionState> = {}):
     reevaluation: null,
     form: null,
     cold: null,
+    items: null,
     config: null,
     path: null,
     confirmation: null,
@@ -1301,6 +1302,107 @@ describe('AC12 — os comandos de escrita na sessão', () => {
       } finally {
         session.close()
       }
+    })
+  })
+})
+
+describe('AC13 — a lista de fichas na sessão', () => {
+  it('sessao-fichas-abre-e-fecha: l abre a lista com ativas e arquivadas e o foco da fila (U-27)', () => {
+      withDb((dbPath) => {
+        const today = '2026-09-20'
+        const clock = fakeDeps(today)
+        seed(dbPath, {
+          items: [
+            makeItem({ id: 'A', title: 'Ativa', due_date: today }),
+            makeItem({
+              id: 'Z',
+              title: 'Arquivada',
+              status: 'archived',
+              archived_at: `${today}T12:00:00Z`,
+              due_date: '2026-08-01',
+            }),
+          ],
+        })
+
+        const session = openSession(sessionOptions(dbPath, clock.deps))
+        try {
+          const opened = session.applyAction({ kind: 'open-items' })
+          expect(opened.screen).toBe('items')
+          expect(opened.items?.focusId).toBe('A')
+          expect(session.applyAction({ kind: 'close-items' }).screen).toBe('queue')
+        } finally {
+          session.close()
+        }
+    })
+  })
+
+  it('sessao-fichas-vazia-mantem-arquivadas: sem fila, l ainda lista e foca a arquivada (U-27)', () => {
+      withDb((dbPath) => {
+        const today = '2026-09-20'
+        const clock = fakeDeps(today)
+        seed(dbPath, {
+          items: [
+            makeItem({
+              id: 'Z',
+              title: 'Arquivada',
+              status: 'archived',
+              archived_at: `${today}T12:00:00Z`,
+              due_date: '2026-08-01',
+            }),
+          ],
+        })
+
+        const session = openSession(sessionOptions(dbPath, clock.deps))
+        try {
+          expect(session.state().queue).toEqual([])
+          const opened = session.applyAction({ kind: 'open-items' })
+          expect(opened.screen).toBe('items')
+          expect(opened.items?.focusId).toBe('Z')
+        } finally {
+          session.close()
+        }
+    })
+  })
+
+  it('sessao-fichas-x-x-arquiva-desarquiva: x e X agem no foco da lista (U-27)', () => {
+      withDb((dbPath) => {
+        const today = '2026-09-20'
+        const clock = fakeDeps(today)
+        seed(dbPath, { items: [makeItem({ id: 'A', due_date: today })] })
+
+        const session = openSession(sessionOptions(dbPath, clock.deps))
+        try {
+          session.applyAction({ kind: 'open-items' })
+          const archived = session.applyAction({ kind: 'archive' })
+          expect(archived.screen).toBe('items')
+          expect(archived.banner?.message).toContain('arquivado')
+          withStore(dbPath, (store) => expect(store.getItem('A')?.status).toBe('archived'))
+
+          const unarchived = session.applyAction({ kind: 'unarchive' })
+          expect(unarchived.banner?.message).toContain('desarquivado')
+          withStore(dbPath, (store) => expect(store.getItem('A')?.status).toBe('active'))
+        } finally {
+          session.close()
+        }
+    })
+  })
+
+  it('sessao-fichas-detalhe-volta: i abre o detalhe e Esc volta para a lista (U-27)', () => {
+      withDb((dbPath) => {
+        const today = '2026-09-20'
+        const clock = fakeDeps(today)
+        seed(dbPath, { items: [makeItem({ id: 'A', title: 'Ativa', due_date: today })] })
+
+        const session = openSession(sessionOptions(dbPath, clock.deps))
+        try {
+          session.applyAction({ kind: 'open-items' })
+          const detail = session.applyAction({ kind: 'open-detail' })
+          expect(detail.screen).toBe('detail')
+          expect(detail.detailItemId).toBe('A')
+          expect(session.applyAction({ kind: 'close-detail' }).screen).toBe('items')
+        } finally {
+          session.close()
+        }
     })
   })
 })

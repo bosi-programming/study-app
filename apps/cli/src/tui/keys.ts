@@ -1,4 +1,4 @@
-export type KeyScreen = 'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm'
+export type KeyScreen = 'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm' | 'items'
 
 export type KeyCommand =
   | { readonly kind: 'focus-next' }
@@ -21,6 +21,8 @@ export type KeyCommand =
   | { readonly kind: 'request-remove' }
   | { readonly kind: 'open-cold' }
   | { readonly kind: 'close-cold' }
+  | { readonly kind: 'open-items' }
+  | { readonly kind: 'close-items' }
   | { readonly kind: 'cold-focus-prev' }
   | { readonly kind: 'cold-focus-next' }
   | { readonly kind: 'cold-restore' }
@@ -76,6 +78,7 @@ type KeyToken =
   | { readonly kind: 'unarchive' }
   | { readonly kind: 'remove' }
   | { readonly kind: 'cold' }
+  | { readonly kind: 'items' }
   | { readonly kind: 'config' }
   | { readonly kind: 'export' }
   | { readonly kind: 'import' }
@@ -151,6 +154,7 @@ const CHAR_TOKENS: Readonly<Record<string, KeyToken>> = {
   X: { kind: 'unarchive' },
   D: { kind: 'remove' },
   c: { kind: 'cold' },
+  l: { kind: 'items' },
   C: { kind: 'config' },
   E: { kind: 'export' },
   I: { kind: 'import' },
@@ -275,18 +279,19 @@ function scan(input: string, textMode: boolean): Scan {
 }
 
 function focusCommands(screen: KeyScreen, kind: 'focus-prev' | 'focus-next'): readonly KeyCommand[] {
-  return screen === 'queue' || screen === 'help' ? [{ kind }] : []
+  return screen === 'queue' || screen === 'help' || screen === 'items' ? [{ kind }] : []
 }
 
 function queueCommands(
   screen: KeyScreen,
   kind: 'focus-prev' | 'focus-next' | 'focus-first' | 'focus-last' | 'page-prev' | 'page-next',
 ): readonly KeyCommand[] {
-  return screen === 'queue' ? [{ kind }] : []
+  return screen === 'queue' || screen === 'items' ? [{ kind }] : []
 }
 
 function enterCommands(screen: KeyScreen): readonly KeyCommand[] {
   if (screen === 'queue') return [{ kind: 'check-in' }]
+  if (screen === 'items') return [{ kind: 'open-detail' }]
   if (screen === 'reevaluate') return [{ kind: 'cancel-reevaluate' }]
   return []
 }
@@ -296,6 +301,7 @@ function escapeCommands(screen: KeyScreen): readonly KeyCommand[] {
   if (screen === 'reevaluate') return [{ kind: 'cancel-reevaluate' }]
   if (screen === 'help') return [{ kind: 'toggle-help' }]
   if (screen === 'cold') return [{ kind: 'close-cold' }]
+  if (screen === 'items') return [{ kind: 'close-items' }]
   if (screen === 'confirm') return [{ kind: 'confirm-no' }]
   return []
 }
@@ -332,14 +338,18 @@ function textCommands(token: KeyToken): readonly KeyCommand[] {
 }
 
 function screenCommands(screen: KeyScreen, kind: 'archive' | 'unarchive' | 'remove'): readonly KeyCommand[] {
-  if (screen !== 'queue' && screen !== 'detail') return []
+  if (kind === 'remove') {
+    if (screen !== 'queue' && screen !== 'detail') return []
+    return [{ kind: 'request-remove' }]
+  }
+  if (screen !== 'queue' && screen !== 'detail' && screen !== 'items') return []
   if (kind === 'archive') return [{ kind: 'archive' }]
   if (kind === 'unarchive') return [{ kind: 'unarchive' }]
-  return [{ kind: 'request-remove' }]
+  return []
 }
 
 function detailCommands(screen: KeyScreen): readonly KeyCommand[] {
-  if (screen === 'queue') return [{ kind: 'open-detail' }]
+  if (screen === 'queue' || screen === 'items') return [{ kind: 'open-detail' }]
   if (screen === 'detail') return [{ kind: 'close-detail' }]
   return []
 }
@@ -399,6 +409,9 @@ function commandsFor(screen: KeyScreen, token: KeyToken): readonly KeyCommand[] 
     case 'cold':
       if (screen === 'queue') return [{ kind: 'open-cold' }]
       return screen === 'cold' ? [{ kind: 'close-cold' }] : []
+    case 'items':
+      if (screen === 'queue') return [{ kind: 'open-items' }]
+      return screen === 'items' ? [{ kind: 'close-items' }] : []
     case 'config':
       return screen === 'queue' ? [{ kind: 'open-config' }] : []
     case 'export':

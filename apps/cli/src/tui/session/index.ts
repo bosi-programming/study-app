@@ -5,6 +5,7 @@ export type {
   ConfirmationState,
   ConfigState,
   FormState,
+  ItemsState,
   PathState,
   ReevaluationState,
   Session,

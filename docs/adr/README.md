@@ -21,6 +21,7 @@
 | [`escrita-na-tui-com-campo-de-texto-em-raw-mode.md`](escrita-na-tui-com-campo-de-texto-em-raw-mode.md) | Escrita na TUI com campo de texto em raw mode | aceito |
 | [`export-import-do-json-v1-no-web.md`](export-import-do-json-v1-no-web.md) | Export/import do JSON v1 no web: leitor próprio, abertura relaxada e prova cruzada | aceito |
 | [`export-import-do-json-v1.md`](export-import-do-json-v1.md) | Export/import do JSON v1: isenções do contexto e merge por updated_at | aceito |
+| [`fichas-da-tui-na-tecla-l.md`](fichas-da-tui-na-tecla-l.md) | Fichas da TUI na tecla l | aceito |
 | [`filtro-por-materia-na-tui-adiado.md`](filtro-por-materia-na-tui-adiado.md) | Filtro por matéria na TUI adiado | aceito |
 | [`finditems-com-filtro-porta-de-consulta-do-store.md`](finditems-com-filtro-porta-de-consulta-do-store.md) | findItems com filtro: a porta de consulta do store | aceito |
 | [`gancho-do-streak-de-fila-zerada.md`](gancho-do-streak-de-fila-zerada.md) | Roll-forward do streak de fila zerada no gancho de contexto, com export/import/init isentos | aceito |

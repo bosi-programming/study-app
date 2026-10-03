@@ -6,11 +6,12 @@ export function settle(state: SessionState, queue: readonly Item[], focusId: str
   let detailItemId = state.detailItemId
 
   if (screen === 'detail') {
-    if (focusId === null) {
-      screen = 'queue'
+    const detailFocusId = state.items === null ? focusId : state.items.focusId
+    if (detailFocusId === null) {
+      screen = state.items === null ? 'queue' : 'items'
       detailItemId = null
     } else {
-      detailItemId = focusId
+      detailItemId = detailFocusId
     }
   }
 

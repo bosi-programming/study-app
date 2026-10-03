@@ -1,4 +1,5 @@
 export { render } from './render.ts'
+export { itemsPageSize } from './itemsPageSize.ts'
 export { queuePageSize } from './queuePageSize.ts'
 export {
   backspaceField,
@@ -17,6 +18,8 @@ export type {
   RenderConfirm,
   RenderDetail,
   RenderForm,
+  RenderItems,
+  RenderItemsItem,
   RenderPath,
   RenderReevaluation,
   RenderScreen,

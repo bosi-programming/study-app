@@ -1,6 +1,6 @@
 # Frames da TUI — Referência
 
-Versão: 3 | Data: 2026-10-03 | Base: `docs/especificacao/TUI.md`
+Versão: 4 | Data: 2026-10-03 | Base: `docs/especificacao/TUI.md`
 
 Blocos das telas da `study tui` para conferência visual. O texto sem os escapes é a fonte; a cor é decoração do ADR Cores da saída humana do CLI.
 
@@ -138,6 +138,32 @@ Fila de hoje — 2026-09-28
                                   ? ajuda · q sair
 
 ────────────────────────────────────────────────────────────────────────────────────
+```
+
+## Fichas
+
+`l` na fila abre a lista de todas as fichas, ativas e arquivadas, com o status de cada uma; o foco e a rolagem seguem a fila.
+
+```text
+Fichas — 2026-09-28
+────────────────────────────────────────────────────────────────────────────────────
+> 1.  [Cálculo]    Derivadas parciais  ! venceu 2026-08-22 (37d)    d4  n=2 active  
+  2.  [Estrutura…] Árvores balanceadas…! venceu 2026-09-07 (21d)    d5  n=2 active  
+  3.  [Inglês]     Phrasal verbs       ! venceu 2026-09-14 (14d)    d3  n=2 active  
+  4.  [Física]     Leis de Newton      ! venceu 2026-09-18 (10d)    d2  n=2 active  
+  5.  [História]   Revolução Industrial! venceu 2026-09-22 (6d)     d3  n=2 active  
+  6.  [Português]  Crase e regência ve…! venceu 2026-09-24 (4d)     d2  n=2 active  
+  7.  [Biologia]   Ciclo de Krebs e fo…! venceu 2026-09-27 (1d)     d4  n=2 active  
+  8.  [Cálculo]    Integrais por partes! venceu 2026-09-25 (3d)     d5  n=2 active  
+  9.  [Cálculo]    Séries de Taylor    vence hoje                   d4  n=2 active  
+  10. [Química]    Estequiometria      vence hoje                   d3  n=2 active  
+  11. [Estrutura…] Grafos: caminho mín…vence hoje                   d5  n=2 active  
+  12. [Inglês]     Reported speech     vence hoje                   d2  n=2 active  
+  13. [Álgebra]    Matrizes e determin…! venceu 2026-08-10 (49d)    d3  n=2 archived
+  14. [Física]     Termodinâmica       ! venceu 2026-07-30 (60d)    d4  n=2 archived
+  15. [Biologia]   Genética mendeliana ! venceu 2026-07-12 (78d)    d3  n=2 archived
+────────────────────────────────────────────────────────────────────────────────────
+Enter/i detalhe · x/X arquivar · Esc/l volta                 12 ativos, 3 arquivados
 ```
 
 ## Ajuda

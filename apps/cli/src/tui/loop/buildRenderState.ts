@@ -1,6 +1,7 @@
 import { type Store } from '../../persistence/index.ts'
 import { tryLocalDateOf } from '../../deps.ts'
 import { COLD_ARCHIVE_AFTER_DAYS, readColdArchiveWindow } from '../../model/config.ts'
+import { listableItems } from '../items.ts'
 import {
   type RenderCold,
   type RenderConfig,
@@ -38,6 +39,7 @@ export function buildRenderState(input: BuildRenderStateInput): RenderState {
     confirmation: input.confirmed && reevaluation !== null ? reevaluation.item.title : null,
     form: resolveForm(state.form),
     cold: resolveCold(store, state),
+    items: resolveItems(store, state),
     config: resolveConfig(store, state),
     path: state.path,
     confirm: resolveConfirm(state.confirmation),
@@ -63,6 +65,14 @@ function resolveCold(store: Store, state: SessionState): RenderCold | null {
       focused: item.id === state.cold?.focusId,
     })),
   }
+}
+
+function resolveItems(store: Store, state: SessionState): RenderState['items'] {
+  const itemsState = state.items
+  if (itemsState === null) return null
+  const items = listableItems(store.listItems())
+  const focusId = items.some((item) => item.id === itemsState.focusId) ? itemsState.focusId : items[0]?.id ?? null
+  return { focusId, items: items.map((item) => ({ item, focused: item.id === focusId })) }
 }
 
 function resolveConfig(store: Store, state: SessionState): RenderConfig | null {

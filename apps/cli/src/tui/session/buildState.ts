@@ -24,6 +24,7 @@ export function buildState(
       reevaluation: null,
       form: null,
       cold: null,
+      items: null,
       config: null,
       path: null,
       confirmation: null,

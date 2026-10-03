@@ -75,6 +75,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     confirmation: null,
     form: null,
     cold: null,
+    items: null,
     config: null,
     path: null,
     confirm: null,
@@ -566,5 +567,36 @@ describe('AC12 — as telas de escrita', () => {
     expect(frame).toContain('Velho')
     expect(frame).toContain('> Antigo')
     expect(frame).toContain('R restaura · P purga')
+  })
+})
+
+describe('AC13 — as fichas', () => {
+  const fichas = {
+    focusId: 'a1',
+    items: [
+      { item: makeItem({ id: 'a1', title: 'Derivadas parciais', status: 'active' }), focused: true },
+      { item: makeItem({ id: 'z1', title: 'Termodinâmica', status: 'archived' }), focused: false },
+    ],
+  }
+
+  it('frame-fichas: a lista mostra as fichas com o status e o foco (U-26)', () => {
+    const frame = render(state({ screen: 'items', items: fichas }))
+
+    expect(frame).toContain('Fichas')
+    expect(frame).toContain('> 1.')
+    expect(frame).toContain('active')
+    expect(frame).toContain('archived')
+    expect(frame).toContain('Esc/l volta')
+    expect(frame).toContain('1 ativos, 1 arquivados')
+  })
+
+  it('fichas-largura: em 84 e em 60 a lista cabe e as linhas de item medem columns (U-26)', () => {
+    for (const columns of [84, 60]) {
+      const lines = linesOf(render(state({ screen: 'items', items: fichas, viewport: { columns, rows: 24 } })))
+      const itemWidths = lines.filter(isItemLine).map(visibleWidth)
+
+      expect(Math.max(...lines.map(visibleWidth))).toBeLessThanOrEqual(columns)
+      expect([Math.min(...itemWidths), Math.max(...itemWidths)]).toEqual([columns, columns])
+    }
   })
 })

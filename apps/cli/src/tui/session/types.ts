@@ -3,7 +3,7 @@ import { type OpenedContext, type OpenContextOptions } from '../../context.ts'
 import { type Store } from '../../persistence/index.ts'
 import { type FormField, type TextField } from '../fieldTypes.ts'
 
-export type SessionScreen = 'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm'
+export type SessionScreen = 'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm' | 'items'
 
 export type ReevaluationState = {
   readonly itemId: string
@@ -28,6 +28,10 @@ export type FormState = {
 }
 
 export type ColdState = {
+  readonly focusId: string | null
+}
+
+export type ItemsState = {
   readonly focusId: string | null
 }
 
@@ -61,6 +65,7 @@ export type SessionState = {
   readonly reevaluation: ReevaluationState | null
   readonly form: FormState | null
   readonly cold: ColdState | null
+  readonly items: ItemsState | null
   readonly config: ConfigState | null
   readonly path: PathState | null
   readonly confirmation: ConfirmationState | null
@@ -88,6 +93,8 @@ export type SessionAction =
   | { readonly kind: 'request-remove' }
   | { readonly kind: 'open-cold' }
   | { readonly kind: 'close-cold' }
+  | { readonly kind: 'open-items' }
+  | { readonly kind: 'close-items' }
   | { readonly kind: 'cold-focus-prev' }
   | { readonly kind: 'cold-focus-next' }
   | { readonly kind: 'cold-restore' }

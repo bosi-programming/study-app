@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 const PLAN_DOC = resolve(import.meta.dirname, '../../../docs/engenharia/PLANO-DE-TESTES.md')
 const TEST_ROOT = import.meta.dirname
 const SWEEP_FILE = resolve(import.meta.dirname, 'traceability.test.ts')
-const TUI_SUITE_HEADING = '### Suíte da TUI (U-01..U-25)'
+const TUI_SUITE_HEADING = '### Suíte da TUI (U-01..U-27)'
 const TUI_TEST_ROOT = resolve(import.meta.dirname, 'tui')
 
 type PlanCase = {
@@ -151,10 +151,10 @@ describe('rastreabilidade U-nn do CLI', () => {
   const cases = tuiPlanCases()
   const files = tuiTestFiles()
 
-  it('plan-u-nn-forma: a subseção tem 25 ids contíguos, únicos, e marca só o U-13 como manual', () => {
+  it('plan-u-nn-forma: a subseção tem 27 ids contíguos, únicos, e marca só o U-13 como manual', () => {
     const ids = cases.map((entry) => entry.id)
     const expected = Array.from(
-      { length: 25 },
+      { length: 27 },
       (_, index) => `U-${String(index + 1).padStart(2, '0')}`,
     )
 
@@ -165,7 +165,7 @@ describe('rastreabilidade U-nn do CLI', () => {
 
   it('plan-u-nn-vinculo: todo U-nn não manual tem token num arquivo de apps/cli/test/tui', () => {
     const required = cases.filter((entry) => !entry.manual)
-    expect(required).toHaveLength(24)
+    expect(required).toHaveLength(26)
 
     for (const entry of required) {
       const found = files.some((file) => hasToken(file.text, entry.id))

@@ -10,6 +10,7 @@ export function emptyState(today: string): SessionState {
     reevaluation: null,
     form: null,
     cold: null,
+    items: null,
     config: null,
     path: null,
     confirmation: null,

@@ -15,7 +15,7 @@ const CTRL_C = '\u0003'
 const TODAY = '2026-09-30'
 const KEYS_SOURCE = readFileSync(resolve(import.meta.dirname, '../../src/tui/keys.ts'), 'utf8')
 
-const SCREENS = ['queue', 'detail', 'reevaluate', 'help'] as const
+const SCREENS = ['queue', 'detail', 'reevaluate', 'help', 'items'] as const
 
 const QUEUE: readonly Item[] = [
   makeItem({ id: 'a1', due_date: '2026-08-22' }),
@@ -69,6 +69,7 @@ function sessionState(overrides: Partial<SessionState> = {}): SessionState {
     reevaluation: null,
     form: null,
     cold: null,
+    items: null,
     config: null,
     path: null,
     confirmation: null,
@@ -394,5 +395,34 @@ describe('AC11 — campo de texto em raw mode (U-15)', () => {
     expect(commandsOf('R', 'cold')).toEqual([{ kind: 'cold-restore' }])
     expect(commandsOf('P', 'cold')).toEqual([{ kind: 'cold-purge' }])
     expect(commandsOf(ESC, 'cold')).toEqual([{ kind: 'close-cold' }])
+  })
+})
+
+describe('AC13 — as fichas (U-26)', () => {
+  it('keys-l-abre-e-fecha-fichas: l abre a lista e na tela fecha (U-26)', () => {
+    expect(commandsOf('l', 'queue')).toEqual([{ kind: 'open-items' }])
+    expect(commandsOf('l', 'items')).toEqual([{ kind: 'close-items' }])
+    expect(commandsOf(ESC, 'items')).toEqual([{ kind: 'close-items' }])
+  })
+
+  it('keys-fichas-navega-e-age: a lista usa a navegacao da fila e as teclas proprias (U-26)', () => {
+    expect(commandsOf(`${CSI}B`, 'items')).toEqual([{ kind: 'focus-next' }])
+    expect(commandsOf('k', 'items')).toEqual([{ kind: 'focus-prev' }])
+    expect(commandsOf(`${CSI}5~`, 'items')).toEqual([{ kind: 'page-prev' }])
+    expect(commandsOf(`${CSI}6~`, 'items')).toEqual([{ kind: 'page-next' }])
+    expect(commandsOf('g', 'items')).toEqual([{ kind: 'focus-first' }])
+    expect(commandsOf('G', 'items')).toEqual([{ kind: 'focus-last' }])
+    expect(commandsOf('i', 'items')).toEqual([{ kind: 'open-detail' }])
+    expect(commandsOf('\r', 'items')).toEqual([{ kind: 'open-detail' }])
+    expect(commandsOf('x', 'items')).toEqual([{ kind: 'archive' }])
+    expect(commandsOf('X', 'items')).toEqual([{ kind: 'unarchive' }])
+    expect(commandsOf('q', 'items')).toEqual([{ kind: 'quit' }])
+    expect(commandsOf(CTRL_C, 'items')).toEqual([{ kind: 'interrupt' }])
+  })
+
+  it('keys-fichas-sem-escrita: fora da lista, l e inerte (U-26)', () => {
+    expect(commandsOf('l', 'detail')).toEqual([])
+    expect(commandsOf('D', 'items')).toEqual([])
+    expect(commandsOf('e', 'items')).toEqual([])
   })
 })

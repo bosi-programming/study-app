@@ -5,6 +5,7 @@ import { renderCold } from './renderCold.ts'
 import { renderConfig } from './renderConfig.ts'
 import { renderConfirm } from './renderConfirm.ts'
 import { renderForm } from './renderForm.ts'
+import { renderItems } from './renderItems.ts'
 import { renderPath } from './renderPath.ts'
 import { renderQueue } from './renderQueue.ts'
 import { renderReevaluate } from './renderReevaluate.ts'
@@ -37,6 +38,8 @@ export function render(state: RenderState): string {
       return renderPath(state).join('\n')
     case 'confirm':
       return renderConfirm(state).join('\n')
+    case 'items':
+      return renderItems(state).join('\n')
     case 'queue':
       return (state.queue.length === 0 ? renderEmpty(state) : renderQueue(state)).join('\n')
   }
