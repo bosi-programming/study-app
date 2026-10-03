@@ -1,6 +1,6 @@
 # Plano de Testes — App de Estudo Espaçado
 
-Versão: 8 | Data: 2026-10-02 | Base: `docs/especificacao/REQUISITOS.md`
+Versão: 9 | Data: 2026-10-02 | Base: `docs/especificacao/REQUISITOS.md`
 
 ## Estratégia
 
@@ -83,7 +83,7 @@ Versão: 8 | Data: 2026-10-02 | Base: `docs/especificacao/REQUISITOS.md`
 | T-26 | Benchmark: 5.000 itens e `study due --json` abaixo de 200ms (manual) | RNF-03 |
 | T-27 | `study list` filtra por matéria e status e ordena por vencimento | RF-02 |
 
-### Suíte de scaffold (S-01..S-63)
+### Suíte de scaffold (S-01..S-64)
 
 - IDs `S-nn` cobrem a fiação do repo, não a regra: pureza e resolução do core (`S-01`, `S-02`, `S-16`), forma, unicidade e cobertura da fixture (`S-03`..`S-05`, `S-18`), bin do CLI (`S-06`, `S-07`, `S-28`: fiação e publicação no npm), membros, tsconfig, dependências e scripts do workspace (`S-08`..`S-12`), o engine SQLite (`S-13`..`S-15`: probe executável, DDL acoplado ao doc e recusa de dependência nativa), a organização dos docs (`S-17`: nome e frontmatter dos ADRs) e a automação do repositório (`S-21`, `S-22`: workflow de CI e gate de lint).
 - `S-16` fecha o outro lado do `S-01`: além dos imports proibidos, nenhum arquivo de `packages/core/src` pode ler relógio ou aleatoriedade do ambiente (`Date.now`, `new Date()` sem argumentos, `Math.random`, `crypto`, `performance.now`) — tempo e ids vêm só de `deps`. Nasceu do Tasting do BOS-28; era `S-13` no ramo e ficou com o id livre depois que o probe do BOS-27 tomou `S-13`..`S-15`.
@@ -97,6 +97,7 @@ Versão: 8 | Data: 2026-10-02 | Base: `docs/especificacao/REQUISITOS.md`
 - `S-56`..`S-61` nasceram do BOS-60 (ENG-35), o empacotamento assinado do desktop: a config do `electron-builder` com os três targets, o `extraResources` do bundle do web e o `files` do asar (`S-56`, em `apps/desktop/test/package-config.test.ts`), a versão de fonte única com `assertReleasableVersion` e a injeção por `extraMetadata.version` (`S-57`), o plano de assinatura por plataforma e o script GPG do AppImage (`S-58`), o workflow de release em matrix nativa, com artifacts e release draft na tag (`S-59`, em `tests/release.test.ts`), a guarda contra segredo em arquivos, scripts e workflow (`S-60`) e os dois ADRs de empacotamento e assinatura com o índice da pasta (`S-61`, em `tests/adr.test.ts`). A prova final de notarização e de SmartScreen exige os certificados reais e fica como verificação de release, fora do `pnpm test`.
 - `S-62` nasceu do BOS-56 (ENG-31), o fechamento da rastreabilidade da superfície da TUI: pina o ADR `superficie-da-tui-zero-dep-raw-mode-tela-alternativa-e-saida.md` aceito e indexado em `docs/adr/README.md`, cobrindo zero-dep (`dependencies`), raw mode (`setRawMode`), tela alternativa (`1049h`) e restauração, os exit codes `q`/`Ctrl-C`/`fatal` e a recusa sem TTY (`usage`, exit 1), além da TUI na Fase 1 do `ROADMAP.md`, da linha `docs/adr/` em `Rascunho v2` e do título `S-01..S-62`.
 - `S-63` nasceu do BOS-57 (ENG-32), o fechamento das decisões em aberto da TUI: pina os três ADRs aceitos e indexados — `tui-sem-subcomando-em-terminal-interativo.md`, `painel-de-stats-da-tui-na-tecla-s.md` e `filtro-por-materia-na-tui-adiado.md` —, as specs que cada um puxa (`TUI.md` v2, `TUI-RENDER.md` v2, `TUI-FRAMES.md` v2 e `CLI.md` v7) e o pin dos índices (`docs/README.md` com CLI v7, TUI v2, TUI-FRAMES v2, TUI-RENDER v2 e plano v8, com `docs/adr/` em `Rascunho v2` e `ROADMAP.md` em v4), além do título `S-01..S-63`.
+- `S-64` nasceu do BOS-69 (ENG-44), a devolução dos comandos de escrita à TUI: pina o escopo em `TUI.md` v5 — `add`, `edit`, `archive`/`unarchive`, `remove`, `cold`, `config`, `export` e `import` fora de `Fora de escopo (v1)`, com o campo de texto em raw mode como peça comum, a confirmação própria de `remove`/`cold purge`, a `### Ajuda` com as teclas de escrita e a `### Fichas` com a lista de todas as fichas na tecla `l` —, os ADRs `escrita-na-tui-com-campo-de-texto-em-raw-mode.md` e `fichas-da-tui-na-tecla-l.md` aceitos e indexados em `docs/adr/README.md`, o pin do índice (`docs/README.md` com TUI v5, TUI-FRAMES v4, TUI-RENDER v4 e plano v9) e o título `S-01..S-64`.
 - Reservados para não colidir com `T-01`..`T-27` (domínio) nem com `C-01`..`C-65` (a regra, no nível de unidade).
 - Arquivos: `packages/core/test/core.test.ts`, `fixtures/golden/test/golden.test.ts`, `apps/cli/test/cli.test.ts`, `tests/scaffold.test.ts`, `apps/web/test/due.test.tsx` e `apps/web/test/architecture.test.ts` — 240 testes no total (BOS-29); o web entrou depois, na ENG-16.
 - BOS-30 (ENG-5) acrescentou a suíte de persistência em `apps/cli/test/persistence/{schema,mapping,store}.test.ts` — 269 testes no total; ela roda no projeto `cli` do `vitest.config.ts` contra um SQLite real em diretório temporário.
@@ -112,11 +113,11 @@ Versão: 8 | Data: 2026-10-02 | Base: `docs/especificacao/REQUISITOS.md`
 - `T-11` não tem casa no core: ordenar a fila é do CLI (`CORE.md`). O `C-62` prova que a ordem documentada em `CA-12` é a que as definições do core produzem, com um comparador local ao teste — atrasados primeiro (`isLate`), depois por vencimento, e o `id` como desempate.
 - `C-56` e `C-57` nasceram do Tasting do BOS-28: datas malformadas falham igual em `compareDates`/`isLate`/`daysLate`/`isDue`, e `note`/`link` guardam o texto digitado (só o vazio vira `null`).
 
-### Suíte da TUI (U-01..U-13)
+### Suíte da TUI (U-01..U-27)
 
 - IDs `U-nn` são os casos de `apps/cli/test/tui/**/*.test.ts`: os frames puros (`render(estado) -> string`), o parser de teclas, a recusa fora de um terminal e o spawn do bin. É subseção própria, no molde de `S-01..S-55`/`C-01..C-65`: não entra na tabela `## Casos obrigatórios` (o `T-nn` é do domínio) nem nas faixas `W/P/M/D`.
 - Os casos de frame, teclas e recusa já vivem in-process em `apps/cli/test/tui/` (BOS-51/BOS-52/BOS-53); o token `U-nn` rotula cada caso existente e só o spawn sem TTY ganha arquivo próprio. Nenhum caso do domínio é reescrito nem copiado.
-- A varredura de `apps/cli/test/traceability.test.ts` lê esta subseção: exige os 13 ids contíguos, só o `U-13` `(manual)`, e cada `U-nn` não manual como token literal num arquivo de `apps/cli/test/tui/**/*.test.ts` — espelho do `S-23`, com a isenção `(manual)` lida do documento.
+- A varredura de `apps/cli/test/traceability.test.ts` lê esta subseção: exige os 27 ids contíguos, só o `U-13` `(manual)`, e cada `U-nn` não manual como token literal num arquivo de `apps/cli/test/tui/**/*.test.ts` — espelho do `S-23`, com a isenção `(manual)` lida do documento.
 - A TUI não repete a regra: os fluxos do domínio seguem nos `T-nn` do CLI e os RF que a TUI reusa (RF-05, RF-06, RF-08, RF-10, RF-11, RF-12, RF-13, RF-21) seguem ancorados pelos `T-nn` existentes (T-11, T-16, T-03, T-04, T-19, T-05, T-21), porque a faixa `RF-01..RF-20` exige `--json` e a TUI o recusa.
 
 | ID | Caso | Requisito |
@@ -134,6 +135,20 @@ Versão: 8 | Data: 2026-10-02 | Base: `docs/especificacao/REQUISITOS.md`
 | U-11 | Spawn sem TTY: exit 1, mensagem no stderr e stdout vazio; `--no-input` recusa igual | TUI.md — Erros e exit codes |
 | U-12 | Recusa com `--json`: exit 1, erro `usage` no envelope e stdout vazio | TUI.md — Erros e exit codes |
 | U-13 | PTY real no bin construído: a fila desenha, `j`/`i` respondem e `q` sai 0 (manual) | TUI.md — Testes |
+| U-14 | Campo de texto puro: insere, apaga, move o cursor e trunca na largura | TUI.md — Escrita |
+| U-15 | Parser em modo de edição: imprimível, `Backspace`, `Delete`, `Enter`, `Esc` | TUI.md — Teclas |
+| U-16 | Formulário `add`: frame com título, matéria, dificuldade, nota e link | TUI.md — Escrita |
+| U-17 | `add` grava pelo `createItem` e a fila é relida | TUI.md — Escrita |
+| U-18 | `edit` carrega os valores atuais e grava só o que mudou | TUI.md — Escrita |
+| U-19 | `x`/`X` arquivam e desarquivam pela mesma função do CLI | TUI.md — Escrita |
+| U-20 | `D` mostra a confirmação e só o `y` remove | TUI.md — Escrita |
+| U-21 | Arquivo morto: a tela lista com data e `R`/`P` agem no foco | TUI.md — Escrita |
+| U-22 | Config: `get` desenha a chave/valor e `set` grava pelo `parseColdArchiveWindow` | TUI.md — Escrita |
+| U-23 | Export/import: o caminho digitado chama `dumpJsonV1`/`applyDump` | TUI.md — Escrita |
+| U-24 | Export sobre arquivo existente pede confirmação antes de sobrescrever | TUI.md — Escrita |
+| U-25 | Falha de escrita vira aviso na barra e a sessão continua | TUI.md — Escrita |
+| U-26 | Fichas: `l` lista as ativas e arquivadas com o status e a navegação da fila | TUI.md — Fichas |
+| U-27 | Sessão: `l` abre, `x`/`X` agem no foco, `i` abre o detalhe e `Esc`/`l` fecham | TUI.md — Fichas |
 
 ## Casos por camada (W, P, M, D)
 

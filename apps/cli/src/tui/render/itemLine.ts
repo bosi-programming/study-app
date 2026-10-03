@@ -11,8 +11,13 @@ const INDEX_WIDTH = 4
 const META_WIDTH = 7
 const MARGIN = ' '
 
-export function itemLine(number: number, item: Item, state: RenderState, widths: FrameWidths): string {
-  const focused = item.id === state.focusId
+export function itemLine(
+  number: number,
+  item: Item,
+  state: RenderState,
+  widths: FrameWidths,
+  focused = item.id === state.focusId,
+): string {
   const prefix = focused ? `${paint(ACCENT_HEX, '>', state.color)} ` : '  '
   const index = paintCell(`${number}.`, INDEX_WIDTH, DIM_HEX, state.color)
   const subject = paintCell(subjectCell(item.subject, widths.subject), widths.subject, MUTED_HEX, state.color)

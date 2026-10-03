@@ -1,18 +1,9 @@
-import {
-  type Item,
-  reevaluateDifficulty,
-  resolveRef,
-  toDifficulty,
-  validateLink,
-  validateNote,
-  validateSubject,
-  validateTitle,
-} from '@study/core'
+import { resolveRef } from '@study/core'
 import { assertAllowedFlags, assertPositionals, hasFlag, valueOf } from '../args.ts'
 import { CliError } from '../errors.ts'
+import { type ItemPatch, updatedItem } from '../model/editItem.ts'
 import { toItemJson } from '../model/json.ts'
 import { type Command, type CommandArgs } from './types.ts'
-import { type CommandContext } from '../context.ts'
 
 const EDITABLE_FLAGS = ['title', 'subject', 'note', 'link', 'difficulty']
 
@@ -26,37 +17,23 @@ export const editCommand: Command = (args, ctx) => {
 
   const current = resolveRef(args.positionals[0] ?? '', ctx.store.listItems())
 
-  const result = updatedItem(args, current, ctx)
+  const result = updatedItem(current, patchOf(args), ctx.deps)
   ctx.store.saveItem(result)
 
   return { json: { item: toItemJson(result) }, view: { kind: 'item-updated', item: result } }
 }
 
-function updatedItem(args: CommandArgs, current: Item, ctx: CommandContext): Item {
-  const titleValue = valueOf(args, 'title')
-  const subjectValue = valueOf(args, 'subject')
-  const noteValue = valueOf(args, 'note')
-  const linkValue = valueOf(args, 'link')
-  const difficultyValue = valueOf(args, 'difficulty')
-
-  const next: Item = {
-    ...current,
-    title: titleValue === undefined ? current.title : validateTitle(titleValue),
-    subject: subjectValue === undefined ? current.subject : validateSubject(subjectValue),
-    note: noteValue === undefined ? current.note : validateNote(noteValue),
-    link: linkValue === undefined ? current.link : validateLink(linkValue),
+function patchOf(args: CommandArgs): ItemPatch {
+  const title = valueOf(args, 'title')
+  const subject = valueOf(args, 'subject')
+  const note = valueOf(args, 'note')
+  const link = valueOf(args, 'link')
+  const difficulty = valueOf(args, 'difficulty')
+  return {
+    ...(title === undefined ? {} : { title }),
+    ...(subject === undefined ? {} : { subject }),
+    ...(note === undefined ? {} : { note }),
+    ...(link === undefined ? {} : { link }),
+    ...(difficulty === undefined ? {} : { difficulty: Number(difficulty) }),
   }
-
-  const difficulty =
-    difficultyValue === undefined ? current.difficulty : toDifficulty(Number(difficultyValue))
-
-  if (difficulty !== current.difficulty) return reevaluateDifficulty(next, difficulty, ctx.deps)
-
-  const fieldsChanged =
-    next.title !== current.title ||
-    next.subject !== current.subject ||
-    next.note !== current.note ||
-    next.link !== current.link
-
-  return fieldsChanged ? { ...next, updated_at: ctx.deps.clock.nowUtc() } : next
 }

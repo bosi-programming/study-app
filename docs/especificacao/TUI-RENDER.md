@@ -1,6 +1,6 @@
 # TUI — Contrato do renderizador puro
 
-Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/TUI.md` e `docs/especificacao/TUI-FRAMES.md`
+Versão: 4 | Data: 2026-10-03 | Base: `docs/especificacao/TUI.md` e `docs/especificacao/TUI-FRAMES.md`
 
 O `TUI.md` descreve as telas e a `TUI-FRAMES.md` mostra os retratos. Este documento fixa o que falta entre os dois: o contrato de entrada do desenho — o `RenderState` que o loop monta — e o mapeamento de estado para frame. É o que o comando `study tui` e o loop (BOS-53) consomem para ligar a sessão (BOS-50) ao desenho sem importar a view.
 
@@ -21,6 +21,12 @@ O `TUI.md` descreve as telas e a `TUI-FRAMES.md` mostra os retratos. Este docume
 | `detail` | `RenderDetail \| null` | item mais histórico, na tela `detail` |
 | `reevaluation` | `RenderReevaluation \| null` | item mais dificuldade atual, na tela `reevaluate` |
 | `confirmation` | `string \| null` | título do check-in recém-registrado, para o rodapé da reavaliação |
+| `form` | `RenderForm \| null` | formulário do `add`/`edit`, na tela `form` |
+| `cold` | `RenderCold \| null` | arquivo morto, na tela `cold` |
+| `config` | `RenderConfig \| null` | chave e valor da config, na tela `config` |
+| `path` | `RenderPath \| null` | caminho de export/import, na tela `path` |
+| `confirm` | `RenderConfirm \| null` | mensagem do diálogo destrutivo, na tela `confirm` |
+| `items` | `RenderItems \| null` | fichas ativas e arquivadas, na tela `items` |
 | `stats` | `RenderStats \| null` | dados do painel, na tela `stats` |
 | `streak` | `QueueStreak` | streak de fila zerada, para o frame vazio |
 | `banner` | `string \| null` | aviso não fatal; vira uma linha do frame |
@@ -35,9 +41,16 @@ Tipos de apoio:
 - `RenderDetail` — `{ item: Item, history: readonly ReviewLog[] }`.
 - `RenderReevaluation` — `{ item: Item, currentDifficulty: Difficulty }`.
 - `RenderStats` — `{ streak: QueueStreak, checkinsToday: number, items: { active: number, archived: number, cold: number }, due: { overdue: number, today: number }, bySubject: Readonly<Record<string, number>> }`.
-- `RenderScreen` — `'queue' | 'detail' | 'reevaluate' | 'help' | 'stats'`.
+- `RenderForm` — `{ mode: 'add' | 'edit', fields: Readonly<Record<FormField, TextField>>, focus: FormField }`.
+- `RenderCold` — `{ items: readonly RenderColdItem[] }`; `RenderColdItem` — `{ item: Item, archivedOn: string | null, focused: boolean }`.
+- `RenderConfig` — `{ key: string, value: string, editing: boolean, field: TextField }`.
+- `RenderPath` — `{ mode: 'export' | 'import', field: TextField }`.
+- `RenderConfirm` — `{ message: string }`.
+- `RenderItems` — `{ focusId: string | null, items: readonly RenderItemsItem[] }`; `RenderItemsItem` — `{ item: Item, focused: boolean }`.
+- `FormField` — `'title' | 'subject' | 'difficulty' | 'note' | 'link'`; `TextField` — `{ value: string, cursor: number }`.
+- `RenderScreen` — `'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm' | 'items' | 'stats'`.
 
-O `RenderState` é declarado sobre tipos do core e não carrega o `SessionState`. Quem faz a conversão é o loop: copia `today`, `queue`, `focusId`, `reevaluation`, `streak`, `banner` e `fatal` da sessão; resolve `detail` a partir do `detailItemId` mais o store; guarda `confirmation` no check-in; monta `stats` com as mesmas leituras dos comandos (`stats` e `due`) quando a tela é `stats`; tira `viewport` do tamanho inicial e do `SIGWINCH`; resolve `color` por `resolveColorEnabled` e `utf8` pelo locale.
+O `RenderState` é declarado sobre tipos do core e não carrega o `SessionState`. Quem faz a conversão é o loop: copia `today`, `queue`, `focusId`, `reevaluation`, `streak`, `banner` e `fatal` da sessão; resolve `detail` a partir do `detailItemId` mais o store; guarda `confirmation` no check-in; monta `stats` com as mesmas leituras dos comandos (`stats` e `due`) quando a tela é `stats`; resolve `form` e `path` do buffer da sessão, `cold` listando o status `cold` com a data de migração, `items` com as ativas e arquivadas na ordem do `list` e o foco da sessão, `config` pela `readColdArchiveWindow` e `confirm` da confirmação pendente; tira `viewport` do tamanho inicial e do `SIGWINCH`; resolve `color` por `resolveColorEnabled` e `utf8` pelo locale.
 
 ## Estado para frame
 
@@ -52,9 +65,33 @@ A ordem de precedência é `fatal`, janela pequena, `screen`.
 | `screen: 'detail'` | caixa `Detalhe`; `detail: null` cai na fila |
 | `screen: 'reevaluate'` | corpo da fila mais o rodapé de reavaliação |
 | `screen: 'help'` | caixa `Ajuda` |
+| `screen: 'form'` | caixa `Novo item` (add) ou `Editar item` (edit); `form: null` desenha a caixa `Formulário` vazia |
+| `screen: 'cold'` | caixa `Arquivo morto`; sem itens, a mensagem de arquivo vazio |
+| `screen: 'config'` | caixa `Config`; `config: null` desenha a caixa vazia |
+| `screen: 'path'` | caixa `Exportar` ou `Importar`; `path: null` desenha a caixa `Caminho` vazia |
+| `screen: 'confirm'` | caixa `Confirmação`; `confirm: null` desenha a caixa vazia |
+| `screen: 'items'` | lista `Fichas`, com as colunas da fila, o status de cada ficha e a rolagem; `items: null` desenha a lista vazia |
 | `screen: 'stats'` | caixa `Stats`; somente-leitura |
 
 Banner e confirmação de check-in são linhas dentro de um frame, nunca frames próprios.
+
+O `confirm` (diálogo destrutivo) é uma tela própria; a `confirmation` (título do check-in) é uma linha do rodapé da reavaliação.
+
+## Teclas de escrita
+
+O mapeamento da tecla para a tela e o estado que o loop monta, na mesma ordem de `## Escrita` do `TUI.md`:
+
+| Tecla | Tela (`RenderScreen`) | Estado |
+| --- | --- | --- |
+| `a` | `form` | `RenderForm` de `add`, campos vazios |
+| `e` | `form` | `RenderForm` de `edit`, campos com os valores atuais |
+| `D` | `confirm` | `RenderConfirm` de remover |
+| `c` | `cold` | `RenderCold` com a lista do status `cold` |
+| `C` | `config` | `RenderConfig` de leitura; `Enter` passa a edição |
+| `E` `I` | `path` | `RenderPath` de export/import |
+| `l` | `items` | `RenderItems` com as ativas e arquivadas; `x`/`X` agem no foco, `i`/`Enter` abrem o detalhe e `Esc`/`l` fecham |
+| `x` `X` `R` `P` | a tela atual | sem tela nova; a barra confirma |
+| `y` `n` | a tela de retorno | fecha a confirmação e escreve só com `y` |
 
 ## Frames
 
@@ -62,9 +99,24 @@ Banner e confirmação de check-in são linhas dentro de um frame, nunca frames 
 - **Fila vazia.** Cabeçalho, filete, `Fila zerada — streak de N dia(s)` e `? ajuda · q sair` centralizados no corpo, filete.
 - **Detalhe.** Caixa com o título do item e `Esc · i · q` à direita, `[matéria]` e prefixo do id, campos (Dificuldade, Vencimento, Intervalo, Check-ins, Nota, Link, Status), `Histórico (n)` com as linhas de check-in ou `nenhum check-in` e a nota de rolagem. O histórico que passa da altura é cortado.
 - **Reavaliação.** Corpo da fila mais o rodapé de quatro linhas: a confirmação `✓ Check-in registrado: <título>` (só com `confirmation`), a dificuldade atual, os cinco valores com rótulo e `Esc cancela · Enter mantém · 1–5 recalcula`.
-- **Ajuda.** Caixa com as onze teclas da v1, o lembrete dos comandos de linha e `Esc · ? · q para fechar`.
+- **Ajuda.** Caixa com as teclas de leitura e de escrita e o lembrete de que os comandos de linha continuam sendo a porta de script e de leitor de tela.
+- **Formulário.** Caixa `Novo item` ou `Editar item` com os cinco campos na ordem Título, Matéria, Dificuldade, Nota e Link, o rótulo em 14 células e o valor entre `[` `]`; o foco leva `>` e destaque, e o rodapé é `Enter avança; no último campo grava · Esc cancela`.
+- **Arquivo morto.** Caixa `Arquivo morto` com o título truncado em 30 colunas, `migrado em <data>` (ou `—`) e o `>` no foco; sem itens, `Nenhum item no arquivo morto.`; a dica é `R restaura · P purga · Esc/c volta`.
+- **Config.** Caixa `Config` com o rótulo da chave e o valor no campo; `Enter edita · Esc volta` na leitura e `Enter grava · Esc cancela` na edição.
+- **Caminho.** Caixa `Exportar` ou `Importar` com o campo `Caminho` e a dica `Enter confirma · Esc cancela`.
+- **Confirmação.** Caixa `Confirmação` com a mensagem da ação e `y confirma · n/Esc cancela`.
+- **Fichas.** Cabeçalho `Fichas — <today>`, filete, as fichas ativas e depois as arquivadas com o status à direita, filete e o rodapé `Enter/i detalhe · x/X arquivar · Esc/l volta` com `N ativos, M arquivados` à direita.
 - **Stats.** Caixa `Stats` com o streak `N dias` e o último dia, `checkins_today`, atrasados e para hoje, ativos/arquivados/arquivo morto e a contagem da fila por matéria, mais `s · Esc · q fecha`.
 - **Janela pequena.** `Aumente a janela para pelo menos` e `60 colunas e 15 linhas.`, cada linha truncada com `…` se `columns` for menor. 60x15 desenha.
+
+## Campo de texto
+
+Toda tela de escrita usa a mesma peça de campo, que não conhece a tela:
+
+- `TextField` é `{ value, cursor }` em code points; `startField(value)` abre com o cursor no fim.
+- `fieldWindow(field, largura)` devolve a janela visível e a coluna do cursor: o valor inteiro quando cabe; senão uma janela de `largura - 2` code points com `…` na frente, no fim ou nos dois lados, conforme o cursor.
+- `fieldInputLine` desenha ` ` mais o rótulo em 14 células (truncado com `…`, com `>` e destaque no foco) mais o valor entre `[` `]`, na largura `columns - 14 - 2 - 1`.
+- `Enter` varia por tela: avança o campo no formulário, grava na config e confirma o caminho.
 
 ## Geometria das colunas
 

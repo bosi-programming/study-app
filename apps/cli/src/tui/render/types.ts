@@ -1,4 +1,8 @@
 import type { Difficulty, Item, QueueStreak, ReviewLog } from '@study/core'
+import type { FormField } from '../fieldTypes.ts'
+import type { TextField } from './field.ts'
+
+export type { FormField } from '../fieldTypes.ts'
 
 export type StyledText = {
   readonly plain: string
@@ -20,7 +24,49 @@ export type RenderReevaluation = {
   readonly currentDifficulty: Difficulty
 }
 
-export type RenderScreen = 'queue' | 'detail' | 'reevaluate' | 'help'
+export type RenderScreen = 'queue' | 'detail' | 'reevaluate' | 'help' | 'form' | 'cold' | 'config' | 'path' | 'confirm' | 'items'
+
+export type RenderForm = {
+  readonly mode: 'add' | 'edit'
+  readonly fields: Readonly<Record<FormField, TextField>>
+  readonly focus: FormField
+}
+
+export type RenderColdItem = {
+  readonly item: Item
+  readonly archivedOn: string | null
+  readonly focused: boolean
+}
+
+export type RenderCold = {
+  readonly items: readonly RenderColdItem[]
+}
+
+export type RenderConfig = {
+  readonly key: string
+  readonly value: string
+  readonly editing: boolean
+  readonly field: TextField
+}
+
+export type RenderPath = {
+  readonly mode: 'export' | 'import'
+  readonly field: TextField
+}
+
+export type RenderConfirm = {
+  readonly message: string
+}
+
+export type RenderItemsItem = {
+  readonly item: Item
+  readonly focused: boolean
+}
+
+export type RenderItems = {
+  readonly focusId: string | null
+  readonly items: readonly RenderItemsItem[]
+}
 
 export type RenderState = {
   readonly today: string
@@ -30,6 +76,12 @@ export type RenderState = {
   readonly detail: RenderDetail | null
   readonly reevaluation: RenderReevaluation | null
   readonly confirmation: string | null
+  readonly form: RenderForm | null
+  readonly cold: RenderCold | null
+  readonly config: RenderConfig | null
+  readonly path: RenderPath | null
+  readonly confirm: RenderConfirm | null
+  readonly items: RenderItems | null
   readonly streak: QueueStreak
   readonly banner: string | null
   readonly fatal: string | null

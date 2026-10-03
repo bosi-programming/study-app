@@ -1,6 +1,12 @@
 import { renderDetail } from './renderDetail.ts'
 import { renderEmpty } from './renderEmpty.ts'
 import { renderHelp } from './renderHelp.ts'
+import { renderCold } from './renderCold.ts'
+import { renderConfig } from './renderConfig.ts'
+import { renderConfirm } from './renderConfirm.ts'
+import { renderForm } from './renderForm.ts'
+import { renderItems } from './renderItems.ts'
+import { renderPath } from './renderPath.ts'
 import { renderQueue } from './renderQueue.ts'
 import { renderReevaluate } from './renderReevaluate.ts'
 import { renderSmall } from './renderSmall.ts'
@@ -22,6 +28,18 @@ export function render(state: RenderState): string {
       return renderHelp(state).join('\n')
     case 'reevaluate':
       return renderReevaluate(state).join('\n')
+    case 'form':
+      return renderForm(state).join('\n')
+    case 'cold':
+      return renderCold(state).join('\n')
+    case 'config':
+      return renderConfig(state).join('\n')
+    case 'path':
+      return renderPath(state).join('\n')
+    case 'confirm':
+      return renderConfirm(state).join('\n')
+    case 'items':
+      return renderItems(state).join('\n')
     case 'queue':
       return (state.queue.length === 0 ? renderEmpty(state) : renderQueue(state)).join('\n')
   }

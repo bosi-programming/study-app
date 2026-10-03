@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { type Item } from '@study/core'
 import { describe, expect, it } from 'vitest'
-import { type RenderState, render } from '../../src/tui/render/index.ts'
+import { type RenderState, render, startField } from '../../src/tui/render/index.ts'
 import { makeItem, makeLog } from '../persistence/helpers.ts'
 
 const ESC = '\u001b['
@@ -73,6 +73,12 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     detail: null,
     reevaluation: null,
     confirmation: null,
+    form: null,
+    cold: null,
+    items: null,
+    config: null,
+    path: null,
+    confirm: null,
     streak: { streak_current: 4, streak_last_day: TODAY },
     banner: null,
     fatal: null,
@@ -158,25 +164,33 @@ describe('AC2 — os frames', () => {
     expect(frame).toContain('Esc cancela · Enter mantém · 1–5 recalcula')
   })
 
-  it('frame-ajuda: a ajuda desenha a caixa com os comandos de linha (U-08)', () => {
+  it('frame-ajuda: a ajuda desenha a caixa com as teclas e o lembrete (U-08)', () => {
     const frame = render(state({ screen: 'help' }))
 
     expect(frame).toContain('Ajuda')
-    expect(frame).toContain('Os comandos de linha fazem o resto: add, edit, archive, cold, stats.')
+    expect(frame).toContain('Os comandos de linha continuam sendo a porta de script')
+    expect(frame).toContain('e de leitor de tela: a TUI nunca é a única forma de')
+    expect(frame).toContain('fazer algo.')
     expect(frame).toContain('Esc · ? · q para fechar')
   })
 
   it.each([
     ['↑ ↓  k j', 'mover o foco na fila'],
-    ['PgUp PgDn', 'rolar uma página'],
-    ['g  G', 'primeiro e último item'],
+    ['PgUp PgDn g G', 'rolar e ir às pontas'],
     ['Enter', 'check-in do item em foco'],
     ['1–5', 'reavaliar a dificuldade'],
     ['i', 'abrir o detalhe'],
-    ['Esc', 'fechar painel ou cancelar'],
-    ['?', 'esta ajuda'],
-    ['q', 'sair'],
-    ['Ctrl-C', 'sair com 130'],
+    ['a  e', 'item novo e edição do foco'],
+    ['x  X', 'arquivar e desarquivar'],
+    ['D', 'remover o item em foco'],
+    ['c', 'arquivo morto'],
+    ['C', 'config'],
+    ['E  I', 'exportar e importar'],
+    ['l', 'lista de todas as fichas'],
+    ['R  P', 'restaurar e purgar no arquivo morto'],
+    ['y  n', 'confirmar e cancelar'],
+    ['Esc  ?', 'fechar painel ou esta ajuda'],
+    ['q  Ctrl-C', 'sair (Ctrl-C sai 130)'],
   ])('frame-ajuda: a linha de %s está na ajuda', (label, description) => {
     expect(render(state({ screen: 'help' }))).toContain(`│ ${label.padEnd(14)}${description}`)
   })
@@ -494,5 +508,95 @@ describe('AC11 — casos de borda', () => {
 
     expect(frame).toContain('? ajuda · q sair')
     expect(frame).not.toContain('Enter revisar')
+  })
+})
+
+describe('AC12 — as telas de escrita', () => {
+  it('frame-formulario-add: o formulario traz titulo, materia, dificuldade, nota e link (U-16)', () => {
+    const frame = render(
+      state({
+        screen: 'form',
+        form: {
+          mode: 'add',
+          fields: {
+            title: startField('Derivadas parciais'),
+            subject: startField('Cálculo'),
+            difficulty: startField('4'),
+            note: startField(''),
+            link: startField(''),
+          },
+          focus: 'title',
+        },
+      }),
+    )
+
+    expect(frame).toContain('Novo item')
+    expect(frame).toContain('Título')
+    expect(frame).toContain('Matéria')
+    expect(frame).toContain('Dificuldade')
+    expect(frame).toContain('Nota')
+    expect(frame).toContain('Link')
+    expect(frame).toContain('Derivadas parciais')
+    expect(frame).toContain('Cálculo')
+  })
+
+  it('frame-arquivo-morto: a tela lista com a data de migracao e o foco (U-21)', () => {
+    const frame = render(
+      state({
+        screen: 'cold',
+        cold: {
+          items: [
+            {
+              item: makeItem({ id: 'c1', title: 'Antigo', status: 'cold', cold_archived_at: '2026-09-01T12:00:00Z' }),
+              archivedOn: '2026-09-01',
+              focused: true,
+            },
+            {
+              item: makeItem({ id: 'c2', title: 'Velho', status: 'cold', cold_archived_at: '2026-09-10T12:00:00Z' }),
+              archivedOn: '2026-09-10',
+              focused: false,
+            },
+          ],
+        },
+      }),
+    )
+
+    expect(frame).toContain('Arquivo morto')
+    expect(frame).toContain('Antigo')
+    expect(frame).toContain('migrado em 2026-09-01')
+    expect(frame).toContain('Velho')
+    expect(frame).toContain('> Antigo')
+    expect(frame).toContain('R restaura · P purga')
+  })
+})
+
+describe('AC13 — as fichas', () => {
+  const fichas = {
+    focusId: 'a1',
+    items: [
+      { item: makeItem({ id: 'a1', title: 'Derivadas parciais', status: 'active' }), focused: true },
+      { item: makeItem({ id: 'z1', title: 'Termodinâmica', status: 'archived' }), focused: false },
+    ],
+  }
+
+  it('frame-fichas: a lista mostra as fichas com o status e o foco (U-26)', () => {
+    const frame = render(state({ screen: 'items', items: fichas }))
+
+    expect(frame).toContain('Fichas')
+    expect(frame).toContain('> 1.')
+    expect(frame).toContain('active')
+    expect(frame).toContain('archived')
+    expect(frame).toContain('Esc/l volta')
+    expect(frame).toContain('1 ativos, 1 arquivados')
+  })
+
+  it('fichas-largura: em 84 e em 60 a lista cabe e as linhas de item medem columns (U-26)', () => {
+    for (const columns of [84, 60]) {
+      const lines = linesOf(render(state({ screen: 'items', items: fichas, viewport: { columns, rows: 24 } })))
+      const itemWidths = lines.filter(isItemLine).map(visibleWidth)
+
+      expect(Math.max(...lines.map(visibleWidth))).toBeLessThanOrEqual(columns)
+      expect([Math.min(...itemWidths), Math.max(...itemWidths)]).toEqual([columns, columns])
+    }
   })
 })

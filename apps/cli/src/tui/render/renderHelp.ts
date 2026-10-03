@@ -8,19 +8,29 @@ import type { RenderState } from './types.ts'
 
 const HELP_LABEL_WIDTH = 14
 const HELP_TITLE = 'Ajuda'
-const HELP_REMINDER = 'Os comandos de linha fazem o resto: add, edit, archive, cold, stats.'
+const HELP_REMINDER = [
+  ' Os comandos de linha continuam sendo a porta de script',
+  ' e de leitor de tela: a TUI nunca é a única forma de',
+  ' fazer algo.',
+]
 const HELP_CLOSE = 'Esc · ? · q para fechar'
 const HELP_KEYS: readonly (readonly [string, string])[] = [
   ['↑ ↓  k j', 'mover o foco na fila'],
-  ['PgUp PgDn', 'rolar uma página'],
-  ['g  G', 'primeiro e último item'],
+  ['PgUp PgDn g G', 'rolar e ir às pontas'],
   ['Enter', 'check-in do item em foco'],
   ['1–5', 'reavaliar a dificuldade'],
   ['i', 'abrir o detalhe'],
-  ['Esc', 'fechar painel ou cancelar'],
-  ['?', 'esta ajuda'],
-  ['q', 'sair'],
-  ['Ctrl-C', 'sair com 130'],
+  ['a  e', 'item novo e edição do foco'],
+  ['x  X', 'arquivar e desarquivar'],
+  ['D', 'remover o item em foco'],
+  ['c', 'arquivo morto'],
+  ['C', 'config'],
+  ['E  I', 'exportar e importar'],
+  ['l', 'lista de todas as fichas'],
+  ['R  P', 'restaurar e purgar no arquivo morto'],
+  ['y  n', 'confirmar e cancelar'],
+  ['Esc  ?', 'fechar painel ou esta ajuda'],
+  ['q  Ctrl-C', 'sair (Ctrl-C sai 130)'],
 ]
 
 export function renderHelp(state: RenderState): string[] {
@@ -30,8 +40,7 @@ export function renderHelp(state: RenderState): string[] {
   const body = [
     plainText(''),
     ...keys,
-    plainText(''),
-    plainText(` ${HELP_REMINDER}`),
+    ...HELP_REMINDER.map((line) => plainText(line)),
     plainText(` ${HELP_CLOSE}`),
   ]
   return renderBox(HELP_TITLE, body, { columns: state.viewport.columns, rows: state.viewport.rows, utf8: state.utf8, color: state.color, banner: state.banner })

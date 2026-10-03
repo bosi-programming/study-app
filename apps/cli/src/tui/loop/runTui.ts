@@ -1,6 +1,6 @@
 import { openContext } from '../../context.ts'
 import { type KeyCommand } from '../keys.ts'
-import { queuePageSize, render, type RenderViewport } from '../render/index.ts'
+import { itemsPageSize, queuePageSize, render, type RenderViewport } from '../render/index.ts'
 import {
   openSession,
   type Session,
@@ -96,10 +96,9 @@ export async function runTui(options: TuiOptions): Promise<TuiOutcome> {
           if (command.kind === 'quit') return 'quit'
           if (command.kind === 'interrupt') return 'interrupt'
 
-          const page = pageMoveOf(
-            command,
-            queuePageSize(buildRenderState({ state, store, confirmed, viewport, color, utf8 })),
-          )
+          const rendered = buildRenderState({ state, store, confirmed, viewport, color, utf8 })
+          const pageSize = state.screen === 'items' ? itemsPageSize(rendered) : queuePageSize(rendered)
+          const page = pageMoveOf(command, pageSize)
           if (page !== null) {
             for (let index = 0; index < page.steps; index += 1) {
               state = session.applyAction({ kind: page.action })

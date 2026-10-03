@@ -292,6 +292,25 @@ describe('AC4 — a tabela de teclas', () => {
     })
   })
 
+  it('laco-fichas-pagina: l abre as fichas e PgDn/PgUp usam a página da lista (U-26)', async () => {
+    await withTempDb(async (dbPath) => {
+      const items = Array.from({ length: 15 }, (_value, index) =>
+        makeItem({ id: `I${index + 1}`, due_date: TODAY }),
+      )
+      seed(dbPath, { items })
+      const { writes } = await runScript(dbPath, fakeDeps(TODAY).deps, [
+        key('l'), key(`${CSI}6~`), key(`${CSI}6~`), key(`${CSI}5~`), key('q'),
+      ], { size: { columns: 84, rows: 16 } })
+
+      const fichas = writes.filter((frame) => frame.includes('Fichas'))
+      expect(fichas.length).toBeGreaterThanOrEqual(4)
+      expect(fichas[0]).toContain('> 1.')
+      expect(fichas[1]).toContain('> 11.')
+      expect(fichas[2]).toContain('> 15.')
+      expect(fichas[3]).toContain('> 5.')
+    })
+  })
+
   it('laco-enter-checkin-abre-reavaliacao: Enter grava e abre a reavaliação do item revisado', async () => {
     await withTempDb(async (dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'A', title: 'Derivadas', due_date: TODAY })] })
@@ -433,6 +452,12 @@ describe('AC5 — RenderState e frame', () => {
           focusId: null,
           detailItemId: null,
           reevaluation: null,
+          form: null,
+          cold: null,
+          items: null,
+          config: null,
+          path: null,
+          confirmation: null,
           streak: { streak_current: 3, streak_last_day: TODAY },
           banner: { kind: 'info', message: 'aviso de migração' },
           fatal: null,
@@ -571,7 +596,7 @@ describe('AC6 — o redesenho', () => {
   it('laco-tecla-inerte: tecla inerte ou foco no limite não escreve frame novo', async () => {
     await withTempDb(async (dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'A', due_date: TODAY })] })
-      const { writes } = await runScript(dbPath, fakeDeps(TODAY).deps, [key('x'), key('\n'), key('k'), key('q')])
+      const { writes } = await runScript(dbPath, fakeDeps(TODAY).deps, [key('z'), key('\n'), key('k'), key('q')])
 
       expect(writes).toHaveLength(1)
     })
@@ -664,6 +689,43 @@ describe('AC7 — desfecho e fatal', () => {
       .map((name) => readFileSync(join(LOOP_DIR, name), 'utf8'))
       .join('\n')
     expect(sources).not.toMatch(/process\.|node:|setRawMode|SIGWINCH/)
+  })
+
+  it('laco-falha-de-escrita-vira-aviso: a escrita que falha não derruba a sessão (U-25)', async () => {
+    await withTempDb(async (dbPath) => {
+      seed(dbPath, { items: [makeItem({ id: 'A', due_date: TODAY })] })
+      let armed = false
+      const { outcome, writes, errors } = await runScript(
+        dbPath,
+        fakeDeps(TODAY).deps,
+        [
+          () => {
+            armed = true
+            return key('x')
+          },
+          key('q'),
+        ],
+        {
+          wrap: (opened) => ({
+            ...opened,
+            store: {
+              ...opened.store,
+              transaction: <T>(run: () => T): T => {
+                if (armed) {
+                  armed = false
+                  throw new Error('disco cheio')
+                }
+                return opened.store.transaction(run)
+              },
+            },
+          }),
+        },
+      )
+
+      expect(outcome).toBe('quit')
+      expect(writes.some((frame) => frame.includes('disco cheio'))).toBe(true)
+      expect(errors).toHaveLength(0)
+    })
   })
 })
 

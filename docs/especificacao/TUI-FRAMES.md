@@ -1,6 +1,6 @@
 # Frames da TUI — Referência
 
-Versão: 2 | Data: 2026-10-02 | Base: `docs/especificacao/TUI.md`
+Versão: 4 | Data: 2026-10-03 | Base: `docs/especificacao/TUI.md`
 
 Blocos das telas da `study tui` para conferência visual. O texto sem os escapes é a fonte; a cor é decoração do ADR Cores da saída humana do CLI.
 
@@ -140,26 +140,58 @@ Fila de hoje — 2026-09-28
 ────────────────────────────────────────────────────────────────────────────────────
 ```
 
+## Fichas
+
+`l` na fila abre a lista de todas as fichas, ativas e arquivadas, com o status de cada uma; o foco e a rolagem seguem a fila.
+
+```text
+Fichas — 2026-09-28
+────────────────────────────────────────────────────────────────────────────────────
+> 1.  [Cálculo]    Derivadas parciais  ! venceu 2026-08-22 (37d)    d4  n=2 active  
+  2.  [Estrutura…] Árvores balanceadas…! venceu 2026-09-07 (21d)    d5  n=2 active  
+  3.  [Inglês]     Phrasal verbs       ! venceu 2026-09-14 (14d)    d3  n=2 active  
+  4.  [Física]     Leis de Newton      ! venceu 2026-09-18 (10d)    d2  n=2 active  
+  5.  [História]   Revolução Industrial! venceu 2026-09-22 (6d)     d3  n=2 active  
+  6.  [Português]  Crase e regência ve…! venceu 2026-09-24 (4d)     d2  n=2 active  
+  7.  [Biologia]   Ciclo de Krebs e fo…! venceu 2026-09-27 (1d)     d4  n=2 active  
+  8.  [Cálculo]    Integrais por partes! venceu 2026-09-25 (3d)     d5  n=2 active  
+  9.  [Cálculo]    Séries de Taylor    vence hoje                   d4  n=2 active  
+  10. [Química]    Estequiometria      vence hoje                   d3  n=2 active  
+  11. [Estrutura…] Grafos: caminho mín…vence hoje                   d5  n=2 active  
+  12. [Inglês]     Reported speech     vence hoje                   d2  n=2 active  
+  13. [Álgebra]    Matrizes e determin…! venceu 2026-08-10 (49d)    d3  n=2 archived
+  14. [Física]     Termodinâmica       ! venceu 2026-07-30 (60d)    d4  n=2 archived
+  15. [Biologia]   Genética mendeliana ! venceu 2026-07-12 (78d)    d3  n=2 archived
+────────────────────────────────────────────────────────────────────────────────────
+Enter/i detalhe · x/X arquivar · Esc/l volta                 12 ativos, 3 arquivados
+```
+
 ## Ajuda
 
-? abre a lista de teclas da v1 e lembra que os comandos de linha fazem o resto.
+? abre a lista de teclas de leitura e de escrita e lembra que os comandos de linha continuam sendo a porta de script e de leitor de tela.
 
 ```text
 ╭─ Ajuda ──────────────────────────────────────────────────────────────────────────╮
 │                                                                                  │
 │ ↑ ↓  k j      mover o foco na fila                                               │
-│ PgUp PgDn     rolar uma página                                                   │
-│ g  G          primeiro e último item                                             │
+│ PgUp PgDn g G rolar e ir às pontas                                               │
 │ Enter         check-in do item em foco                                           │
 │ 1–5           reavaliar a dificuldade                                            │
 │ i             abrir o detalhe                                                    │
-│ s             abrir o painel de stats                                            │
-│ Esc           fechar painel ou cancelar                                          │
-│ ?             esta ajuda                                                         │
-│ q             sair                                                               │
-│ Ctrl-C        sair com 130                                                       │
-│                                                                                  │
-│ Os comandos de linha fazem o resto: add, edit, archive, cold, stats.             │
+│ a  e          item novo e edição do foco                                         │
+│ x  X          arquivar e desarquivar                                             │
+│ D             remover o item em foco                                             │
+│ c             arquivo morto                                                      │
+│ C             config                                                             │
+│ E  I          exportar e importar                                                │
+│ l             lista de todas as fichas                                           │
+│ R  P          restaurar e purgar no arquivo morto                                │
+│ y  n          confirmar e cancelar                                               │
+│ Esc  ?        fechar painel ou esta ajuda                                        │
+│ q  Ctrl-C     sair (Ctrl-C sai 130)                                              │
+│ Os comandos de linha continuam sendo a porta de script                           │
+│ e de leitor de tela: a TUI nunca é a única forma de                              │
+│ fazer algo.                                                                      │
 │ Esc · ? · q para fechar                                                          │
 │                                                                                  │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
@@ -183,6 +215,141 @@ O painel do `s` na fila: streak de fila zerada, contagens de hoje e por status e
 │                                                                                  │
 │ s · Esc · q fecha                                                                │
 │                                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Teclas de escrita
+
+As teclas de `## Escrita` do `TUI.md` abrem as telas de escrita sobre a fila e o arquivo morto; o campo de texto é a peça comum de entrada. Os retratos abaixo cortam as linhas vazias que completam a altura do terminal.
+
+| Tecla | Abre |
+| --- | --- |
+| `a` | formulário de item novo |
+| `e` | edição do item em foco |
+| `x` `X` | arquiva e desarquiva, sem tela |
+| `D` | confirmação de remover |
+| `c` | arquivo morto |
+| `C` | config |
+| `E` `I` | caminho de export e import |
+| `R` `P` | restaura e purga no arquivo morto |
+| `y` `n` | confirma e cancela a ação destrutiva |
+
+## Formulário de item (`a`, `e`)
+
+O formulário do `add` (tecla `a`) e do `edit` (tecla `e`): cinco campos na ordem Título, Matéria, Dificuldade, Nota e Link, o foco no primeiro e a matéria e o título obrigatórios. O `edit` abre com os valores atuais; o `add` abre vazio. O marcador `>` e o tom de destaque ficam no campo em foco, e `Enter` avança até o último campo, que grava.
+
+Adicionar:
+
+```text
+╭─ Novo item ──────────────────────────────────────────────────────────────────────╮
+│ > Título      [Derivadas parciais                                               ]│
+│   Matéria     [Cálculo                                                          ]│
+│   Dificuldade [4                                                                ]│
+│   Nota        [                                                                 ]│
+│   Link        [                                                                 ]│
+│                                                                                  │
+│ Enter avança; no último campo grava · Esc cancela                                │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+Editar:
+
+```text
+╭─ Editar item ────────────────────────────────────────────────────────────────────╮
+│   Título      [Derivadas parciais                                               ]│
+│   Matéria     [Cálculo                                                          ]│
+│   Dificuldade [4                                                                ]│
+│ > Nota        [cap. 3                                                           ]│
+│   Link        [https://exemplo                                                  ]│
+│                                                                                  │
+│ Enter avança; no último campo grava · Esc cancela                                │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Arquivo morto (`c`)
+
+A tela do `cold list`: título truncado na largura de 30 colunas, a data de migração (`migrado em <data>`, ou `—` quando não houver) e o marcador `>` no item em foco. `R` restaura e `P` pede a confirmação da purga; `Esc`, `q` ou `c` fecham.
+
+```text
+╭─ Arquivo morto ──────────────────────────────────────────────────────────────────╮
+│> Antigo                                migrado em 2026-09-01                     │
+│  Velho                                 migrado em 2026-09-10                     │
+│                                                                                  │
+│ R restaura · P purga · Esc/c volta                                               │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+Vazio:
+
+```text
+╭─ Arquivo morto ──────────────────────────────────────────────────────────────────╮
+│ Nenhum item no arquivo morto.                                                    │
+│                                                                                  │
+│ R restaura · P purga · Esc/c volta                                               │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Config (`C`)
+
+A tela da única chave da v1 (`cold_archive_after_days`) com o valor atual, como o `config get`. Na leitura, `Enter` abre a edição; no campo, `Enter` grava e a tela é relida. O rótulo usa a mesma célula de 14 colunas dos formulários, então a chave longa sai truncada (`cold_archiv…`); o valor digitado fica entre `[` `]`.
+
+Leitura:
+
+```text
+╭─ Config ─────────────────────────────────────────────────────────────────────────╮
+│   cold_archiv…[180                                                              ]│
+│                                                                                  │
+│ Enter edita · Esc volta                                                          │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+Edição:
+
+```text
+╭─ Config ─────────────────────────────────────────────────────────────────────────╮
+│ > cold_archiv…[90                                                               ]│
+│                                                                                  │
+│ Enter grava · Esc cancela                                                        │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Caminho de export e import (`E`, `I`)
+
+O campo do caminho de `export` e `import`, digitado no campo de texto: o `Enter` confirma e o `Esc` cancela. O `export` sobre arquivo existente passa pela confirmação antes de sobrescrever.
+
+```text
+╭─ Exportar ───────────────────────────────────────────────────────────────────────╮
+│ > Caminho     [~/backup.json                                                    ]│
+│                                                                                  │
+│ Enter confirma · Esc cancela                                                     │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+```text
+╭─ Importar ───────────────────────────────────────────────────────────────────────╮
+│ > Caminho     [~/backup.json                                                    ]│
+│                                                                                  │
+│ Enter confirma · Esc cancela                                                     │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Confirmação
+
+A tela única de `remove` (`D`), da purga do arquivo morto (`P`) e do `export` sobre arquivo existente: a mensagem da ação e `y` para confirmar, `n` ou `Esc` para cancelar. Nenhuma delas escreve sem o `y` explícito.
+
+```text
+╭─ Confirmação ────────────────────────────────────────────────────────────────────╮
+│ Remover Derivadas parciais? (y/n)                                                │
+│                                                                                  │
+│ y confirma · n/Esc cancela                                                       │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+```
+
+```text
+╭─ Confirmação ────────────────────────────────────────────────────────────────────╮
+│ Remover do arquivo morto? (y/n)                                                  │
+│                                                                                  │
+│ y confirma · n/Esc cancela                                                       │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
 ```
 
