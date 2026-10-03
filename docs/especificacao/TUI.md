@@ -1,6 +1,6 @@
 # TUI — App de Estudo Espaçado
 
-Versão: 3 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
+Versão: 4 | Data: 2026-10-03 | Base: `docs/especificacao/CLI.md` e `docs/especificacao/REQUISITOS.md`
 
 ## Convenções
 
@@ -62,7 +62,7 @@ Versão: 3 | Data: 2026-10-02 | Base: `docs/especificacao/CLI.md` e `docs/especi
 
 ### Ajuda
 
-- Lista de teclas da v1 e o lembrete de que os comandos de linha fazem o resto.
+- Lista as teclas de leitura e de escrita — navegação, check-in, reavaliação, detalhe, `a`/`e`, `x`/`X`, `D`, `c`, `C`, `E`/`I`, `l`, `R`/`P`, `y`/`n` e saída — e lembra que os comandos de linha continuam sendo a porta de script e de leitor de tela.
 - Fecha com `Esc`, `?` ou `q`.
 
 ## Escrita

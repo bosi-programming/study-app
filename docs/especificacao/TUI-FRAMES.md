@@ -142,24 +142,30 @@ Fila de hoje — 2026-09-28
 
 ## Ajuda
 
-? abre a lista de teclas da v1 e lembra que os comandos de linha fazem o resto.
+? abre a lista de teclas de leitura e de escrita e lembra que os comandos de linha continuam sendo a porta de script e de leitor de tela.
 
 ```text
 ╭─ Ajuda ──────────────────────────────────────────────────────────────────────────╮
 │                                                                                  │
 │ ↑ ↓  k j      mover o foco na fila                                               │
-│ PgUp PgDn     rolar uma página                                                   │
-│ g  G          primeiro e último item                                             │
+│ PgUp PgDn g G rolar e ir às pontas                                               │
 │ Enter         check-in do item em foco                                           │
 │ 1–5           reavaliar a dificuldade                                            │
 │ i             abrir o detalhe                                                    │
-│ s             abrir o painel de stats                                            │
-│ Esc           fechar painel ou cancelar                                          │
-│ ?             esta ajuda                                                         │
-│ q             sair                                                               │
-│ Ctrl-C        sair com 130                                                       │
-│                                                                                  │
-│ Os comandos de linha fazem o resto: add, edit, archive, cold, stats.             │
+│ a  e          item novo e edição do foco                                         │
+│ x  X          arquivar e desarquivar                                             │
+│ D             remover o item em foco                                             │
+│ c             arquivo morto                                                      │
+│ C             config                                                             │
+│ E  I          exportar e importar                                                │
+│ l             lista de todas as fichas                                           │
+│ R  P          restaurar e purgar no arquivo morto                                │
+│ y  n          confirmar e cancelar                                               │
+│ Esc  ?        fechar painel ou esta ajuda                                        │
+│ q  Ctrl-C     sair (Ctrl-C sai 130)                                              │
+│ Os comandos de linha continuam sendo a porta de script                           │
+│ e de leitor de tela: a TUI nunca é a única forma de                              │
+│ fazer algo.                                                                      │
 │ Esc · ? · q para fechar                                                          │
 │                                                                                  │
 ╰──────────────────────────────────────────────────────────────────────────────────╯

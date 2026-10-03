@@ -95,7 +95,7 @@ O mapeamento da tecla para a tela e o estado que o loop monta, na mesma ordem de
 - **Fila vazia.** Cabeçalho, filete, `Fila zerada — streak de N dia(s)` e `? ajuda · q sair` centralizados no corpo, filete.
 - **Detalhe.** Caixa com o título do item e `Esc · i · q` à direita, `[matéria]` e prefixo do id, campos (Dificuldade, Vencimento, Intervalo, Check-ins, Nota, Link, Status), `Histórico (n)` com as linhas de check-in ou `nenhum check-in` e a nota de rolagem. O histórico que passa da altura é cortado.
 - **Reavaliação.** Corpo da fila mais o rodapé de quatro linhas: a confirmação `✓ Check-in registrado: <título>` (só com `confirmation`), a dificuldade atual, os cinco valores com rótulo e `Esc cancela · Enter mantém · 1–5 recalcula`.
-- **Ajuda.** Caixa com as onze teclas da v1, o lembrete dos comandos de linha e `Esc · ? · q para fechar`.
+- **Ajuda.** Caixa com as teclas de leitura e de escrita e o lembrete de que os comandos de linha continuam sendo a porta de script e de leitor de tela.
 - **Formulário.** Caixa `Novo item` ou `Editar item` com os cinco campos na ordem Título, Matéria, Dificuldade, Nota e Link, o rótulo em 14 células e o valor entre `[` `]`; o foco leva `>` e destaque, e o rodapé é `Enter avança; no último campo grava · Esc cancela`.
 - **Arquivo morto.** Caixa `Arquivo morto` com o título truncado em 30 colunas, `migrado em <data>` (ou `—`) e o `>` no foco; sem itens, `Nenhum item no arquivo morto.`; a dica é `R restaura · P purga · Esc/c volta`.
 - **Config.** Caixa `Config` com o rótulo da chave e o valor no campo; `Enter edita · Esc volta` na leitura e `Enter grava · Esc cancela` na edição.

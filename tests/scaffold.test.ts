@@ -1635,12 +1635,12 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
     expect(sectionBetween(source, '### Stats', '\n### ')).toContain('somente-leitura')
   })
 
-  it('tui-em-aberto-vazio: os quatro bullets saíram e a spec sobe para v3', () => {
+  it('tui-em-aberto-vazio: os quatro bullets saíram e a spec sobe para v4', () => {
     const source = textAt('docs/especificacao/TUI.md')
     const open = sectionBetween(source, '## Em aberto', '\n## Notas de implementação')
     const bullets = open.split('\n').filter((line) => line.startsWith('- '))
 
-    expect(source).toMatch(/^Versão: 3 \|/m)
+    expect(source).toMatch(/^Versão: 4 \|/m)
     expect(bullets).toEqual([])
   })
 
@@ -1662,12 +1662,14 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
     expect(source).toContain('último dia')
   })
 
-  it('frames-ajuda-tecla-s: a caixa Ajuda lista a tecla s entre as onze da v1', () => {
+  it('frames-ajuda-escrita: a caixa Ajuda lista as teclas de leitura e de escrita', () => {
     const source = sectionBetween(textAt('docs/especificacao/TUI-FRAMES.md'), '## Ajuda', '\n## ')
 
-    expect(source).toMatch(/^│ s /m)
-    expect(source).toContain('abrir o painel de stats')
-    expect(textAt('docs/especificacao/TUI-RENDER.md')).toContain('onze teclas da v1')
+    expect(source).toMatch(/^│ l /m)
+    expect(source).toContain('lista de todas as fichas')
+    expect(source).toContain('Os comandos de linha continuam sendo a porta de script')
+    expect(textAt('docs/especificacao/TUI-RENDER.md')).not.toContain('onze teclas da v1')
+    expect(textAt('docs/especificacao/TUI-RENDER.md')).toContain('porta de script e de leitor de tela')
   })
 
   it('cli-study-sem-comando: o CLI.md fixa a abertura condicionada aos dois TTY', () => {
@@ -1696,7 +1698,7 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
 
   it('docs-linhas-versao: o índice sobe os documentos mexidos e mantém o resto', () => {
     expect(versionRow('docs/especificacao/CLI.md')).toContain('Rascunho v7')
-    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v3')
+    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v4')
     expect(versionRow('docs/especificacao/TUI-FRAMES.md')).toContain('Rascunho v3')
     expect(versionRow('docs/especificacao/TUI-RENDER.md')).toContain('Rascunho v3')
     expect(versionRow('docs/engenharia/PLANO-DE-TESTES.md')).toContain('Rascunho v9')
@@ -1769,11 +1771,11 @@ describe('S-64 bos-69-escrita-da-tui', () => {
     return row
   }
 
-  it('tui-v3: a spec sobe para v3 e mantém o Em aberto vazio', () => {
+  it('tui-v4: a spec sobe para v4 e mantém o Em aberto vazio', () => {
     const source = textAt('docs/especificacao/TUI.md')
     const open = sectionBetween(source, '## Em aberto', '\n## Notas de implementação')
 
-    expect(source).toMatch(/^Versão: 3 \|/m)
+    expect(source).toMatch(/^Versão: 4 \|/m)
     expect(open.split('\n').filter((line) => line.startsWith('- '))).toEqual([])
   })
 
@@ -1859,8 +1861,8 @@ describe('S-64 bos-69-escrita-da-tui', () => {
     )
   })
 
-  it('docs-index-tui-v3: a linha da TUI sobe para Rascunho v3', () => {
-    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v3')
+  it('docs-index-tui-v4: a linha da TUI sobe para Rascunho v4', () => {
+    expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v4')
   })
 
   it('plano-v9-s64: o plano sobe para v9 com a faixa S-01..S-64 e o bullet do S-64', () => {

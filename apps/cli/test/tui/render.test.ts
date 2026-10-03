@@ -163,25 +163,33 @@ describe('AC2 — os frames', () => {
     expect(frame).toContain('Esc cancela · Enter mantém · 1–5 recalcula')
   })
 
-  it('frame-ajuda: a ajuda desenha a caixa com os comandos de linha (U-08)', () => {
+  it('frame-ajuda: a ajuda desenha a caixa com as teclas e o lembrete (U-08)', () => {
     const frame = render(state({ screen: 'help' }))
 
     expect(frame).toContain('Ajuda')
-    expect(frame).toContain('Os comandos de linha fazem o resto: add, edit, archive, cold, stats.')
+    expect(frame).toContain('Os comandos de linha continuam sendo a porta de script')
+    expect(frame).toContain('e de leitor de tela: a TUI nunca é a única forma de')
+    expect(frame).toContain('fazer algo.')
     expect(frame).toContain('Esc · ? · q para fechar')
   })
 
   it.each([
     ['↑ ↓  k j', 'mover o foco na fila'],
-    ['PgUp PgDn', 'rolar uma página'],
-    ['g  G', 'primeiro e último item'],
+    ['PgUp PgDn g G', 'rolar e ir às pontas'],
     ['Enter', 'check-in do item em foco'],
     ['1–5', 'reavaliar a dificuldade'],
     ['i', 'abrir o detalhe'],
-    ['Esc', 'fechar painel ou cancelar'],
-    ['?', 'esta ajuda'],
-    ['q', 'sair'],
-    ['Ctrl-C', 'sair com 130'],
+    ['a  e', 'item novo e edição do foco'],
+    ['x  X', 'arquivar e desarquivar'],
+    ['D', 'remover o item em foco'],
+    ['c', 'arquivo morto'],
+    ['C', 'config'],
+    ['E  I', 'exportar e importar'],
+    ['l', 'lista de todas as fichas'],
+    ['R  P', 'restaurar e purgar no arquivo morto'],
+    ['y  n', 'confirmar e cancelar'],
+    ['Esc  ?', 'fechar painel ou esta ajuda'],
+    ['q  Ctrl-C', 'sair (Ctrl-C sai 130)'],
   ])('frame-ajuda: a linha de %s está na ajuda', (label, description) => {
     expect(render(state({ screen: 'help' }))).toContain(`│ ${label.padEnd(14)}${description}`)
   })
