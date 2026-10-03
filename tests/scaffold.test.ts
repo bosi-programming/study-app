@@ -1647,7 +1647,7 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
   it('render-screen-stats: RenderScreen inclui stats e a precedência tem a linha do painel', () => {
     const source = textAt('docs/especificacao/TUI-RENDER.md')
 
-    expect(source).toMatch(/^Versão: 2 \|/m)
+    expect(source).toMatch(/^Versão: 3 \|/m)
     expect(source).toContain("'stats'")
     expect(source).toMatch(/^\| `screen: 'stats'` \|/m)
   })
@@ -1655,7 +1655,7 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
   it('frames-stats-decidido: o frame Stats perde a proposta e a barra de 10 blocos', () => {
     const source = textAt('docs/especificacao/TUI-FRAMES.md')
 
-    expect(source).toMatch(/^Versão: 2 \|/m)
+    expect(source).toMatch(/^Versão: 3 \|/m)
     expect(source.toLowerCase()).not.toContain('proposta')
     expect(source).not.toContain('█')
     expect(source).not.toContain('últimos 10 dias')
@@ -1697,8 +1697,8 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
   it('docs-linhas-versao: o índice sobe os documentos mexidos e mantém o resto', () => {
     expect(versionRow('docs/especificacao/CLI.md')).toContain('Rascunho v7')
     expect(versionRow('docs/especificacao/TUI.md')).toContain('Rascunho v3')
-    expect(versionRow('docs/especificacao/TUI-FRAMES.md')).toContain('Rascunho v2')
-    expect(versionRow('docs/especificacao/TUI-RENDER.md')).toContain('Rascunho v2')
+    expect(versionRow('docs/especificacao/TUI-FRAMES.md')).toContain('Rascunho v3')
+    expect(versionRow('docs/especificacao/TUI-RENDER.md')).toContain('Rascunho v3')
     expect(versionRow('docs/engenharia/PLANO-DE-TESTES.md')).toContain('Rascunho v9')
     expect(versionRow('docs/engenharia/ROADMAP.md')).toContain('Rascunho v4')
   })
