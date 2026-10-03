@@ -4,3 +4,5 @@ export type TextField = {
 }
 
 export type FormField = 'title' | 'subject' | 'difficulty' | 'note' | 'link'
+
+export const FORM_FIELD_ORDER: readonly FormField[] = ['title', 'subject', 'difficulty', 'note', 'link']

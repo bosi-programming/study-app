@@ -1,10 +1,10 @@
+import { FORM_FIELD_ORDER } from '../fieldTypes.ts'
 import { boxOptions } from './boxOptions.ts'
 import { fieldInputLine } from './fieldInputLine.ts'
 import { plainText } from './plainText.ts'
 import { renderBox } from './renderBox.ts'
 import type { FormField, RenderState } from './types.ts'
 
-const FIELD_ORDER: readonly FormField[] = ['title', 'subject', 'difficulty', 'note', 'link']
 const FIELD_LABELS: Readonly<Record<FormField, string>> = {
   title: 'Título',
   subject: 'Matéria',
@@ -20,7 +20,7 @@ export function renderForm(state: RenderState): string[] {
   const form = state.form
   if (form === null) return renderBox('Formulário', [], options)
 
-  const body = FIELD_ORDER.map((field) =>
+  const body = FORM_FIELD_ORDER.map((field) =>
     fieldInputLine(FIELD_LABELS[field], form.fields[field], state.viewport.columns - 2, form.focus === field, state.color),
   )
   return renderBox(FORM_TITLES[form.mode], [...body, plainText(''), plainText(` ${FORM_HINT}`)], options)

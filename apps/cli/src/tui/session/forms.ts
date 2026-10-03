@@ -1,10 +1,8 @@
 import { type Item } from '@study/core'
 import { type ItemPatch } from '../../model/editItem.ts'
 import { startField } from '../field.ts'
-import { type FormField, type TextField } from '../fieldTypes.ts'
+import { FORM_FIELD_ORDER, type FormField, type TextField } from '../fieldTypes.ts'
 import { type FormState } from './types.ts'
-
-export const FORM_FIELDS: readonly FormField[] = ['title', 'subject', 'difficulty', 'note', 'link']
 
 export function fieldValues(form: FormState): Readonly<Record<FormField, string>> {
   return {
@@ -60,9 +58,9 @@ export function withField(form: FormState, field: FormField, update: (value: Tex
 }
 
 export function moveFormFocus(form: FormState, step: 1 | -1): FormState {
-  const index = FORM_FIELDS.indexOf(form.focus)
-  const next = Math.max(0, Math.min(FORM_FIELDS.length - 1, index + step))
-  return { ...form, focus: FORM_FIELDS[next] ?? form.focus }
+  const index = FORM_FIELD_ORDER.indexOf(form.focus)
+  const next = Math.max(0, Math.min(FORM_FIELD_ORDER.length - 1, index + step))
+  return { ...form, focus: FORM_FIELD_ORDER[next] ?? form.focus }
 }
 
 export function patchOfForm(form: FormState): ItemPatch {
