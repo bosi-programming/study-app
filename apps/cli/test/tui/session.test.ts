@@ -1236,4 +1236,71 @@ describe('AC12 — os comandos de escrita na sessão', () => {
       }
     })
   })
+
+  it('sessao-cold-restaura: R restaura o item do arquivo morto (U-19)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      const stamp = '2026-09-01T00:00:00Z'
+      seed(dbPath, {
+        items: [makeItem({ id: 'cold-1', title: 'Antigo', status: 'cold', cold_archived_at: stamp })],
+      })
+      withStore(dbPath, (store) =>
+        store.saveColdArchive({ id: 'cold-1', payload: '{}', cold_archived_at: stamp }),
+      )
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        const opened = session.applyAction({ kind: 'open-cold' })
+        expect(opened.screen).toBe('cold')
+        expect(opened.cold?.focusId).toBe('cold-1')
+
+        const restored = session.applyAction({ kind: 'cold-restore' })
+        expect(restored.banner?.message).toContain('Item restaurado: Antigo')
+        withStore(dbPath, (store) => {
+          expect(store.getItem('cold-1')?.status).toBe('active')
+          expect(store.listColdArchive()).toEqual([])
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('sessao-cold-purge-confirma: P pede confirmacao e so o y purga (U-20)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      const stamp = '2026-09-01T00:00:00Z'
+      seed(dbPath, {
+        items: [makeItem({ id: 'cold-1', title: 'Antigo', status: 'cold', cold_archived_at: stamp })],
+      })
+      withStore(dbPath, (store) =>
+        store.saveColdArchive({ id: 'cold-1', payload: '{}', cold_archived_at: stamp }),
+      )
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'open-cold' })
+        const asked = session.applyAction({ kind: 'cold-purge' })
+        expect(asked.screen).toBe('confirm')
+        expect(asked.confirmation?.message).toContain('Remover do arquivo morto?')
+        withStore(dbPath, (store) => expect(store.getItem('cold-1')).not.toBeNull())
+
+        expect(session.applyAction({ kind: 'confirm-no' }).screen).toBe('cold')
+        withStore(dbPath, (store) => expect(store.getItem('cold-1')).not.toBeNull())
+
+        session.applyAction({ kind: 'cold-purge' })
+        const purged = session.applyAction({ kind: 'confirm-yes' })
+        expect(purged.screen).toBe('cold')
+        expect(purged.banner?.message).toContain('Removido do arquivo morto: Antigo')
+        withStore(dbPath, (store) => {
+          expect(store.getItem('cold-1')).toBeNull()
+          expect(store.listColdArchive()).toEqual([])
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
 })
