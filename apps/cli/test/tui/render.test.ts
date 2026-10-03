@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { type Item } from '@study/core'
 import { describe, expect, it } from 'vitest'
-import { type RenderState, render } from '../../src/tui/render/index.ts'
+import { type RenderState, render, startField } from '../../src/tui/render/index.ts'
 import { makeItem, makeLog } from '../persistence/helpers.ts'
 
 const ESC = '\u001b['
@@ -73,6 +73,11 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     detail: null,
     reevaluation: null,
     confirmation: null,
+    form: null,
+    cold: null,
+    config: null,
+    path: null,
+    confirm: null,
     streak: { streak_current: 4, streak_last_day: TODAY },
     banner: null,
     fatal: null,
@@ -494,5 +499,64 @@ describe('AC11 — casos de borda', () => {
 
     expect(frame).toContain('? ajuda · q sair')
     expect(frame).not.toContain('Enter revisar')
+  })
+})
+
+describe('AC12 — as telas de escrita', () => {
+  it('frame-formulario-add: o formulario traz titulo, materia, dificuldade, nota e link (U-16)', () => {
+    const frame = render(
+      state({
+        screen: 'form',
+        form: {
+          mode: 'add',
+          fields: {
+            title: startField('Derivadas parciais'),
+            subject: startField('Cálculo'),
+            difficulty: startField('4'),
+            note: startField(''),
+            link: startField(''),
+          },
+          focus: 'title',
+        },
+      }),
+    )
+
+    expect(frame).toContain('Novo item')
+    expect(frame).toContain('Título')
+    expect(frame).toContain('Matéria')
+    expect(frame).toContain('Dificuldade')
+    expect(frame).toContain('Nota')
+    expect(frame).toContain('Link')
+    expect(frame).toContain('Derivadas parciais')
+    expect(frame).toContain('Cálculo')
+  })
+
+  it('frame-arquivo-morto: a tela lista com a data de migracao e o foco (U-21)', () => {
+    const frame = render(
+      state({
+        screen: 'cold',
+        cold: {
+          items: [
+            {
+              item: makeItem({ id: 'c1', title: 'Antigo', status: 'cold', cold_archived_at: '2026-09-01T12:00:00Z' }),
+              archivedOn: '2026-09-01',
+              focused: true,
+            },
+            {
+              item: makeItem({ id: 'c2', title: 'Velho', status: 'cold', cold_archived_at: '2026-09-10T12:00:00Z' }),
+              archivedOn: '2026-09-10',
+              focused: false,
+            },
+          ],
+        },
+      }),
+    )
+
+    expect(frame).toContain('Arquivo morto')
+    expect(frame).toContain('Antigo')
+    expect(frame).toContain('migrado em 2026-09-01')
+    expect(frame).toContain('Velho')
+    expect(frame).toContain('> Antigo')
+    expect(frame).toContain('R restaura · P purga')
   })
 })

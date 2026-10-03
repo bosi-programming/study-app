@@ -433,6 +433,11 @@ describe('AC5 — RenderState e frame', () => {
           focusId: null,
           detailItemId: null,
           reevaluation: null,
+          form: null,
+          cold: null,
+          config: null,
+          path: null,
+          confirmation: null,
           streak: { streak_current: 3, streak_last_day: TODAY },
           banner: { kind: 'info', message: 'aviso de migração' },
           fatal: null,
@@ -571,7 +576,7 @@ describe('AC6 — o redesenho', () => {
   it('laco-tecla-inerte: tecla inerte ou foco no limite não escreve frame novo', async () => {
     await withTempDb(async (dbPath) => {
       seed(dbPath, { items: [makeItem({ id: 'A', due_date: TODAY })] })
-      const { writes } = await runScript(dbPath, fakeDeps(TODAY).deps, [key('x'), key('\n'), key('k'), key('q')])
+      const { writes } = await runScript(dbPath, fakeDeps(TODAY).deps, [key('z'), key('\n'), key('k'), key('q')])
 
       expect(writes).toHaveLength(1)
     })
@@ -664,6 +669,43 @@ describe('AC7 — desfecho e fatal', () => {
       .map((name) => readFileSync(join(LOOP_DIR, name), 'utf8'))
       .join('\n')
     expect(sources).not.toMatch(/process\.|node:|setRawMode|SIGWINCH/)
+  })
+
+  it('laco-falha-de-escrita-vira-aviso: a escrita que falha não derruba a sessão (U-25)', async () => {
+    await withTempDb(async (dbPath) => {
+      seed(dbPath, { items: [makeItem({ id: 'A', due_date: TODAY })] })
+      let armed = false
+      const { outcome, writes, errors } = await runScript(
+        dbPath,
+        fakeDeps(TODAY).deps,
+        [
+          () => {
+            armed = true
+            return key('x')
+          },
+          key('q'),
+        ],
+        {
+          wrap: (opened) => ({
+            ...opened,
+            store: {
+              ...opened.store,
+              transaction: <T>(run: () => T): T => {
+                if (armed) {
+                  armed = false
+                  throw new Error('disco cheio')
+                }
+                return opened.store.transaction(run)
+              },
+            },
+          }),
+        },
+      )
+
+      expect(outcome).toBe('quit')
+      expect(writes.some((frame) => frame.includes('disco cheio'))).toBe(true)
+      expect(errors).toHaveLength(0)
+    })
   })
 })
 

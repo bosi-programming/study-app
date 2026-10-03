@@ -35,10 +35,16 @@ export function apply(
     )
 
     const reconciled = reconcileReevaluation(settled, target.store)
+    const banner =
+      dispatched.banner === reread.banner
+        ? migrationLine === null
+          ? null
+          : { kind: 'info' as const, message: migrationLine }
+        : dispatched.banner
     return {
       ...reconciled,
       streak,
-      banner: migrationLine === null ? null : { kind: 'info', message: migrationLine },
+      banner,
     }
   } catch (error) {
     return failureState(state, tracker, error)

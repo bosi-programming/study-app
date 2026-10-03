@@ -1,14 +1,17 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { type Deps, addDays } from '@study/core'
 import { describe, expect, it } from 'vitest'
 import {
+  type ContextHookTarget,
   type OpenContextOptions,
   type OpenedContext,
   openContext,
 } from '../../src/context.ts'
-import { type Store } from '../../src/persistence/index.ts'
-import { type SessionOptions, openSession } from '../../src/tui/session/index.ts'
+import { type Store, openStore } from '../../src/persistence/index.ts'
+import { type Session, type SessionOptions, openSession } from '../../src/tui/session/index.ts'
+import { dispatch } from '../../src/tui/session/dispatch.ts'
+import { type SessionState } from '../../src/tui/session/types.ts'
 import { makeItem } from '../persistence/helpers.ts'
 import { withDb } from '../persistence/helpers/db.ts'
 import { seed, withStore } from '../commands/helpers.ts'
@@ -991,6 +994,243 @@ describe('AC10 — a reavaliação após o check-in', () => {
         withStore(dbPath, (store) => {
           expect(store.getItem('A')).toBeNull()
         })
+      } finally {
+        session.close()
+      }
+    })
+  })
+})
+
+function baseSessionState(today: string, overrides: Partial<SessionState> = {}): SessionState {
+  return {
+    today,
+    screen: 'queue',
+    queue: [],
+    focusId: null,
+    detailItemId: null,
+    reevaluation: null,
+    form: null,
+    cold: null,
+    config: null,
+    path: null,
+    confirmation: null,
+    streak: { streak_current: 0, streak_last_day: null },
+    banner: null,
+    fatal: null,
+    ...overrides,
+  }
+}
+
+function typeText(session: Session, text: string): void {
+  for (const char of [...text]) session.applyAction({ kind: 'field-insert', text: char })
+}
+
+function replaceField(session: Session, text: string): void {
+  session.applyAction({ kind: 'field-home' })
+  for (let index = 0; index < 80; index += 1) session.applyAction({ kind: 'field-delete' })
+  typeText(session, text)
+}
+
+describe('AC12 — os comandos de escrita na sessão', () => {
+  it('sessao-add-grava-e-rele: o formulario grava pelo createItem e a fila e relida (U-17)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'keep', due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        expect(session.applyAction({ kind: 'open-add' }).screen).toBe('form')
+        typeText(session, 'Derivadas')
+        session.applyAction({ kind: 'form-enter' })
+        typeText(session, 'Cálculo')
+        session.applyAction({ kind: 'form-enter' })
+        typeText(session, '4')
+        session.applyAction({ kind: 'form-enter' })
+        session.applyAction({ kind: 'form-enter' })
+        session.applyAction({ kind: 'form-enter' })
+
+        const state = session.state()
+        expect(state.screen).toBe('queue')
+        expect(state.banner?.message).toContain('Item criado: Derivadas')
+        expect(state.queue.map((item) => item.id)).toEqual(['keep'])
+        withStore(dbPath, (store) => {
+          const created = store.listItems().find((item) => item.title === 'Derivadas')
+          expect(created?.subject).toBe('Cálculo')
+          expect(created?.difficulty).toBe(4)
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('sessao-edit-carrega-e-grava-so-o-que-mudou: abre com os valores atuais (U-18)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, {
+        items: [makeItem({ id: 'A', title: 'Antigo', subject: 'Cálculo', difficulty: 4, due_date: today })],
+      })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        const opened = session.applyAction({ kind: 'open-edit' })
+        expect(opened.screen).toBe('form')
+        expect(opened.form?.mode).toBe('edit')
+        expect(opened.form?.fields.title.value).toBe('Antigo')
+        expect(opened.form?.fields.difficulty.value).toBe('4')
+
+        session.applyAction({ kind: 'form-enter' })
+        replaceField(session, 'Álgebra')
+        session.applyAction({ kind: 'form-enter' })
+        session.applyAction({ kind: 'form-enter' })
+        session.applyAction({ kind: 'form-enter' })
+        session.applyAction({ kind: 'form-enter' })
+
+        withStore(dbPath, (store) => {
+          const item = store.getItem('A')
+          expect(item?.subject).toBe('Álgebra')
+          expect(item?.title).toBe('Antigo')
+          expect(item?.difficulty).toBe(4)
+        })
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('sessao-x-x-arquiva-desarquiva: x e X usam as funcoes do CLI (U-19)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', due_date: today })] })
+      const store = openStore(dbPath)
+      try {
+        const target: ContextHookTarget = { store, deps: clock.deps, exportDir: null, dbPath }
+        const archived = dispatch(target, baseSessionState(today, { focusId: 'A' }), { kind: 'archive' })
+        expect(store.getItem('A')?.status).toBe('archived')
+        expect(archived.banner?.message).toContain('arquivado')
+
+        const unarchived = dispatch(target, baseSessionState(today, { focusId: 'A' }), { kind: 'unarchive' })
+        expect(store.getItem('A')?.status).toBe('active')
+        expect(unarchived.banner?.message).toContain('desarquivado')
+      } finally {
+        store.close()
+      }
+    })
+  })
+
+  it('sessao-remove-confirma: D pede confirmacao e so o y remove (U-20)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      seed(dbPath, { items: [makeItem({ id: 'A', due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        const asked = session.applyAction({ kind: 'request-remove' })
+        expect(asked.screen).toBe('confirm')
+        expect(asked.confirmation?.message).toContain('Remover')
+        withStore(dbPath, (store) => expect(store.getItem('A')).not.toBeNull())
+
+        expect(session.applyAction({ kind: 'confirm-no' }).screen).toBe('queue')
+        withStore(dbPath, (store) => expect(store.getItem('A')).not.toBeNull())
+
+        session.applyAction({ kind: 'request-remove' })
+        expect(session.applyAction({ kind: 'confirm-yes' }).screen).toBe('queue')
+        withStore(dbPath, (store) => expect(store.getItem('A')).toBeNull())
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('sessao-config-le-e-grava: get desenha e set grava pelo parseColdArchiveWindow (U-22)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        const opened = session.applyAction({ kind: 'open-config' })
+        expect(opened.screen).toBe('config')
+        expect(opened.config?.field.value).toBe('180')
+
+        session.applyAction({ kind: 'form-enter' })
+        replaceField(session, '90')
+        const saved = session.applyAction({ kind: 'form-enter' })
+        expect(saved.config?.editing).toBe(false)
+        expect(saved.banner?.message).toContain('cold_archive_after_days: 90')
+        withStore(dbPath, (store) => expect(store.getMeta('cold_archive_after_days')).toBe('90'))
+
+        session.applyAction({ kind: 'form-enter' })
+        replaceField(session, 'abc')
+        const invalid = session.applyAction({ kind: 'form-enter' })
+        expect(invalid.banner?.kind).toBe('warning')
+        expect(invalid.config?.editing).toBe(true)
+        withStore(dbPath, (store) => expect(store.getMeta('cold_archive_after_days')).toBe('90'))
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('sessao-export-import: o caminho digitado chama dumpJsonV1 e applyDump (U-23)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      const exportPath = join(dirname(dbPath), 'dump.json')
+      seed(dbPath, { items: [makeItem({ id: 'A', due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'open-export' })
+        typeText(session, exportPath)
+        const exported = session.applyAction({ kind: 'form-enter' })
+        expect(exported.screen).toBe('queue')
+        expect(exported.banner?.message).toContain('Exportado')
+        expect(existsSync(exportPath)).toBe(true)
+
+        withStore(dbPath, (store) => store.deleteItem('A'))
+
+        session.applyAction({ kind: 'open-import' })
+        typeText(session, exportPath)
+        const imported = session.applyAction({ kind: 'form-enter' })
+        expect(imported.screen).toBe('queue')
+        expect(imported.banner?.message).toContain('Importado')
+        withStore(dbPath, (store) => expect(store.getItem('A')).not.toBeNull())
+      } finally {
+        session.close()
+      }
+    })
+  })
+
+  it('sessao-export-existente-confirma: so o y sobrescreve o arquivo existente (U-24)', () => {
+    withDb((dbPath) => {
+      const today = '2026-09-20'
+      const clock = fakeDeps(today)
+      const exportPath = join(dirname(dbPath), 'dump.json')
+      writeFileSync(exportPath, 'keep')
+      seed(dbPath, { items: [makeItem({ id: 'A', due_date: today })] })
+
+      const session = openSession(sessionOptions(dbPath, clock.deps))
+      try {
+        session.applyAction({ kind: 'open-export' })
+        typeText(session, exportPath)
+        const asked = session.applyAction({ kind: 'form-enter' })
+        expect(asked.screen).toBe('confirm')
+        expect(asked.confirmation?.message).toContain('Sobrescrever')
+        expect(readFileSync(exportPath, 'utf8')).toBe('keep')
+
+        expect(session.applyAction({ kind: 'confirm-no' }).screen).toBe('queue')
+        expect(readFileSync(exportPath, 'utf8')).toBe('keep')
+
+        session.applyAction({ kind: 'open-export' })
+        typeText(session, exportPath)
+        session.applyAction({ kind: 'form-enter' })
+        expect(session.applyAction({ kind: 'confirm-yes' }).screen).toBe('queue')
+        expect(readFileSync(exportPath, 'utf8')).not.toBe('keep')
       } finally {
         session.close()
       }

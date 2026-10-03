@@ -1,5 +1,11 @@
 export { openSession } from './openSession.ts'
 export type {
+  ColdState,
+  ConfirmationAction,
+  ConfirmationState,
+  ConfigState,
+  FormState,
+  PathState,
   ReevaluationState,
   Session,
   SessionAction,

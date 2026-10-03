@@ -4,7 +4,6 @@ import { CliError } from '../errors.ts'
 import { type ItemPatch, updatedItem } from '../model/editItem.ts'
 import { toItemJson } from '../model/json.ts'
 import { type Command, type CommandArgs } from './types.ts'
-import { type CommandContext } from '../context.ts'
 
 const EDITABLE_FLAGS = ['title', 'subject', 'note', 'link', 'difficulty']
 
@@ -25,12 +24,16 @@ export const editCommand: Command = (args, ctx) => {
 }
 
 function patchOf(args: CommandArgs): ItemPatch {
+  const title = valueOf(args, 'title')
+  const subject = valueOf(args, 'subject')
+  const note = valueOf(args, 'note')
+  const link = valueOf(args, 'link')
   const difficulty = valueOf(args, 'difficulty')
   return {
-    title: valueOf(args, 'title'),
-    subject: valueOf(args, 'subject'),
-    note: valueOf(args, 'note'),
-    link: valueOf(args, 'link'),
+    ...(title === undefined ? {} : { title }),
+    ...(subject === undefined ? {} : { subject }),
+    ...(note === undefined ? {} : { note }),
+    ...(link === undefined ? {} : { link }),
     ...(difficulty === undefined ? {} : { difficulty: Number(difficulty) }),
   }
 }
