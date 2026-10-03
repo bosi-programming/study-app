@@ -1725,11 +1725,11 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
     expect(textAt('tests/scaffold.test.ts')).not.toContain(previousTitle)
   })
 
-  it('u-suite-intacta: a subseção da TUI segue U-01..U-13', () => {
+  it('u-suite-intacta: a subseção da TUI segue U-01..U-25', () => {
     const plan = textAt('docs/engenharia/PLANO-DE-TESTES.md')
     const ids = [...plan.matchAll(/^\| (U-\d{2}) \|/gm)].map((match) => match[1])
 
-    expect(plan).toContain('### Suíte da TUI (U-01..U-13)')
+    expect(plan).toContain('### Suíte da TUI (U-01..U-25)')
     expect(ids).toEqual([
       'U-01',
       'U-02',
@@ -1744,6 +1744,18 @@ describe('S-63 bos-57-decisoes-da-tui', () => {
       'U-11',
       'U-12',
       'U-13',
+      'U-14',
+      'U-15',
+      'U-16',
+      'U-17',
+      'U-18',
+      'U-19',
+      'U-20',
+      'U-21',
+      'U-22',
+      'U-23',
+      'U-24',
+      'U-25',
     ])
   })
 })
