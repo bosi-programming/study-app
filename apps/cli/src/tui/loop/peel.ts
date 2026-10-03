@@ -24,5 +24,6 @@ export function peel(buffer: string, screen: KeyScreen): Peeled {
 function sameCommand(a: KeyCommand, b: KeyCommand): boolean {
   if (a.kind !== b.kind) return false
   if (a.kind === 'reevaluate' && b.kind === 'reevaluate') return a.difficulty === b.difficulty
+  if (a.kind === 'field-insert' && b.kind === 'field-insert') return a.text === b.text
   return true
 }

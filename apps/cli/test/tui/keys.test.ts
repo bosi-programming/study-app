@@ -338,3 +338,56 @@ describe('AC8 — saída', () => {
     expect(commandsOf(CTRL_C, screen)).toEqual([{ kind: 'interrupt' }])
   })
 })
+
+describe('AC11 — campo de texto em raw mode (U-15)', () => {
+  it('campo-parser-imprimivel: no modo de edicao o imprimivel vira field-insert', () => {
+    expect(parseKeys('a', 'form')).toEqual({ commands: [{ kind: 'field-insert', text: 'a' }], pending: '' })
+    expect(parseKeys('7', 'form')).toEqual({ commands: [{ kind: 'field-insert', text: '7' }], pending: '' })
+    expect(parseKeys(' ', 'form')).toEqual({ commands: [{ kind: 'field-insert', text: ' ' }], pending: '' })
+    expect(parseKeys('q', 'form')).toEqual({ commands: [{ kind: 'field-insert', text: 'q' }], pending: '' })
+  })
+
+  it('campo-parser-apaga: Backspace e Delete viram comandos proprios', () => {
+    expect(parseKeys('\u007f', 'form')).toEqual({ commands: [{ kind: 'field-backspace' }], pending: '' })
+    expect(parseKeys('\u0008', 'form')).toEqual({ commands: [{ kind: 'field-backspace' }], pending: '' })
+    expect(parseKeys(`${CSI}3~`, 'form')).toEqual({ commands: [{ kind: 'field-delete' }], pending: '' })
+  })
+
+  it('campo-parser-enter-esc: Enter confirma e Esc cancela', () => {
+    expect(parseKeys('\r', 'form')).toEqual({ commands: [{ kind: 'form-enter' }], pending: '' })
+    expect(parseKeys(ESC, 'form')).toEqual({ commands: [{ kind: 'form-cancel' }], pending: '' })
+  })
+
+  it('campo-parser-move: setas, Home e End movem o cursor e as verticais trocam o campo', () => {
+    expect(parseKeys(`${CSI}D`, 'form')).toEqual({ commands: [{ kind: 'field-left' }], pending: '' })
+    expect(parseKeys(`${CSI}C`, 'form')).toEqual({ commands: [{ kind: 'field-right' }], pending: '' })
+    expect(parseKeys(`${CSI}H`, 'form')).toEqual({ commands: [{ kind: 'field-home' }], pending: '' })
+    expect(parseKeys(`${CSI}F`, 'form')).toEqual({ commands: [{ kind: 'field-end' }], pending: '' })
+    expect(parseKeys(`${CSI}A`, 'form')).toEqual({ commands: [{ kind: 'form-previous-field' }], pending: '' })
+    expect(parseKeys(`${CSI}B`, 'form')).toEqual({ commands: [{ kind: 'form-next-field' }], pending: '' })
+  })
+
+  it('campo-parser-pending: o escape partido continua pendente no modo de edicao', () => {
+    expect(parseKeys(CSI, 'form')).toEqual({ commands: [], pending: CSI })
+  })
+
+  it('campo-parser-teclas-novas: a fila abre add, edit, arquivo, config e export/import', () => {
+    expect(commandsOf('a', 'queue')).toEqual([{ kind: 'open-add' }])
+    expect(commandsOf('e', 'detail')).toEqual([{ kind: 'open-edit' }])
+    expect(commandsOf('x', 'queue')).toEqual([{ kind: 'archive' }])
+    expect(commandsOf('X', 'detail')).toEqual([{ kind: 'unarchive' }])
+    expect(commandsOf('D', 'queue')).toEqual([{ kind: 'request-remove' }])
+    expect(commandsOf('c', 'queue')).toEqual([{ kind: 'open-cold' }])
+    expect(commandsOf('C', 'queue')).toEqual([{ kind: 'open-config' }])
+    expect(commandsOf('E', 'queue')).toEqual([{ kind: 'open-export' }])
+    expect(commandsOf('I', 'queue')).toEqual([{ kind: 'open-import' }])
+  })
+
+  it('campo-parser-confirmacao: y/n confirmam e cancelam; R/P agem no arquivo morto', () => {
+    expect(commandsOf('y', 'confirm')).toEqual([{ kind: 'confirm-yes' }])
+    expect(commandsOf('n', 'confirm')).toEqual([{ kind: 'confirm-no' }])
+    expect(commandsOf('R', 'cold')).toEqual([{ kind: 'cold-restore' }])
+    expect(commandsOf('P', 'cold')).toEqual([{ kind: 'cold-purge' }])
+    expect(commandsOf(ESC, 'cold')).toEqual([{ kind: 'close-cold' }])
+  })
+})
