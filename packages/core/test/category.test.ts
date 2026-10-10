@@ -45,6 +45,12 @@ describe('distinctCategories spelling (AC2)', () => {
     ]);
   });
 
+  it('emits the trimmed spelling', () => {
+    expect(distinctCategories(cards('  Inglês  ', 'Inglês'))).toEqual([
+      'Inglês',
+    ]);
+  });
+
   it('does not change card.category', () => {
     const input = cards('Inglês', 'inglês');
     const before = input.map((entry) => entry.category);
@@ -62,21 +68,26 @@ describe('distinctCategories (AC3)', () => {
   });
 
   it('returns the single category for one card', () => {
-    expect(distinctCategories(cards('Inglês'))).toHaveLength(1);
+    expect(distinctCategories(cards('Inglês'))).toEqual(['Inglês']);
   });
 
   it('collapses case duplicates', () => {
-    expect(distinctCategories(cards('Inglês', 'inglês', 'INGLÊS'))).toHaveLength(
-      1,
-    );
+    expect(distinctCategories(cards('Inglês', 'inglês', 'INGLÊS'))).toEqual([
+      'Inglês',
+    ]);
   });
 
   it('collapses whitespace duplicates', () => {
-    expect(distinctCategories(cards('  Inglês  ', 'Inglês'))).toHaveLength(1);
+    expect(distinctCategories(cards('  Inglês  ', 'Inglês'))).toEqual([
+      'Inglês',
+    ]);
   });
 
   it('keeps distinct categories separate', () => {
-    expect(distinctCategories(cards('Inglês', 'Matemática'))).toHaveLength(2);
+    expect(distinctCategories(cards('Inglês', 'Matemática'))).toEqual([
+      'Inglês',
+      'Matemática',
+    ]);
   });
 
   it('sorts ascending in pt-BR', () => {

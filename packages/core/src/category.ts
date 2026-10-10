@@ -9,7 +9,7 @@ export function distinctCategories(cards: readonly Card[]): readonly string[] {
   for (const card of cards) {
     const key = categoryKey(card.category);
     if (!firstSeen.has(key)) {
-      firstSeen.set(key, card.category);
+      firstSeen.set(key, card.category.trim());
     }
   }
   return [...firstSeen.values()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
