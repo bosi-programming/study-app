@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { type CalendarDay, addDays } from '../src/data.ts';
+import type { CalendarDay } from '../src/data.ts';
 import { nextReviewDate } from '../src/review.ts';
 
 const day = (value: string): CalendarDay => value as CalendarDay;
@@ -7,28 +7,24 @@ const day = (value: string): CalendarDay => value as CalendarDay;
 const BASE = day('2026-01-01');
 
 describe('interval table & ceiling (AC1)', () => {
-  it('doubles below the ceiling', () => {
-    const intervals: Array<[number, number]> = [
-      [0, 7],
-      [1, 14],
-      [2, 28],
-      [3, 56],
-      [4, 112],
-      [5, 224],
-    ];
-
-    for (const [reviewCount, interval] of intervals) {
-      expect(nextReviewDate(BASE, BASE, reviewCount)).toBe(addDays(BASE, interval));
-    }
+  it.each<[number, string]>([
+    [0, '2026-01-08'],
+    [1, '2026-01-15'],
+    [2, '2026-01-29'],
+    [3, '2026-02-26'],
+    [4, '2026-04-23'],
+    [5, '2026-08-13'],
+  ])('doubles the interval at reviewCount %i', (reviewCount, expected) => {
+    expect(nextReviewDate(BASE, BASE, reviewCount)).toBe(expected);
   });
 
   it('cuts 448 to 365 at count 6', () => {
-    expect(nextReviewDate(BASE, BASE, 6)).toBe(addDays(BASE, 365));
+    expect(nextReviewDate(BASE, BASE, 6)).toBe('2027-01-01');
   });
 
   it('stays at 365 for counts 7 and above', () => {
-    expect(nextReviewDate(BASE, BASE, 7)).toBe(addDays(BASE, 365));
-    expect(nextReviewDate(BASE, BASE, 20)).toBe(addDays(BASE, 365));
+    expect(nextReviewDate(BASE, BASE, 7)).toBe('2027-01-01');
+    expect(nextReviewDate(BASE, BASE, 20)).toBe('2027-01-01');
   });
 });
 
@@ -43,6 +39,10 @@ describe('base selection (AC2)', () => {
 
   it('ignores lastReviewDate when count is 0', () => {
     expect(nextReviewDate(day('2026-01-01'), day('2025-06-01'), 0)).toBe('2026-01-08');
+  });
+
+  it('falls back to createdDate when lastReviewDate is null above count 0', () => {
+    expect(nextReviewDate(day('2026-01-01'), null, 5)).toBe('2026-08-13');
   });
 });
 
