@@ -19,4 +19,7 @@ pnpm-debug.log*
 # temporary metric artifacts
 .tmp
 
+# Obsidian vault (local editor config)
+.obsidian
+
 
