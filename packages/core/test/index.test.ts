@@ -45,17 +45,20 @@ describe('validation barrel (AC5)', () => {
     expect(CARD_LIMITS).toBeTypeOf('object');
 
     const input: NewCard = {
-      name: 'Name',
+      name: '',
       category: 'Category',
       content: 'Content',
     };
     const result: CardValidation = validateCard(input);
-    const field: CardField = 'name';
-    const rule: CardRule = 'required';
-    const error: CardFieldError = { field, rule };
+    const [error] = result.errors;
+    const field: CardField | undefined = error?.field;
+    const rule: CardRule | undefined = error?.rule;
+    const shaped: CardFieldError | undefined = error;
 
-    expect(result.valid).toBe(true);
-    expect(error.rule).toBe('required');
+    expect(result.valid).toBe(false);
+    expect(field).toBe('name');
+    expect(rule).toBe('required');
+    expect(shaped).toEqual({ field: 'name', rule: 'required' });
   });
 
   it('exposes the RB-10 limits', () => {
