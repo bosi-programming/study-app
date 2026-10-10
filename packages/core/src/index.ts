@@ -12,3 +12,5 @@ export type {
 export { validateCard, CARD_LIMITS } from './validation.ts';
 export { categoryKey, distinctCategories } from './category.ts';
 export { sortCards } from './order.ts';
+export type { DateRange } from './filter.ts';
+export { filterByDateRange, filterByCategory } from './filter.ts';
