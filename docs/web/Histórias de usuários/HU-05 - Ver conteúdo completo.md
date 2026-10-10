@@ -32,7 +32,7 @@ Cenário: Conteúdo vazio
 - Nenhuma regra de agendamento envolvida.
 
 ## Requisitos não funcionais
-- `RNF-05`, `RNF-06`, `RNF-07`.
+- `RNF-05`, `RNF-06`, `RNF-08`.
 
 ## Caso de uso relacionado
 - [CDU-04](../Casos%20de%20uso/CDU-04%20-%20Expandir%20conteúdo.md)

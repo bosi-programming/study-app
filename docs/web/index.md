@@ -45,50 +45,15 @@ Aplicação web que ajuda o usuário a decidir a melhor data p/ revisar cada con
 
 ## Requisitos não funcionais
 
-| ID | Requisito |
-| --- | --- |
-| RNF-01 | Persistência 100% local no browser via IndexedDB; nenhum dado sai do dispositivo. |
-| RNF-02 | Funciona offline após o primeiro carregamento. |
-| RNF-03 | Interface em pt-BR. |
-| RNF-04 | Layout responsivo, largura máxima de conteúdo **1024px**, com **40px** de padding lateral. |
-| RNF-05 | Espaçamentos verticais conforme sketch: **40px** entre seções, **8px** entre cartões da lista, **20px** ao final da lista. |
-| RNF-06 | Cada cartão colapsado mostra próxima data, nome & categoria; ações como icon buttons (marcar revisado, editar, excluir, expandir). |
-| RNF-07 | Acessibilidade: elementos interativos com `aria-label` & navegação por teclado. |
-| RNF-08 | Stack: TypeScript + React 19 (ver `apps/web`). |
+14 RNFs (categorizadas por ISO/IEC 25010): [Requisitos não funcionais](./Requisitos%20não%20funcionais/index.md).
+
+Resumo: persistência local (IndexedDB), offline, pt-BR, layout 1024px/40px, espaçamentos 40/8/20, acessibilidade WCAG 2.1 AA, stack TS + React 19 + Tailwind 4, UI via `bosi-design-system`, código compartilhado em `packages/core`, desempenho, compatibilidade, cobertura ≥90%, escrita atômica & privacidade.
 
 ## Regras de negócio
 
-### RB-01 — Cálculo da próxima data de revisão
+11 regras, em [Regras de negócio](./Regras%20de%20negócio/index.md).
 
-- `intervalo` (dias) = `7 × 2^(quantidadeRevisoes)`, limitado ao teto de **365 dias**.
-  - 0 revisões → 7 · 1 → 14 · 2 → 28 · 3 → 56 · 4 → 112 · 5 → 224 · 6 → 365 · 7+ → 365.
-- `dataProximaRevisao = base + intervaloEmDias`, com:
-  - `base = dataCriacao` quando `quantidadeRevisoes = 0` (cartão nunca revisado);
-  - `base = dataUltimaRevisao` caso contrário.
-- Cartão novo nasce com `quantidadeRevisoes = 0` & `dataProximaRevisao = dataCriacao + 7 dias`.
-- Ao marcar como revisado (`CDU-03`): `dataUltimaRevisao = hoje`, `quantidadeRevisoes += 1`, recalcular `dataProximaRevisao = hoje + min(7 × 2^quantidadeRevisoes, 365)`.
-- Datas são dias de calendário (sem hora), comparadas no fuso local do usuário.
-
-### RB-02 — Categorias
-
-- Categorias são texto livre, **criadas pelo usuário** ao criar || editar um cartão.
-- Ao digitar, o sistema sugere categorias já existentes nos cartões.
-- O filtro de categoria (`CDU-08`) lista apenas as categorias presentes em algum cartão.
-- !existe entidade "categoria" separada; a lista é derivada dos cartões.
-
-### RB-03 — Ordenação da lista
-
-- Ordem padrão: `dataProximaRevisao` ascendente.
-- Empate: `nome` ascendente (ordem alfabética, pt-BR).
-
-### RB-04 — Exclusão
-
-- Excluir um cartão exige **confirmação** antes de remover.
-
-### RB-05 — Estados vazios
-
-- Sem cartões cadastrados: mensagem informando que não há cartões.
-- Sem resultados após aplicar filtros: mensagem informando que não há cartões p/ aqueles filtros.
+Resumo: cálculo da próxima data (RB-01), categorias (RB-02), ordenação (RB-03), confirmação de exclusão (RB-04), estados vazios (RB-05), validação de campos (RB-06), definição de "hoje" (RB-07), normalização de categoria (RB-08), intervalo do filtro de data (RB-09), limites de tamanho (RB-10) & cartão vencido (RB-11).
 
 ## Modelo de dados
 

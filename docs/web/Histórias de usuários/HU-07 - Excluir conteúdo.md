@@ -40,7 +40,7 @@ Cenário: Falha ao remover
 - `RB-04` (confirmação obrigatória).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-07`.
+- `RNF-01`, `RNF-06`, `RNF-08`, `RNF-13`.
 
 ## Caso de uso relacionado
 - [CDU-06](../Casos%20de%20uso/CDU-06%20-%20Excluir%20conteúdo.md)

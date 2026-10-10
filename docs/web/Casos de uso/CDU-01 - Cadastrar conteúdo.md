@@ -36,7 +36,7 @@ IndexedDB (browser)
 - `RB-01` (cálculo da próxima data), `RB-02` (categorias).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-04`, `RNF-05`, `RNF-07`.
+- `RNF-01`, `RNF-04`, `RNF-05`, `RNF-06`, `RNF-08`, `RNF-09`, `RNF-13`.
 
 ## Diagrama
 

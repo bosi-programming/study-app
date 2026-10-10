@@ -39,7 +39,7 @@ Cenário: Lista sem resultados para os filtros
 - `RB-03` (ordenação), `RB-05` (estados vazios).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-04`, `RNF-05`, `RNF-06`, `RNF-07`.
+- `RNF-01`, `RNF-04`, `RNF-05`, `RNF-06`, `RNF-08`, `RNF-10`.
 
 ## Caso de uso relacionado
 - [CDU-02](../Casos%20de%20uso/CDU-02%20-%20Listar%20conteúdos.md)

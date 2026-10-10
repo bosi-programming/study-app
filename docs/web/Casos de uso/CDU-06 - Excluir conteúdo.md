@@ -28,7 +28,7 @@ IndexedDB (browser)
 - `RB-04` (confirmação obrigatória).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-07`.
+- `RNF-01`, `RNF-06`, `RNF-08`, `RNF-13`.
 
 ## Diagrama
 

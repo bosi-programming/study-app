@@ -37,7 +37,7 @@ Cenário: Base do cálculo
 - `RB-01` (cálculo & teto de 365 dias).
 
 ## Requisitos não funcionais
-- `RNF-06` (exibição da data no cartão).
+- `RNF-09`, `RNF-12`.
 
 ## Caso de uso relacionado
 - Referenciada por [CDU-02](../Casos%20de%20uso/CDU-02%20-%20Listar%20conteúdos.md) & [CDU-03](../Casos%20de%20uso/CDU-03%20-%20Marcar%20conteúdo%20como%20revisado.md).

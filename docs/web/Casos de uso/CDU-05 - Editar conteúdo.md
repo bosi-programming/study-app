@@ -33,7 +33,7 @@ IndexedDB (browser)
 - `RB-02` (categorias).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-04`, `RNF-07`.
+- `RNF-01`, `RNF-04`, `RNF-06`, `RNF-08`, `RNF-13`.
 
 ## Diagrama
 

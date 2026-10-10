@@ -39,7 +39,7 @@ Cenário: Posição do ícone
 - `RB-01` (recalcula próxima data), `RB-03` (reordenação).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-06`, `RNF-07`.
+- `RNF-01`, `RNF-06`, `RNF-08`, `RNF-09`, `RNF-13`.
 
 ## Caso de uso relacionado
 - [CDU-03](../Casos%20de%20uso/CDU-03%20-%20Marcar%20conteúdo%20como%20revisado.md)

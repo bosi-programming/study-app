@@ -26,7 +26,7 @@ Usuário
 - Nenhuma regra de agendamento envolvida.
 
 ## Requisitos não funcionais
-- `RNF-05`, `RNF-06`, `RNF-07`.
+- `RNF-05`, `RNF-06`, `RNF-08`.
 
 ## Diagrama
 

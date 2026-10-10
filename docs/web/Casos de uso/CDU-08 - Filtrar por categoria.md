@@ -29,7 +29,7 @@ Usuário
 - `RB-02` (categorias), `RB-03` (ordenação), `RB-05` (estado vazio).
 
 ## Requisitos não funcionais
-- `RNF-04`, `RNF-05`, `RNF-07`.
+- `RNF-04`, `RNF-05`, `RNF-06`, `RNF-08`, `RNF-10`.
 
 ## Diagrama
 

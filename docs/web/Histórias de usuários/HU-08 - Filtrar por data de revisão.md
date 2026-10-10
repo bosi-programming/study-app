@@ -43,7 +43,7 @@ Cenário: Intervalo inválido
 - `RB-03` (ordenação), `RB-05` (estado vazio).
 
 ## Requisitos não funcionais
-- `RNF-04`, `RNF-05`, `RNF-07`.
+- `RNF-04`, `RNF-05`, `RNF-06`, `RNF-08`, `RNF-10`.
 
 ## Caso de uso relacionado
 - [CDU-07](../Casos%20de%20uso/CDU-07%20-%20Filtrar%20por%20data%20de%20revisão.md)

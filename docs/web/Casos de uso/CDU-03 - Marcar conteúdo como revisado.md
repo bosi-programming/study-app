@@ -29,7 +29,7 @@ IndexedDB (browser)
 - `RB-01` (agendamento & teto de 365 dias), `RB-03` (ordenação).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-06`, `RNF-07`.
+- `RNF-01`, `RNF-06`, `RNF-08`, `RNF-09`, `RNF-12`, `RNF-13`.
 
 ## Diagrama
 

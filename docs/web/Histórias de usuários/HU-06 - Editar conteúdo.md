@@ -45,7 +45,7 @@ Cenário: Categoria atualizada reflete no filtro
 - `RB-02` (categorias).
 
 ## Requisitos não funcionais
-- `RNF-01`, `RNF-04`, `RNF-07`.
+- `RNF-01`, `RNF-04`, `RNF-06`, `RNF-08`, `RNF-13`.
 
 ## Caso de uso relacionado
 - [CDU-05](../Casos%20de%20uso/CDU-05%20-%20Editar%20conteúdo.md)

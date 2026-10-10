@@ -40,7 +40,7 @@ Cenário: Nada sai do dispositivo
 - Nenhuma regra de agendamento envolvida.
 
 ## Requisitos não funcionais
-- `RNF-01` (IndexedDB, sem rede), `RNF-02` (offline).
+- `RNF-01` (IndexedDB, sem rede), `RNF-02` (offline), `RNF-11` (navegadores), `RNF-14` (sem telemetria).
 
 ## Caso de uso relacionado
 - Transversal a todos os CDUs ([CDU-01](../Casos%20de%20uso/CDU-01%20-%20Cadastrar%20conteúdo.md) a [CDU-08](../Casos%20de%20uso/CDU-08%20-%20Filtrar%20por%20categoria.md)).
