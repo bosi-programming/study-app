@@ -1,29 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import {
-  type Cartao,
-  type Dia,
-  type NovoCartao,
-  addDias,
-  criarCartao,
-  hojeLocal,
+  type CalendarDay,
+  type Card,
+  type NewCard,
+  addDays,
+  createCard,
+  todayLocal,
 } from '../src/index.ts';
 
-describe('barrel público (AC9)', () => {
-  it('barrel: exporta símbolos runtime', () => {
-    expect(hojeLocal).toBeTypeOf('function');
-    expect(addDias).toBeTypeOf('function');
-    expect(criarCartao).toBeTypeOf('function');
+describe('public barrel (AC9)', () => {
+  it('exports runtime symbols', () => {
+    expect(todayLocal).toBeTypeOf('function');
+    expect(addDays).toBeTypeOf('function');
+    expect(createCard).toBeTypeOf('function');
   });
 
-  it('barrel: exporta tipos (typecheck)', () => {
-    const dia: Dia = hojeLocal();
-    const entrada: NovoCartao = {
-      nome: 'Nome',
-      categoria: 'Categoria',
-      conteudo: 'Conteudo',
+  it('exports types (typecheck)', () => {
+    const day: CalendarDay = todayLocal();
+    const input: NewCard = {
+      name: 'Name',
+      category: 'Category',
+      content: 'Content',
     };
-    const cartao: Cartao = criarCartao(entrada, dia);
+    const card: Card = createCard(input, day);
 
-    expect(cartao.dataCriacao).toBe(dia);
+    expect(card.createdDate).toBe(day);
   });
 });

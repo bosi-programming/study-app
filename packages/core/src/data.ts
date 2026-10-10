@@ -1,26 +1,26 @@
-export type Dia = string & { readonly __brand: 'Dia' };
+export type CalendarDay = string & { readonly __brand: 'CalendarDay' };
 
-function formatar(y: number, m: number, d: number): Dia {
-  const mes = String(m).padStart(2, '0');
-  const dia = String(d).padStart(2, '0');
-  return `${y}-${mes}-${dia}` as Dia;
+function format(year: number, month: number, day: number): CalendarDay {
+  const mm = String(month).padStart(2, '0');
+  const dd = String(day).padStart(2, '0');
+  return `${year}-${mm}-${dd}` as CalendarDay;
 }
 
-function diaDeLocal(data: Date): Dia {
-  return formatar(data.getFullYear(), data.getMonth() + 1, data.getDate());
+function toLocalDay(date: Date): CalendarDay {
+  return format(date.getFullYear(), date.getMonth() + 1, date.getDate());
 }
 
-export function hojeLocal(): Dia {
-  return diaDeLocal(new Date());
+export function todayLocal(): CalendarDay {
+  return toLocalDay(new Date());
 }
 
-export function addDias(dia: Dia, dias: number): Dia {
-  const [ano = '0', mes = '1', diaDoMes = '1'] = dia.split('-');
-  const base = Date.UTC(Number(ano), Number(mes) - 1, Number(diaDoMes));
-  const resultado = new Date(base + dias * 86_400_000);
-  return formatar(
-    resultado.getUTCFullYear(),
-    resultado.getUTCMonth() + 1,
-    resultado.getUTCDate(),
+export function addDays(day: CalendarDay, days: number): CalendarDay {
+  const [year = '0', month = '1', dayOfMonth = '1'] = day.split('-');
+  const base = Date.UTC(Number(year), Number(month) - 1, Number(dayOfMonth));
+  const result = new Date(base + days * 86_400_000);
+  return format(
+    result.getUTCFullYear(),
+    result.getUTCMonth() + 1,
+    result.getUTCDate(),
   );
 }
