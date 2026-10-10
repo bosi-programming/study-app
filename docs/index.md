@@ -5,6 +5,7 @@ App p/ ajudar o usuário a saber a melhor data p/ revisar conteúdos, usando rep
 ## Índice
 
 - [Web (browser)](./web/index.md) — versão web; dados persistidos só no browser via IndexedDB.
+- [Core](./core/index.md) — regras de negócio & código compartilhado (`@study/core`).
 - CLI — _a definir_.
 - Desktop — _a definir_.
 
@@ -15,6 +16,8 @@ App p/ ajudar o usuário a saber a melhor data p/ revisar conteúdos, usando rep
 - `docs/web/Histórias de usuários/` — HUs; 1 arquivo Markdown por história, com critérios de aceite em Gherkin.
 - `docs/web/Regras de negócio/` — RBs; 1 arquivo Markdown por regra.
 - `docs/web/Requisitos não funcionais/` — RNFs; 1 arquivo Markdown por requisito.
+- `docs/core/` — visão da plataforma core (`@study/core`): regras de negócio & código compartilhado.
+- `docs/web/tickets/` & `docs/core/tickets/` — tickets; 1 arquivo Markdown por ticket.
 
 ## Convenções
 
