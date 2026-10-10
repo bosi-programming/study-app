@@ -65,4 +65,9 @@ describe('addDias (AC5)', () => {
   it('addDias: preserva formato YYYY-MM-DD', () => {
     expect(addDias(diaDe('2026-02-28'), 1)).toBe('2026-03-01');
   });
+
+  it('addDias: aceita dias negativos', () => {
+    expect(addDias(diaDe('2026-03-10'), -7)).toBe('2026-03-03');
+    expect(addDias(diaDe('2026-03-01'), -1)).toBe('2026-02-28');
+  });
 });
