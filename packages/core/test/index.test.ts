@@ -16,6 +16,7 @@ import {
   filterByCategory,
   filterByDateRange,
   isOverdue,
+  markCardReviewed,
   nextReviewDate,
   sortCards,
   todayLocal,
@@ -79,6 +80,12 @@ describe('filter barrel (CORE-07)', () => {
 describe('overdue barrel (CORE-08)', () => {
   it('exports isOverdue from the barrel', () => {
     expect(isOverdue).toBeTypeOf('function');
+  });
+});
+
+describe('review barrel (CORE-03)', () => {
+  it('exports markCardReviewed from the barrel', () => {
+    expect(markCardReviewed).toBeTypeOf('function');
   });
 });
 

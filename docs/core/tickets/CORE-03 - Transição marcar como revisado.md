@@ -12,11 +12,19 @@ Nenhuma mudança visual — infraestrutura.
 
 ## Critérios de aceitação
 
-- [ ] `marcarComoRevisado(cartao, hoje)` define `dataUltimaRevisao = hoje`.
-- [ ] Incrementa `quantidadeRevisoes` em 1.
-- [ ] Recalcula `dataProximaRevisao` via CORE-02 (respeitando o teto de 365).
-- [ ] Função imutável: retorna um novo `Cartao`, sem mutar a entrada.
-- [ ] Testes cobrindo 1ª revisão (→ +14) & revisões subsequentes.
+- [x] `marcarComoRevisado(cartao, hoje)` define `dataUltimaRevisao = hoje`.
+- [x] Incrementa `quantidadeRevisoes` em 1.
+- [x] Recalcula `dataProximaRevisao` via CORE-02 (respeitando o teto de 365).
+- [x] Função imutável: retorna um novo `Cartao`, sem mutar a entrada.
+- [x] Testes cobrindo 1ª revisão (→ +14) & revisões subsequentes.
+
+## Entrega
+
+- Implementada `markCardReviewed(card, today = todayLocal()): Card` em `packages/core/src/card.ts`, reexportada pelo barrel `@study/core` (`index.ts`).
+- Recalcula `nextReviewDate` via CORE-02 (`nextReviewDate(createdDate, today, reviewCount + 1)`), com teto de 365; imutável (spread, entrada intocada).
+- PR #8 — https://github.com/bosi-programming/study-app/pull/8 (base `core-08`, head `core-03`).
+- Gates locais verdes: `pnpm test:coverage` 152 passed / 100% core; `pnpm typecheck` 0; `pnpm lint` 0.
+- Registro completo: `recipes/core-03.md`.
 
 ## Referências
 
