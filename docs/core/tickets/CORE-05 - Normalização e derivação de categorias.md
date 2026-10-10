@@ -12,10 +12,14 @@ Nenhuma mudança visual — infraestrutura.
 
 ## Critérios de aceitação
 
-- [ ] Normalização com `trim`; comparação & agrupamento **case-insensitive** ("Inglês" == "inglês").
-- [ ] A grafia exibida preserva o valor; só a chave de comparação é case-insensitive.
-- [ ] `categoriasDistintas(cartoes)` retorna categorias únicas (sem duplicatas por caixa) & ordenadas.
-- [ ] Testes cobrindo duplicatas por caixa, espaços & ordenação.
+- [x] Normalização com `trim`; comparação & agrupamento **case-insensitive** ("Inglês" == "inglês").
+- [x] A grafia exibida preserva o valor; só a chave de comparação é case-insensitive.
+- [x] `categoriasDistintas(cartoes)` retorna categorias únicas (sem duplicatas por caixa) & ordenadas.
+- [x] Testes cobrindo duplicatas por caixa, espaços & ordenação.
+
+## Entrega
+
+Implementada como funções puras em `packages/core/src/category.ts`, reexportadas por `@study/core` (RNF-09): `categoryKey(category)` == `category.trim().toLowerCase()` (a chave de comparação, RB-08 — Unicode default, locale-independente) & `distinctCategories(cards)` — deduplica por `categoryKey`, preserva a **primeira** grafia vista na ordem dos cartões (a chave nunca substitui o valor exibido) & ordena ascendente com `localeCompare(other, 'pt-BR')` (RB-03); devolve array novo & não muta a entrada. *(Nomes de código em inglês, conforme AGENTS.md — o `categoriasDistintas` do critério é o `distinctCategories`.)* Testes em `packages/core/test/category.test.ts` (+ barrel em `index.test.ts`): duplicatas por caixa & espaços, ordenação pt-BR, determinismo & não-mutação; local gate verde (typecheck + lint + coverage 100%). PR: https://github.com/bosi-programming/study-app/pull/4
 
 ## Referências
 

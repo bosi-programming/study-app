@@ -9,7 +9,9 @@ import {
   type NewCard,
   CARD_LIMITS,
   addDays,
+  categoryKey,
   createCard,
+  distinctCategories,
   nextReviewDate,
   todayLocal,
   validateCard,
@@ -36,6 +38,14 @@ describe('public barrel (AC9)', () => {
     const card: Card = createCard(input, day);
 
     expect(card.createdDate).toBe(day);
+  });
+});
+
+describe('category barrel (CORE-05)', () => {
+  it('exports categoryKey and distinctCategories from the barrel', () => {
+    expect(categoryKey).toBeTypeOf('function');
+    expect(distinctCategories).toBeTypeOf('function');
+    expect(categoryKey('Inglês')).toBe('inglês');
   });
 });
 

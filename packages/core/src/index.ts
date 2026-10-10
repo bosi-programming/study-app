@@ -10,3 +10,4 @@ export type {
   CardValidation,
 } from './validation.ts';
 export { validateCard, CARD_LIMITS } from './validation.ts';
+export { categoryKey, distinctCategories } from './category.ts';
