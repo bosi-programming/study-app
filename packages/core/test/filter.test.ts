@@ -149,6 +149,12 @@ describe('filterByCategory case-insensitive (AC3)', () => {
     expect(names(filterByCategory(input, '  inglês  '))).toEqual(['A']);
   });
 
+  it('matches a card whose category is padded', () => {
+    const input = [card('A', day('2026-10-10'), '  Inglês  ')];
+
+    expect(names(filterByCategory(input, 'inglês'))).toEqual(['A']);
+  });
+
   it('excludes a non-matching category', () => {
     const input = [
       card('Match', day('2026-10-10'), 'Inglês'),
