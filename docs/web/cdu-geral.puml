@@ -1,0 +1,32 @@
+@startuml
+left to right direction
+actor "Usuário" as U
+actor "IndexedDB" as DB
+rectangle Study_Web {
+  usecase "CDU-01\nCadastrar conteúdo" as UC1
+  usecase "CDU-02\nListar conteúdos" as UC2
+  usecase "CDU-03\nMarcar como revisado" as UC3
+  usecase "CDU-04\nExpandir conteúdo" as UC4
+  usecase "CDU-05\nEditar conteúdo" as UC5
+  usecase "CDU-06\nExcluir conteúdo" as UC6
+  usecase "CDU-07\nFiltrar por data de revisão" as UC7
+  usecase "CDU-08\nFiltrar por categoria" as UC8
+}
+U --> UC1
+U --> UC2
+U --> UC3
+U --> UC4
+U --> UC5
+U --> UC6
+U --> UC7
+U --> UC8
+UC2 ..> UC7 : <<extend>>
+UC2 ..> UC8 : <<extend>>
+UC4 ..> UC2 : <<extend>>
+UC3 ..> UC2 : <<include>>
+UC1 --> DB
+UC2 --> DB
+UC3 --> DB
+UC5 --> DB
+UC6 --> DB
+@enduml
