@@ -6,12 +6,15 @@ import {
   type CardFieldError,
   type CardRule,
   type CardValidation,
+  type DateRange,
   type NewCard,
   CARD_LIMITS,
   addDays,
   categoryKey,
   createCard,
   distinctCategories,
+  filterByCategory,
+  filterByDateRange,
   nextReviewDate,
   sortCards,
   todayLocal,
@@ -53,6 +56,22 @@ describe('category barrel (CORE-05)', () => {
 describe('order barrel (CORE-06)', () => {
   it('exports sortCards from the barrel', () => {
     expect(sortCards).toBeTypeOf('function');
+  });
+});
+
+describe('filter barrel (CORE-07)', () => {
+  it('exports filterByDateRange & filterByCategory from the barrel', () => {
+    expect(filterByDateRange).toBeTypeOf('function');
+    expect(filterByCategory).toBeTypeOf('function');
+  });
+
+  it('DateRange type is usable (typecheck)', () => {
+    const range: DateRange = {
+      start: '2026-10-10' as CalendarDay,
+      end: '2026-10-20' as CalendarDay,
+    };
+
+    expect(range.start).toBe('2026-10-10');
   });
 });
 
