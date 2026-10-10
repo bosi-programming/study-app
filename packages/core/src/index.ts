@@ -14,3 +14,4 @@ export { categoryKey, distinctCategories } from './category.ts';
 export { sortCards } from './order.ts';
 export type { DateRange } from './filter.ts';
 export { filterByDateRange, filterByCategory } from './filter.ts';
+export { isOverdue } from './overdue.ts';
