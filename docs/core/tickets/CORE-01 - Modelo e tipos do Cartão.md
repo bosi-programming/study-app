@@ -12,10 +12,14 @@ Nenhuma mudança visual — infraestrutura.
 
 ## Critérios de aceitação
 
-- [ ] Tipo `Cartao` com: `id`, `nome`, `categoria`, `conteudo`, `dataUltimaRevisao` (nullable), `quantidadeRevisoes`, `dataProximaRevisao`, `dataCriacao`.
-- [ ] `quantidadeRevisoes` inicia em `0` & `dataUltimaRevisao` em `null` na criação.
-- [ ] Fábrica de criação define `dataCriacao = hoje` (RB-07) & `dataProximaRevisao = dataCriacao + 7` (RB-01).
-- [ ] Tipos & fábrica exportados por `@study/core`.
+- [x] Tipo `Cartao` com: `id`, `nome`, `categoria`, `conteudo`, `dataUltimaRevisao` (nullable), `quantidadeRevisoes`, `dataProximaRevisao`, `dataCriacao`.
+- [x] `quantidadeRevisoes` inicia em `0` & `dataUltimaRevisao` em `null` na criação.
+- [x] Fábrica de criação define `dataCriacao = hoje` (RB-07) & `dataProximaRevisao = dataCriacao + 7` (RB-01).
+- [x] Tipos & fábrica exportados por `@study/core`.
+
+## Entrega
+
+**Entregue.** Implementado em `packages/core/src` (`data.ts`, `card.ts`, `index.ts`) com testes em `packages/core/test` (23/23, cobertura 100%). Merge direto em `main` (`b126049`), sem PR. Código em inglês (ver `AGENTS.md`): `Cartao`→`Card`, `criarCartao`→`createCard`, `Dia`→`CalendarDay`.
 
 ## Referências
 
