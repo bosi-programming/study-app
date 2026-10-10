@@ -13,6 +13,7 @@ import {
   createCard,
   distinctCategories,
   nextReviewDate,
+  sortCards,
   todayLocal,
   validateCard,
 } from '../src/index.ts';
@@ -46,6 +47,12 @@ describe('category barrel (CORE-05)', () => {
     expect(categoryKey).toBeTypeOf('function');
     expect(distinctCategories).toBeTypeOf('function');
     expect(categoryKey('Inglês')).toBe('inglês');
+  });
+});
+
+describe('order barrel (CORE-06)', () => {
+  it('exports sortCards from the barrel', () => {
+    expect(sortCards).toBeTypeOf('function');
   });
 });
 
