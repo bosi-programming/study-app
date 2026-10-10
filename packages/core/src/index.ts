@@ -1,7 +1,7 @@
 export type { CalendarDay } from './data.ts';
 export { todayLocal, addDays } from './data.ts';
 export type { Card, NewCard } from './card.ts';
-export { createCard } from './card.ts';
+export { createCard, markCardReviewed } from './card.ts';
 export { nextReviewDate } from './review.ts';
 export type {
   CardField,
@@ -14,3 +14,4 @@ export { categoryKey, distinctCategories } from './category.ts';
 export { sortCards } from './order.ts';
 export type { DateRange } from './filter.ts';
 export { filterByDateRange, filterByCategory } from './filter.ts';
+export { isOverdue } from './overdue.ts';
