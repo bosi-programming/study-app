@@ -22,4 +22,7 @@ pnpm-debug.log*
 # Obsidian vault (local editor config)
 .obsidian
 
+# recipe cards (local scratch state)
+recipes
+
 
