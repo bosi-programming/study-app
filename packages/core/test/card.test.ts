@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { type Card, type NewCard, createCard } from '../src/card.ts';
-import { type CalendarDay } from '../src/data.ts';
+import { type CalendarDay, addDays } from '../src/data.ts';
+import { nextReviewDate } from '../src/review.ts';
 
 const day = (value: string): CalendarDay => value as CalendarDay;
 
@@ -133,6 +134,21 @@ describe('immutability (AC7)', () => {
 
     expect(card).not.toBe(input);
     expect(card).not.toBe(other);
+  });
+});
+
+describe('single source of review rule (AC5)', () => {
+  it('uses nextReviewDate(today, null, 0) as its source', () => {
+    const card = createCard(validInput(), TODAY);
+
+    expect(card.nextReviewDate).toBe(nextReviewDate(TODAY, null, 0));
+    expect(card.nextReviewDate).toBe(addDays(TODAY, 7));
+  });
+
+  it('keeps a new card at today + 7', () => {
+    const card = createCard(validInput(), day('2026-03-10'));
+
+    expect(card.nextReviewDate).toBe('2026-03-17');
   });
 });
 

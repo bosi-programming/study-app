@@ -5,6 +5,7 @@ import {
   type NewCard,
   addDays,
   createCard,
+  nextReviewDate,
   todayLocal,
 } from '../src/index.ts';
 
@@ -13,6 +14,10 @@ describe('public barrel (AC9)', () => {
     expect(todayLocal).toBeTypeOf('function');
     expect(addDays).toBeTypeOf('function');
     expect(createCard).toBeTypeOf('function');
+  });
+
+  it('exports nextReviewDate', () => {
+    expect(nextReviewDate).toBeTypeOf('function');
   });
 
   it('exports types (typecheck)', () => {

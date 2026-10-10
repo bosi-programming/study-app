@@ -12,11 +12,15 @@ Nenhuma mudança visual — infraestrutura.
 
 ## Critérios de aceitação
 
-- [ ] `intervalo = min(7 × 2^quantidadeRevisoes, 365)` dias (0→7, 1→14, 2→28, 3→56, 4→112, 5→224, 6→365, 7+→365).
-- [ ] `base = dataCriacao` quando `quantidadeRevisoes = 0`; senão `dataUltimaRevisao`.
-- [ ] `dataProximaRevisao = base + intervalo`.
-- [ ] Datas tratadas como dias de calendário no fuso local (RB-07).
-- [ ] Testes cobrindo toda a tabela de intervalos, o teto & as duas bases.
+- [x] `intervalo = min(7 × 2^quantidadeRevisoes, 365)` dias (0→7, 1→14, 2→28, 3→56, 4→112, 5→224, 6→365, 7+→365).
+- [x] `base = dataCriacao` quando `quantidadeRevisoes = 0`; senão `dataUltimaRevisao`.
+- [x] `dataProximaRevisao = base + intervalo`.
+- [x] Datas tratadas como dias de calendário no fuso local (RB-07).
+- [x] Testes cobrindo toda a tabela de intervalos, o teto & as duas bases.
+
+## Entrega
+
+Implementada como função pura `nextReviewDate(createdDate, lastReviewDate, reviewCount)` em `packages/core/src/review.ts`, reexportada por `@study/core`; `createCard` passou a usá-la como fonte única da RB-01 (RNF-09). Testes em `packages/core/test/review.test.ts` (+2 em `card.test.ts`, +1 em `index.test.ts`); CI verde (typecheck + lint + coverage 100%). PR: https://github.com/bosi-programming/study-app/pull/2
 
 ## Referências
 

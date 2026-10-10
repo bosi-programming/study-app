@@ -1,5 +1,6 @@
 import type { CalendarDay } from './data.ts';
-import { addDays, todayLocal } from './data.ts';
+import { todayLocal } from './data.ts';
+import { nextReviewDate } from './review.ts';
 
 export interface Card {
   readonly id: string;
@@ -29,7 +30,7 @@ export function createCard(
     content: input.content,
     lastReviewDate: null,
     reviewCount: 0,
-    nextReviewDate: addDays(today, 7),
+    nextReviewDate: nextReviewDate(today, null, 0),
     createdDate: today,
   };
 }
