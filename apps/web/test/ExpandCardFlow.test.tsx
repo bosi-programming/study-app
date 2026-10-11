@@ -116,13 +116,13 @@ describe('expanded content (AC2)', () => {
     expect(contentNode.textContent?.length).toBe(5000);
   });
 
-  it('T2.4 · an overdue card keeps border-error on the li and .text-error in the header while expanded', async () => {
+  it('T2.4 · an overdue card keeps the error highlight while expanded', async () => {
     renderWith([makeCard('Vencido', addDays(todayLocal(), -1))]);
 
     const item = await findItem('Vencido');
     fireEvent.click(expandToggle(item));
 
-    expect(item).toHaveClass('border-error');
+    expect(item.querySelector('.border-error')).not.toBeNull();
     expect(item.querySelector('.text-error')).not.toBeNull();
   });
 });
