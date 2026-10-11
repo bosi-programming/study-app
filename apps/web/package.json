@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@study/core": "workspace:*",
     "bosi-design-system": "github:bosi-programming/bosi-design-system",
     "react": "19.3.0",
     "react-dom": "19.3.0"
