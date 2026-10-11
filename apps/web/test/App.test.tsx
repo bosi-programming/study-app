@@ -79,6 +79,24 @@ describe('filter bar (AC4)', () => {
     expect(screen.getByLabelText('Categoria')).toBeInTheDocument();
   });
 
+  it('AC4 · category selected in the filter bar narrows the list', async () => {
+    const today = todayLocal();
+    renderWith([
+      makeCard('Alvo', addDays(today, 1), 'Matemática'),
+      makeCard('Outra', addDays(today, 2), 'História'),
+    ]);
+    await screen.findAllByRole('listitem');
+
+    fireEvent.change(screen.getByLabelText('Categoria'), {
+      target: { value: 'Matemática' },
+    });
+
+    const items = await screen.findAllByRole('listitem');
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toHaveTextContent('Alvo');
+  });
+
   it('AC4 · clearing the date inputs restores all cards', async () => {
     const today = todayLocal();
     renderWith([
