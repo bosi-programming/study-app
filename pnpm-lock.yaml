@@ -193,6 +193,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@study/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       bosi-design-system:
         specifier: github:bosi-programming/bosi-design-system
         version: https://codeload.github.com/bosi-programming/bosi-design-system/tar.gz/16209f75289499edf8ce4866e5ce451375ec8ea6(svelte@5.57.2(@typescript-eslint/types@8.70.1))(ts-pattern@5.9.0)
