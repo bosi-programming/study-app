@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { type CalendarDay, type Card } from '@study/core';
 import { App } from '../src/App';
 import { type CardStore, getCardStore } from '../src/persistence';
@@ -139,6 +139,7 @@ describe('confirm removes the card (AC2)', () => {
     fireEvent.click(confirm);
     await waitFor(() => expect(vi.mocked(store.remove)).toHaveBeenCalledTimes(1));
     fireEvent.click(confirm);
+    await act(async () => {});
 
     expect(vi.mocked(store.remove)).toHaveBeenCalledTimes(1);
   });
@@ -173,6 +174,20 @@ describe('cancel / Escape (AC3)', () => {
 
     expect(screen.queryByTestId('confirmation-dialog')).toBeNull();
     expect(store.remove).not.toHaveBeenCalled();
+  });
+
+  it('T3.4 · Escape while remove is pending keeps the dialog open', async () => {
+    const store = pendingStore([makeCard('Ábaco', '2026-10-10')]);
+    vi.mocked(getCardStore).mockResolvedValue(store);
+    render(<App />);
+    await screen.findAllByRole('listitem');
+    const dialog = await openDelete('Ábaco');
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await waitFor(() => expect(vi.mocked(store.remove)).toHaveBeenCalledTimes(1));
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+
+    expect(screen.getByTestId('confirmation-dialog')).toBeInTheDocument();
   });
 });
 
