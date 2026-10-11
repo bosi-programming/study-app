@@ -37,7 +37,7 @@ export function FilterBar({
         label="Até"
         type="date"
         value={filters.end}
-        error={dateRangeError}
+        error={dateRangeError ?? ''}
         setValue={(value) => onChange({ ...filters, end: value })}
       />
       <Selector
