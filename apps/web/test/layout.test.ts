@@ -82,3 +82,13 @@ describe('design system usage (AC9)', () => {
     expect(filterBarSource).toContain("from 'bosi-design-system/react'");
   });
 });
+
+describe('no UI recomputation (WEB-11)', () => {
+  it('T2.2 no UI module calls nextReviewDate', () => {
+    const itemSource = readFile('../src/components/CardListItem.tsx');
+    const formatSource = readFile('../src/format.ts');
+
+    expect(itemSource).not.toContain('nextReviewDate(');
+    expect(formatSource).not.toContain('nextReviewDate(');
+  });
+});
