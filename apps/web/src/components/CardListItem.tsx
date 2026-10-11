@@ -33,13 +33,13 @@ export function CardListItem({
   const [expanded, setExpanded] = useState(false)
   const hasContent = card.content.trim().length > 0
   return (
-    <li className={overdue ? 'border-error border-[#741427]' : ''}>
+    <li className={overdue ? 'border-error' : ''}>
       <Paper className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-4">
           <Typography
             as="p"
             size="body"
-            className={overdue ? 'text-error text-[#741427]' : ''}
+            className={overdue ? 'text-error' : ''}
           >
             {formatCalendarDay(card.nextReviewDate)}
           </Typography>
@@ -68,7 +68,7 @@ export function CardListItem({
               aria-expanded={expanded}
               onClick={() => setExpanded((previous) => !previous)}
             >
-              <span className={expanded ? 'rotate-180' : ''}>
+              <span className={expanded ? 'inline-block rotate-180' : ''}>
                 <ExpandIcon />
               </span>
             </Button>

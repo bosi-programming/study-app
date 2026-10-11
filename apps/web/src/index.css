@@ -1,2 +1,19 @@
 @import 'tailwindcss';
 @source "../node_modules/bosi-design-system/react-dist";
+
+@theme {
+  --color-primary-on-light: #246347;
+  --color-primary-on-dark: #81d8d0;
+  --color-secondary-on-light: #df6da9;
+  --color-secondary-on-dark: #e791bf;
+  --color-background-on-light: #fdf5e5;
+  --color-background-on-dark: #1e2d2f;
+  --color-error: #741427;
+  --color-warning: #c2530a;
+  --color-success: #14662d;
+  --color-info: #3a5683;
+  --color-emerald: #0d9263;
+  --color-green: #1e2d2f;
+  --color-black: #2f3032;
+  --color-white: #fff;
+}
