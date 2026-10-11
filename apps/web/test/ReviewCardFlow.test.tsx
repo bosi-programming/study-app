@@ -143,6 +143,19 @@ describe('updates & persists (AC2)', () => {
       ),
     );
   });
+
+  it('T2.5 · após o sucesso o botão de revisão volta a habilitado', async () => {
+    renderWith([makeCard('Ábaco', addDays(todayLocal(), 1))]);
+
+    fireEvent.click(reviewButton(await findItem('Ábaco')));
+
+    await waitFor(() =>
+      expect(screen.getByRole('listitem')).toHaveTextContent(
+        formatCalendarDay(addDays(todayLocal(), 14)),
+      ),
+    );
+    expect(reviewButton(await findItem('Ábaco'))).toBeEnabled();
+  });
 });
 
 describe('reordering (AC3)', () => {
@@ -207,6 +220,19 @@ describe('write failure (AC4)', () => {
       formatCalendarDay(addDays(today, 14)),
     );
   });
+
+  it('T4.3 · após a falha, um retry bem-sucedido remove o alerta', async () => {
+    const store = renderWith([makeCard('Ábaco', addDays(todayLocal(), 1))]);
+    vi.mocked(store.update).mockRejectedValueOnce(new PersistenceError('boom'));
+
+    fireEvent.click(reviewButton(await findItem('Ábaco')));
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+
+    fireEvent.click(reviewButton(await findItem('Ábaco')));
+    await waitFor(() => expect(vi.mocked(store.update)).toHaveBeenCalledTimes(2));
+
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
 });
 
 describe('accessible name (AC5)', () => {
@@ -232,6 +258,24 @@ describe('double invocation (AC6)', () => {
     expect(reviewButton(await findItem('Ábaco'))).toBeDisabled();
 
     fireEvent.click(reviewButton(await findItem('Ábaco')));
+    await act(async () => {});
+
+    expect(vi.mocked(store.update)).toHaveBeenCalledTimes(1);
+  });
+
+  it('T6.2 · com store.update pendente, revisar outro cartão não dispara um segundo store.update', async () => {
+    const store = pendingStore([
+      makeCard('Ábaco', addDays(todayLocal(), 1)),
+      makeCard('Zebra', addDays(todayLocal(), 5)),
+    ]);
+    vi.mocked(getCardStore).mockResolvedValue(store);
+    render(<App />);
+    await screen.findAllByRole('listitem');
+
+    fireEvent.click(reviewButton(await findItem('Ábaco')));
+    await waitFor(() => expect(vi.mocked(store.update)).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(reviewButton(await findItem('Zebra')));
     await act(async () => {});
 
     expect(vi.mocked(store.update)).toHaveBeenCalledTimes(1);
