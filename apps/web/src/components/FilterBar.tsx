@@ -64,6 +64,5 @@ export function FilterBar({
         ) : null}
       </div>
     </div>
-    </div>
   )
 }
