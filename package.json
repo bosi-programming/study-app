@@ -14,10 +14,12 @@
     "typecheck": "pnpm -r typecheck && tsc --noEmit -p tsconfig.json",
     "bench": "node scripts/bench.ts",
     "bench:web": "node apps/web/scripts/bench-web.ts",
+    "e2e": "pnpm --filter @study/web e2e",
     "sqlite:probe": "node scripts/sqlite-probe.ts"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "^1.64.0",
     "@types/node": "24.13.4",
     "@vitest/coverage-v8": "4.1.11",
     "eslint": "10.11.0",

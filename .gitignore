@@ -25,4 +25,9 @@ pnpm-debug.log*
 # recipe cards (local scratch state)
 recipes
 
+# playwright
+playwright-report
+test-results
+apps/web/screenshots
+
 
