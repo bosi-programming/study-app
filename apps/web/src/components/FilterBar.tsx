@@ -44,6 +44,7 @@ export function FilterBar({
         name="category"
         label="Categoria"
         placeholder="Todas as categorias"
+        disabled={categories.length === 0}
         value={filters.category}
         options={categories.map((category) => ({
           id: category,
