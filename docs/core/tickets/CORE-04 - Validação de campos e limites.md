@@ -12,11 +12,15 @@ Nenhuma mudança visual — infraestrutura.
 
 ## Critérios de aceitação
 
-- [ ] `Nome`, `Categoria` & `Conteúdo` obrigatórios; vazios após `trim` são inválidos.
-- [ ] Limites: nome ≤ 40, categoria ≤ 40, conteúdo ≤ 5000 caracteres.
-- [ ] Valores normalizados com `trim` antes de validar & gravar.
-- [ ] Retorna lista de erros por campo (para a UI exibir).
-- [ ] Testes cobrindo cada campo vazio, valor no limite & acima do limite.
+- [x] `Nome`, `Categoria` & `Conteúdo` obrigatórios; vazios após `trim` são inválidos.
+- [x] Limites: nome ≤ 40, categoria ≤ 40, conteúdo ≤ 5000 caracteres.
+- [x] Valores normalizados com `trim` antes de validar & gravar.
+- [x] Retorna lista de erros por campo (para a UI exibir).
+- [x] Testes cobrindo cada campo vazio, valor no limite & acima do limite.
+
+## Entrega
+
+Implementada como função pura `validateCard(input: NewCard): CardValidation` em `packages/core/src/validation.ts`, reexportada por `@study/core` junto de `CARD_LIMITS` (RB-10). `trim` nos 3 campos -> `value`; erros tipados `{ field, rule }` (lista plana, sem fail-fast); `valid === (errors.length === 0)`; `createCard` inalterada. Testes em `packages/core/test/validation.test.ts` (+ barrel em `index.test.ts`); local gate verde (typecheck + lint + coverage 100%). PR: https://github.com/bosi-programming/study-app/pull/3
 
 ## Referências
 

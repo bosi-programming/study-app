@@ -34,3 +34,15 @@ export function createCard(
     createdDate: today,
   };
 }
+
+export function markCardReviewed(
+  card: Card,
+  today: CalendarDay = todayLocal(),
+): Card {
+  return {
+    ...card,
+    lastReviewDate: today,
+    reviewCount: card.reviewCount + 1,
+    nextReviewDate: nextReviewDate(card.createdDate, today, card.reviewCount + 1),
+  };
+}
