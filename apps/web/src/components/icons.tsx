@@ -13,6 +13,29 @@ const ICON_PROPS: SVGProps<SVGSVGElement> = {
   focusable: false,
 }
 
+export function LogoMark(): JSX.Element {
+  return (
+    <svg
+      width={28}
+      height={28}
+      viewBox="0 0 24 24"
+      className="text-primary-on-light dark:text-primary-on-dark"
+      aria-hidden
+      focusable={false}
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+      />
+      <circle cx="12" cy="12" r="3" fill="currentColor" />
+    </svg>
+  )
+}
+
 export function ReviewIcon(): JSX.Element {
   return (
     <svg {...ICON_PROPS}>
