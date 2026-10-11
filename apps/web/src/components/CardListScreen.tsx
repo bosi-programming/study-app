@@ -4,6 +4,7 @@ import { type JSX, useEffect, useState } from 'react'
 import { type CardFilters, isFilterActive, visibleCards } from '../cards'
 import { getCardStore } from '../persistence'
 import { CardListItem } from './CardListItem'
+import { ConfirmationDialog } from './ConfirmationDialog'
 import { EmptyState } from './EmptyState'
 import { FilterBar } from './FilterBar'
 import { NewCardForm } from './NewCardForm'
@@ -14,13 +15,22 @@ type FormState =
   | { readonly mode: 'create' }
   | { readonly mode: 'edit'; readonly card: Card }
 
+type DeleteState = {
+  readonly card: Card
+  readonly pending: boolean
+  readonly error: string | null
+}
+
 const INITIAL_FILTERS: CardFilters = { start: '', end: '', category: '' }
+
+const DELETE_ERROR_MESSAGE = 'Não foi possível excluir. Tente novamente.'
 
 export function CardListScreen(): JSX.Element {
   const [cards, setCards] = useState<readonly Card[]>([])
   const [status, setStatus] = useState<LoadStatus>('loading')
   const [filters, setFilters] = useState<CardFilters>(INITIAL_FILTERS)
   const [formState, setFormState] = useState<FormState | null>(null)
+  const [deleteState, setDeleteState] = useState<DeleteState | null>(null)
   const today = todayLocal()
 
   useEffect(() => {
@@ -76,6 +86,33 @@ export function CardListScreen(): JSX.Element {
     setFormState(null)
   }
 
+  function openDelete(card: Card): void {
+    setDeleteState({ card, pending: false, error: null })
+  }
+
+  function cancelDelete(): void {
+    if (deleteState?.pending) {
+      return
+    }
+    setDeleteState(null)
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (deleteState === null || deleteState.pending) {
+      return
+    }
+    const target = deleteState.card
+    setDeleteState({ card: target, pending: true, error: null })
+    try {
+      const store = await getCardStore()
+      await store.remove(target.id)
+      setCards((previous) => previous.filter((card) => card.id !== target.id))
+      setDeleteState(null)
+    } catch {
+      setDeleteState({ card: target, pending: false, error: DELETE_ERROR_MESSAGE })
+    }
+  }
+
   function renderContent(): JSX.Element {
     if (status === 'loading') {
       return (
@@ -105,6 +142,7 @@ export function CardListScreen(): JSX.Element {
             card={card}
             today={today}
             onEdit={openEdit}
+            onDelete={openDelete}
           />
         ))}
       </ul>
@@ -139,6 +177,14 @@ export function CardListScreen(): JSX.Element {
         />
         {renderContent()}
       </div>
+      <ConfirmationDialog
+        open={deleteState !== null}
+        cardName={deleteState?.card.name ?? ''}
+        pending={deleteState?.pending ?? false}
+        error={deleteState?.error ?? null}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   )
 }

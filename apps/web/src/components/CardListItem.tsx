@@ -8,12 +8,14 @@ export interface CardListItemProps {
   readonly card: Card
   readonly today: CalendarDay
   readonly onEdit?: (card: Card) => void
+  readonly onDelete?: (card: Card) => void
 }
 
 export function CardListItem({
   card,
   today,
   onEdit,
+  onDelete,
 }: CardListItemProps): JSX.Element {
   const overdue = isOverdue(card, today)
   return (
@@ -39,7 +41,7 @@ export function CardListItem({
           <Button aria-label="Editar" onClick={() => onEdit?.(card)}>
             <EditIcon />
           </Button>
-          <Button aria-label="Excluir">
+          <Button aria-label="Excluir" onClick={() => onDelete?.(card)}>
             <DeleteIcon />
           </Button>
           <Button aria-label="Expandir">
