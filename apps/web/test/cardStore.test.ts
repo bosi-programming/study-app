@@ -196,6 +196,12 @@ describe('persistence (AC9)', () => {
   });
 });
 
+describe('singleton (contract)', () => {
+  it('getCardStore memoizes a single store promise', () => {
+    expect(getCardStore()).toBe(getCardStore());
+  });
+});
+
 describe('core dependency (AC10)', () => {
   it('web package declares @study/core workspace dep', () => {
     const manifest = JSON.parse(readFile('../package.json')) as {
