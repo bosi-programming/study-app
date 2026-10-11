@@ -1,11 +1,12 @@
-import { type Card, distinctCategories, todayLocal } from '@study/core'
-import { Typography } from 'bosi-design-system/react'
+import { type Card, createCard, distinctCategories, type NewCard, todayLocal } from '@study/core'
+import { Button, Typography } from 'bosi-design-system/react'
 import { type JSX, useEffect, useState } from 'react'
 import { type CardFilters, isFilterActive, visibleCards } from '../cards'
 import { getCardStore } from '../persistence'
 import { CardListItem } from './CardListItem'
 import { EmptyState } from './EmptyState'
 import { FilterBar } from './FilterBar'
+import { NewCardForm } from './NewCardForm'
 
 type LoadStatus = 'loading' | 'ready' | 'error'
 
@@ -15,6 +16,7 @@ export function CardListScreen(): JSX.Element {
   const [cards, setCards] = useState<readonly Card[]>([])
   const [status, setStatus] = useState<LoadStatus>('loading')
   const [filters, setFilters] = useState<CardFilters>(INITIAL_FILTERS)
+  const [formOpen, setFormOpen] = useState(false)
   const today = todayLocal()
 
   useEffect(() => {
@@ -41,6 +43,14 @@ export function CardListScreen(): JSX.Element {
 
   const visible = visibleCards(cards, filters)
   const categories = distinctCategories(cards)
+
+  async function handleCreate(input: NewCard): Promise<void> {
+    const card = createCard(input, today)
+    const store = await getCardStore()
+    await store.create(card)
+    setCards((previousCards) => [...previousCards, card])
+    setFormOpen(false)
+  }
 
   function renderContent(): JSX.Element {
     if (status === 'loading') {
@@ -78,9 +88,19 @@ export function CardListScreen(): JSX.Element {
       className="mx-auto w-full max-w-[1024px] px-10"
     >
       <div className="flex flex-col gap-10">
-        <Typography as="h1" size="h1">
-          Estudo
-        </Typography>
+        <div className="flex items-center justify-between">
+          <Typography as="h1" size="h1">
+            Estudo
+          </Typography>
+          <Button onClick={() => setFormOpen(true)}>Novo conteúdo</Button>
+        </div>
+        {formOpen ? (
+          <NewCardForm
+            categories={categories}
+            onCreate={handleCreate}
+            onCancel={() => setFormOpen(false)}
+          />
+        ) : null}
         <FilterBar
           filters={filters}
           categories={categories}
