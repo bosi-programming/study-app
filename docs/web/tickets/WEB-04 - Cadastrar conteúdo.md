@@ -25,3 +25,7 @@ Formulário para criar um cartão com nome, categoria & conteúdo.
 ## Referências
 
 - CDUs: CDU-01 · HUs: HU-01 · RN: RB-01, RB-06, RB-08, RB-10 · RNFs: RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/15 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14 ← #15).

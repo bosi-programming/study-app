@@ -28,3 +28,7 @@ Tela principal: barra de filtros & lista de cartões colapsados com ações, ord
 ## Referências
 
 - CDUs: CDU-02 · HUs: HU-02 · RN: RB-03, RB-05, RB-11 · RNFs: RNF-04, RNF-05, RNF-06, RNF-08, RNF-10
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/13 — em revisão (stack `core-03` ← #9 ← #10 ← #13).

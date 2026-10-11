@@ -23,3 +23,7 @@ Excluir um cartão com confirmação.
 ## Referências
 
 - CDUs: CDU-06 · HUs: HU-07 · RN: RB-04 · RNFs: RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/17 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14 ← #15 ← #16 ← #17).

@@ -22,3 +22,7 @@ Marcar um cartão como revisado, recalculando a próxima data.
 ## Referências
 
 - CDUs: CDU-03 · HUs: HU-04 · RN: RB-01, RB-07 · RNFs: RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/18 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14 ← #15 ← #16 ← #17 ← #18).

@@ -23,3 +23,7 @@ Editar nome, categoria & conteúdo de um cartão existente.
 ## Referências
 
 - CDUs: CDU-05 · HUs: HU-06 · RN: RB-06, RB-08, RB-10 · RNFs: RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/16 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14 ← #15 ← #16).
