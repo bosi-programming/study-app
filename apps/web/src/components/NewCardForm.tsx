@@ -22,14 +22,16 @@ export interface NewCardFormProps {
   readonly categories: readonly string[]
   readonly onCreate: (input: NewCard) => Promise<void>
   readonly onCancel: () => void
+  readonly initialValues?: NewCard
 }
 
 export function NewCardForm({
   categories,
   onCreate,
   onCancel,
+  initialValues = EMPTY_NEW_CARD,
 }: NewCardFormProps): JSX.Element {
-  const [values, setValues] = useState<NewCard>(EMPTY_NEW_CARD)
+  const [values, setValues] = useState<NewCard>(initialValues)
   const [messages, setMessages] = useState<CardFieldMessages>({})
   const [saveError, setSaveError] = useState<string | null>(null)
   const contentId = useId()

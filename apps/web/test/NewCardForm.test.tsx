@@ -14,6 +14,7 @@ const renderForm = (overrides: Partial<NewCardFormProps> = {}) => {
       categories={overrides.categories ?? ['Inglês', 'Matemática']}
       onCreate={onCreate}
       onCancel={onCancel}
+      {...(overrides.initialValues ? { initialValues: overrides.initialValues } : {})}
     />,
   );
 
@@ -147,5 +148,25 @@ describe('new card form submit (AC4, AC8)', () => {
       'Não foi possível salvar. Tente novamente.',
     );
     expect(screen.getByTestId('new-card-form')).toBeInTheDocument();
+  });
+});
+
+describe('new card form initial values (AC1)', () => {
+  it('T1.2 · renders the received initialValues in the fields', () => {
+    const { form } = renderForm({
+      initialValues: { name: 'Nome', category: 'Categoria', content: 'Conteúdo' },
+    });
+
+    expect(within(form).getByLabelText('Nome')).toHaveValue('Nome');
+    expect(within(form).getByLabelText('Categoria')).toHaveValue('Categoria');
+    expect(within(form).getByLabelText('Conteúdo')).toHaveValue('Conteúdo');
+  });
+
+  it('T1.3 · without initialValues the fields start empty', () => {
+    const { form } = renderForm();
+
+    expect(within(form).getByLabelText('Nome')).toHaveValue('');
+    expect(within(form).getByLabelText('Categoria')).toHaveValue('');
+    expect(within(form).getByLabelText('Conteúdo')).toHaveValue('');
   });
 });

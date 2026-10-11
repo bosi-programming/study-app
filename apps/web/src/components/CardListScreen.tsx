@@ -10,13 +10,17 @@ import { NewCardForm } from './NewCardForm'
 
 type LoadStatus = 'loading' | 'ready' | 'error'
 
+type FormState =
+  | { readonly mode: 'create' }
+  | { readonly mode: 'edit'; readonly card: Card }
+
 const INITIAL_FILTERS: CardFilters = { start: '', end: '', category: '' }
 
 export function CardListScreen(): JSX.Element {
   const [cards, setCards] = useState<readonly Card[]>([])
   const [status, setStatus] = useState<LoadStatus>('loading')
   const [filters, setFilters] = useState<CardFilters>(INITIAL_FILTERS)
-  const [formOpen, setFormOpen] = useState(false)
+  const [formState, setFormState] = useState<FormState | null>(null)
   const today = todayLocal()
 
   useEffect(() => {
@@ -44,12 +48,32 @@ export function CardListScreen(): JSX.Element {
   const visible = visibleCards(cards, filters)
   const categories = distinctCategories(cards)
 
-  async function handleCreate(input: NewCard): Promise<void> {
-    const card = createCard(input, today)
+  function openCreate(): void {
+    setFormState({ mode: 'create' })
+  }
+
+  function openEdit(card: Card): void {
+    setFormState({ mode: 'edit', card })
+  }
+
+  function close(): void {
+    setFormState(null)
+  }
+
+  async function handleSave(input: NewCard): Promise<void> {
     const store = await getCardStore()
-    await store.create(card)
-    setCards((previousCards) => [...previousCards, card])
-    setFormOpen(false)
+    if (formState?.mode === 'edit') {
+      const updated: Card = { ...formState.card, ...input }
+      await store.update(updated)
+      setCards((previousCards) =>
+        previousCards.map((card) => (card.id === updated.id ? updated : card)),
+      )
+    } else {
+      const card = createCard(input, today)
+      await store.create(card)
+      setCards((previousCards) => [...previousCards, card])
+    }
+    setFormState(null)
   }
 
   function renderContent(): JSX.Element {
@@ -76,7 +100,12 @@ export function CardListScreen(): JSX.Element {
     return (
       <ul data-testid="card-list" className="flex flex-col gap-2 pb-5">
         {visible.map((card) => (
-          <CardListItem key={card.id} card={card} today={today} />
+          <CardListItem
+            key={card.id}
+            card={card}
+            today={today}
+            onEdit={openEdit}
+          />
         ))}
       </ul>
     )
@@ -92,13 +121,15 @@ export function CardListScreen(): JSX.Element {
           <Typography as="h1" size="h1">
             Estudo
           </Typography>
-          <Button onClick={() => setFormOpen(true)}>Novo conteúdo</Button>
+          <Button onClick={openCreate}>Novo conteúdo</Button>
         </div>
-        {formOpen ? (
+        {formState ? (
           <NewCardForm
+            key={formState.mode === 'edit' ? formState.card.id : 'new'}
             categories={categories}
-            onCreate={handleCreate}
-            onCancel={() => setFormOpen(false)}
+            {...(formState.mode === 'edit' ? { initialValues: formState.card } : {})}
+            onCreate={handleSave}
+            onCancel={close}
           />
         ) : null}
         <FilterBar
