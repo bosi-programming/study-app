@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { type Card, addDays, todayLocal } from '@study/core';
 import { App } from '../src/App';
 import { type CardStore, getCardStore } from '../src/persistence';
@@ -215,6 +222,150 @@ describe('invalid range (AC5)', () => {
     const items = screen.getAllByRole('listitem');
     expect(items.map((item) => item.textContent)).toEqual([
       expect.stringContaining('Dentro'),
+    ]);
+  });
+});
+
+describe('category filter (AC1-AC6)', () => {
+  it('A1.1 · dropdown lists distinct categories sorted pt-BR', async () => {
+    const today = todayLocal();
+    renderWith([
+      makeCard('A', addDays(today, 1), 'Matemática'),
+      makeCard('B', addDays(today, 2), 'História'),
+    ]);
+    await screen.findAllByRole('listitem');
+
+    const select = screen.getByLabelText('Categoria');
+    const options = within(select).getAllByRole('option');
+
+    expect(options.map((option) => option.textContent)).toEqual([
+      'Todas as categorias',
+      'História',
+      'Matemática',
+    ]);
+  });
+
+  it('A1.2 · case/space variants collapse to one option & all match', async () => {
+    const today = todayLocal();
+    renderWith([
+      makeCard('Um', addDays(today, 1), 'Inglês'),
+      makeCard('Dois', addDays(today, 2), 'inglês'),
+      makeCard('Tres', addDays(today, 3), '  Inglês  '),
+    ]);
+    await screen.findAllByRole('listitem');
+
+    const select = screen.getByLabelText('Categoria');
+    expect(within(select).getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Todas as categorias',
+      'Inglês',
+    ]);
+
+    changeFilter('Categoria', 'Inglês');
+
+    const items = await screen.findAllByRole('listitem');
+    expect(items.map((item) => item.textContent)).toEqual([
+      expect.stringContaining('Um'),
+      expect.stringContaining('Dois'),
+      expect.stringContaining('Tres'),
+    ]);
+  });
+
+  it('A2.1 · comparison ignores case & spaces', async () => {
+    const today = todayLocal();
+    renderWith([
+      makeCard('Maiuscula', addDays(today, 1), 'Matemática'),
+      makeCard('Minuscula', addDays(today, 2), 'matemática'),
+      makeCard('Espacada', addDays(today, 3), '  Matemática  '),
+      makeCard('Outra', addDays(today, 4), 'História'),
+    ]);
+    await screen.findAllByRole('listitem');
+
+    changeFilter('Categoria', 'Matemática');
+
+    const items = await screen.findAllByRole('listitem');
+    expect(items.map((item) => item.textContent)).toEqual([
+      expect.stringContaining('Maiuscula'),
+      expect.stringContaining('Minuscula'),
+      expect.stringContaining('Espacada'),
+    ]);
+  });
+
+  it('A3.1 · category-only keeps RB-03 order', async () => {
+    const today = todayLocal();
+    renderWith([
+      makeCard('Zebra', addDays(today, 2), 'Matemática'),
+      makeCard('Alfa', addDays(today, 2), 'Matemática'),
+      makeCard('Cedo', addDays(today, 1), 'Matemática'),
+      makeCard('Outra', addDays(today, 1), 'História'),
+    ]);
+    await screen.findAllByRole('listitem');
+
+    changeFilter('Categoria', 'Matemática');
+
+    const items = await screen.findAllByRole('listitem');
+    expect(items.map((item) => item.textContent)).toEqual([
+      expect.stringContaining('Cedo'),
+      expect.stringContaining('Alfa'),
+      expect.stringContaining('Zebra'),
+    ]);
+  });
+
+  it('A4.1 · no cards ⇒ dropdown disabled & placeholder-only', async () => {
+    renderWith([]);
+    await screen.findByText('Você ainda não tem cartões.');
+
+    const select = screen.getByLabelText('Categoria');
+
+    expect(select).toBeDisabled();
+    expect(within(select).getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Todas as categorias',
+    ]);
+  });
+
+  it('A4.2 · with cards ⇒ dropdown enabled', async () => {
+    const today = todayLocal();
+    renderWith([makeCard('Um', addDays(today, 1), 'Matemática')]);
+    await screen.findAllByRole('listitem');
+
+    expect(screen.getByLabelText('Categoria')).not.toBeDisabled();
+  });
+
+  it('A5.1 · category + date yields no match ⇒ empty state', async () => {
+    const today = todayLocal();
+    renderWith([
+      makeCard('Mat', addDays(today, 1), 'Matemática'),
+      makeCard('Hist', addDays(today, 10), 'História'),
+    ]);
+    await screen.findAllByRole('listitem');
+
+    changeFilter('Categoria', 'Matemática');
+    changeFilter('De', addDays(today, 5));
+
+    expect(
+      await screen.findByText('Nenhum cartão para esses filtros.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('listitem')).toBeNull();
+  });
+
+  it('A6.1 · clearing a category-only filter restores all', async () => {
+    const today = todayLocal();
+    renderWith([
+      makeCard('Zebra', addDays(today, 3), 'Matemática'),
+      makeCard('Alfa', addDays(today, 1), 'História'),
+    ]);
+    await screen.findAllByRole('listitem');
+
+    changeFilter('Categoria', 'Matemática');
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Limpar filtros' }));
+
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(2));
+    expect(screen.getByLabelText('Categoria')).toHaveValue('');
+    const items = screen.getAllByRole('listitem');
+    expect(items.map((item) => item.textContent)).toEqual([
+      expect.stringContaining('Alfa'),
+      expect.stringContaining('Zebra'),
     ]);
   });
 });
