@@ -74,7 +74,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('review button position (AC1)', () => {
-  it('T1.1 · o botão "Marcar como revisado" precede o botão "Editar" na linha de ações', async () => {
+  it('T1.1 · the "Marcar como revisado" button precedes the "Editar" button in the actions row', async () => {
     renderWith([makeCard('Ábaco', '2026-10-10')]);
     const item = await findItem('Ábaco');
     const labels = within(item)
@@ -87,7 +87,7 @@ describe('review button position (AC1)', () => {
 });
 
 describe('updates & persists (AC2)', () => {
-  it('T2.1 · clicar em revisar chama store.update 1x com lastReviewDate = hoje, reviewCount + 1 & nextReviewDate recalculada', async () => {
+  it('T2.1 · clicking review calls store.update once with lastReviewDate = today, reviewCount + 1 & the recomputed nextReviewDate', async () => {
     const today = todayLocal();
     const card = makeCard('Ábaco', addDays(today, 1));
     const store = renderWith([card]);
@@ -103,7 +103,7 @@ describe('updates & persists (AC2)', () => {
     });
   });
 
-  it('T2.2 · cartão com reviewCount = 6 gera nextReviewDate no teto de 365 dias (RB-01)', async () => {
+  it('T2.2 · a card with reviewCount = 6 yields nextReviewDate at the 365-day ceiling (RB-01)', async () => {
     const today = todayLocal();
     const card = { ...makeCard('Ábaco', addDays(today, 1)), reviewCount: 6 };
     const store = renderWith([card]);
@@ -120,7 +120,7 @@ describe('updates & persists (AC2)', () => {
     );
   });
 
-  it('T2.3 · a revisão grava o dia local: lastReviewDate === todayLocal() (RB-07)', async () => {
+  it('T2.3 · the review writes the local day: lastReviewDate === todayLocal() (RB-07)', async () => {
     const store = renderWith([makeCard('Ábaco', addDays(todayLocal(), 1))]);
 
     fireEvent.click(reviewButton(await findItem('Ábaco')));
@@ -131,7 +131,7 @@ describe('updates & persists (AC2)', () => {
     );
   });
 
-  it('T2.4 · a lista mostra o cartão atualizado após o sucesso', async () => {
+  it('T2.4 · the list shows the updated card after success', async () => {
     const today = todayLocal();
     renderWith([makeCard('Ábaco', addDays(today, 1))]);
 
@@ -144,7 +144,7 @@ describe('updates & persists (AC2)', () => {
     );
   });
 
-  it('T2.5 · após o sucesso o botão de revisão volta a habilitado', async () => {
+  it('T2.5 · after success the review button is enabled again', async () => {
     renderWith([makeCard('Ábaco', addDays(todayLocal(), 1))]);
 
     fireEvent.click(reviewButton(await findItem('Ábaco')));
@@ -159,7 +159,7 @@ describe('updates & persists (AC2)', () => {
 });
 
 describe('reordering (AC3)', () => {
-  it('T3.1 · após revisar, a lista é reordenada conforme RB-03', async () => {
+  it('T3.1 · after reviewing, the list is reordered per RB-03', async () => {
     const today = todayLocal();
     renderWith([
       makeCard('Alvo', addDays(today, 1)),
@@ -175,7 +175,7 @@ describe('reordering (AC3)', () => {
     });
   });
 
-  it('T3.2 · a revisão não faz leitura extra: store.list chamado 1x', async () => {
+  it('T3.2 · the review makes no extra read: store.list called once', async () => {
     const store = renderWith([makeCard('Ábaco', addDays(todayLocal(), 1))]);
 
     fireEvent.click(reviewButton(await findItem('Ábaco')));
@@ -186,7 +186,7 @@ describe('reordering (AC3)', () => {
 });
 
 describe('write failure (AC4)', () => {
-  it('T4.1 · store.update rejeitado mantém cartão & ordem, exibe role="alert" com "Não foi possível marcar como revisado. Tente novamente."', async () => {
+  it('T4.1 · a rejected store.update keeps the card & order, shows role="alert" with "Não foi possível marcar como revisado. Tente novamente."', async () => {
     const today = todayLocal();
     vi.mocked(getCardStore).mockResolvedValue(
       failingStore([
@@ -206,7 +206,7 @@ describe('write failure (AC4)', () => {
     expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual(before);
   });
 
-  it('T4.2 · após a falha o botão volta a habilitado & um retry bem-sucedido aplica a revisão', async () => {
+  it('T4.2 · after a failure the button is enabled again & a successful retry applies the review', async () => {
     const today = todayLocal();
     const store = renderWith([makeCard('Ábaco', addDays(today, 1))]);
     vi.mocked(store.update).mockRejectedValueOnce(new PersistenceError('boom'));
@@ -221,7 +221,7 @@ describe('write failure (AC4)', () => {
     );
   });
 
-  it('T4.3 · após a falha, um retry bem-sucedido remove o alerta', async () => {
+  it('T4.3 · after a failure, a successful retry removes the alert', async () => {
     const store = renderWith([makeCard('Ábaco', addDays(todayLocal(), 1))]);
     vi.mocked(store.update).mockRejectedValueOnce(new PersistenceError('boom'));
 
@@ -236,7 +236,7 @@ describe('write failure (AC4)', () => {
 });
 
 describe('accessible name (AC5)', () => {
-  it('T5.1 · o botão de revisão tem nome acessível "Marcar como revisado"', async () => {
+  it('T5.1 · the review button has the accessible name "Marcar como revisado"', async () => {
     renderWith([makeCard('Ábaco', '2026-10-10')]);
 
     const item = await findItem('Ábaco');
@@ -246,7 +246,7 @@ describe('accessible name (AC5)', () => {
 });
 
 describe('double invocation (AC6)', () => {
-  it('T6.1 · com store.update pendente o botão fica desabilitado & o segundo clique não chama store.update de novo', async () => {
+  it('T6.1 · with a pending store.update the button is disabled & a second click does not call store.update again', async () => {
     const store = pendingStore([makeCard('Ábaco', addDays(todayLocal(), 1))]);
     vi.mocked(getCardStore).mockResolvedValue(store);
     render(<App />);
@@ -263,7 +263,7 @@ describe('double invocation (AC6)', () => {
     expect(vi.mocked(store.update)).toHaveBeenCalledTimes(1);
   });
 
-  it('T6.2 · com store.update pendente, revisar outro cartão não dispara um segundo store.update', async () => {
+  it('T6.2 · with a pending store.update, reviewing another card does not fire a second store.update', async () => {
     const store = pendingStore([
       makeCard('Ábaco', addDays(todayLocal(), 1)),
       makeCard('Zebra', addDays(todayLocal(), 5)),
@@ -283,7 +283,7 @@ describe('double invocation (AC6)', () => {
 });
 
 describe('active filter (AC7)', () => {
-  it('T7.1 · filtro de data ativo: o cartão revisado sai da lista visível', async () => {
+  it('T7.1 · with an active date filter: the reviewed card leaves the visible list', async () => {
     const today = todayLocal();
     renderWith([makeCard('Alvo', addDays(today, 1))]);
     await screen.findAllByRole('listitem');
