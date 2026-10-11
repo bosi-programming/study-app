@@ -8,7 +8,12 @@ import {
 } from '@study/core'
 import { Button, Typography } from 'bosi-design-system/react'
 import { type JSX, useEffect, useState } from 'react'
-import { type CardFilters, isFilterActive, visibleCards } from '../cards'
+import {
+  type CardFilters,
+  INITIAL_FILTERS,
+  isFilterActive,
+  visibleCards,
+} from '../cards'
 import { getCardStore } from '../persistence'
 import { CardListItem } from './CardListItem'
 import { ConfirmationDialog } from './ConfirmationDialog'
@@ -27,8 +32,6 @@ type DeleteState = {
   readonly pending: boolean
   readonly error: string | null
 }
-
-const INITIAL_FILTERS: CardFilters = { start: '', end: '', category: '' }
 
 const DELETE_ERROR_MESSAGE = 'Não foi possível excluir. Tente novamente.'
 
