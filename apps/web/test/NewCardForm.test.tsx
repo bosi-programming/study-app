@@ -14,7 +14,7 @@ const renderForm = (overrides: Partial<NewCardFormProps> = {}) => {
       categories={overrides.categories ?? ['Inglês', 'Matemática']}
       onCreate={onCreate}
       onCancel={onCancel}
-      initialValues={overrides.initialValues}
+      {...(overrides.initialValues ? { initialValues: overrides.initialValues } : {})}
     />,
   );
 
