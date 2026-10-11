@@ -231,7 +231,7 @@ describe('accessibility (AC8)', () => {
     const item = await screen.findByRole('listitem');
     const actions = within(item);
 
-    expect(actions.getAllByRole('button', { name: 'Revisar' })).toHaveLength(1);
+    expect(actions.getAllByRole('button', { name: 'Marcar como revisado' })).toHaveLength(1);
     expect(actions.getAllByRole('button', { name: 'Editar' })).toHaveLength(1);
     expect(actions.getAllByRole('button', { name: 'Excluir' })).toHaveLength(1);
     expect(actions.getAllByRole('button', { name: 'Expandir' })).toHaveLength(1);

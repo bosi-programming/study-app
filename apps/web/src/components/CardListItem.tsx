@@ -1,21 +1,31 @@
 import { type CalendarDay, type Card, isOverdue } from '@study/core'
 import { Button, Paper, Typography } from 'bosi-design-system/react'
-import { type JSX } from 'react'
+import { type ComponentProps, type JSX } from 'react'
 import { formatCalendarDay } from '../format'
 import { DeleteIcon, EditIcon, ExpandIcon, ReviewIcon } from './icons'
+
+type CardActionButtonProps = ComponentProps<typeof Button> & {
+  readonly disabled?: boolean | undefined
+}
+
+const CardActionButton = Button as (props: CardActionButtonProps) => JSX.Element
 
 export interface CardListItemProps {
   readonly card: Card
   readonly today: CalendarDay
+  readonly onReview?: (card: Card) => void
   readonly onEdit?: (card: Card) => void
   readonly onDelete?: (card: Card) => void
+  readonly pending?: boolean
 }
 
 export function CardListItem({
   card,
   today,
+  onReview,
   onEdit,
   onDelete,
+  pending,
 }: CardListItemProps): JSX.Element {
   const overdue = isOverdue(card, today)
   return (
@@ -35,9 +45,13 @@ export function CardListItem({
           {card.category}
         </Typography>
         <div className="flex items-center gap-2">
-          <Button aria-label="Revisar">
+          <CardActionButton
+            aria-label="Marcar como revisado"
+            onClick={() => onReview?.(card)}
+            disabled={pending}
+          >
             <ReviewIcon />
-          </Button>
+          </CardActionButton>
           <Button aria-label="Editar" onClick={() => onEdit?.(card)}>
             <EditIcon />
           </Button>

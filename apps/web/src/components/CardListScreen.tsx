@@ -1,4 +1,11 @@
-import { type Card, createCard, distinctCategories, type NewCard, todayLocal } from '@study/core'
+import {
+  type Card,
+  createCard,
+  distinctCategories,
+  markCardReviewed,
+  type NewCard,
+  todayLocal,
+} from '@study/core'
 import { Button, Typography } from 'bosi-design-system/react'
 import { type JSX, useEffect, useState } from 'react'
 import { type CardFilters, isFilterActive, visibleCards } from '../cards'
@@ -25,12 +32,16 @@ const INITIAL_FILTERS: CardFilters = { start: '', end: '', category: '' }
 
 const DELETE_ERROR_MESSAGE = 'Não foi possível excluir. Tente novamente.'
 
+const REVIEW_ERROR_MESSAGE = 'Não foi possível marcar como revisado. Tente novamente.'
+
 export function CardListScreen(): JSX.Element {
   const [cards, setCards] = useState<readonly Card[]>([])
   const [status, setStatus] = useState<LoadStatus>('loading')
   const [filters, setFilters] = useState<CardFilters>(INITIAL_FILTERS)
   const [formState, setFormState] = useState<FormState | null>(null)
   const [deleteState, setDeleteState] = useState<DeleteState | null>(null)
+  const [reviewingId, setReviewingId] = useState<string | null>(null)
+  const [reviewError, setReviewError] = useState<string | null>(null)
   const today = todayLocal()
 
   useEffect(() => {
@@ -113,6 +124,26 @@ export function CardListScreen(): JSX.Element {
     }
   }
 
+  async function handleReview(card: Card): Promise<void> {
+    if (reviewingId !== null) {
+      return
+    }
+    setReviewingId(card.id)
+    setReviewError(null)
+    const updated = markCardReviewed(card, today)
+    try {
+      const store = await getCardStore()
+      await store.update(updated)
+      setCards((previous) =>
+        previous.map((current) => (current.id === updated.id ? updated : current)),
+      )
+      setReviewingId(null)
+    } catch {
+      setReviewingId(null)
+      setReviewError(REVIEW_ERROR_MESSAGE)
+    }
+  }
+
   function renderContent(): JSX.Element {
     if (status === 'loading') {
       return (
@@ -141,8 +172,10 @@ export function CardListScreen(): JSX.Element {
             key={card.id}
             card={card}
             today={today}
+            onReview={handleReview}
             onEdit={openEdit}
             onDelete={openDelete}
+            pending={reviewingId === card.id}
           />
         ))}
       </ul>
@@ -175,6 +208,7 @@ export function CardListScreen(): JSX.Element {
           categories={categories}
           onChange={setFilters}
         />
+        {reviewError !== null ? <p role="alert">{reviewError}</p> : null}
         {renderContent()}
       </div>
       <ConfirmationDialog
