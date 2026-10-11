@@ -99,7 +99,7 @@ describe('open the form (AC1, AC2)', () => {
 
     const form = await openForm();
 
-    expect(within(form).getAllByRole('button', { name: 'Inglês' })).toHaveLength(1);
+    expect(within(form).getAllByRole('button', { name: /inglês/i })).toHaveLength(1);
   });
 });
 
