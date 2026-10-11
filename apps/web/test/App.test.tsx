@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { type CalendarDay, type Card, addDays, todayLocal } from '@study/core';
+import { type CalendarDay, type Card, addDays, nextReviewDate, todayLocal } from '@study/core';
 import { App } from '../src/App';
+import { formatCalendarDay } from '../src/format';
 import { type CardStore, getCardStore } from '../src/persistence';
 import { PersistenceError } from '../src/persistence/errors';
 
@@ -274,5 +275,54 @@ describe('load & error (AC10)', () => {
 
     expect(await screen.findByRole('listitem')).toHaveTextContent('Ábaco');
     expect(getCardStore).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('next review date (WEB-11)', () => {
+  it("T1.1 renders the card's stored nextReviewDate formatted in pt-BR", async () => {
+    renderWith([makeCard('Alvo', '2026-10-10' as CalendarDay)]);
+
+    const item = await screen.findByRole('listitem');
+
+    expect(item).toHaveTextContent('10/10/2026');
+  });
+
+  it('T2.1 renders the stored date even when it differs from a UI recomputation', async () => {
+    const card = makeCard('Divergente', '2026-05-20' as CalendarDay);
+    const recomputed = formatCalendarDay(
+      nextReviewDate(card.createdDate, card.lastReviewDate, card.reviewCount),
+    );
+    renderWith([card]);
+
+    const item = await screen.findByRole('listitem');
+
+    expect(item).toHaveTextContent('20/05/2026');
+    expect(item).not.toHaveTextContent(recomputed);
+  });
+
+  it("T3.1 formats each card's own date across 2+ cards", async () => {
+    renderWith([
+      makeCard('Alfa', '2026-03-15' as CalendarDay),
+      makeCard('Beta', '2026-11-02' as CalendarDay),
+    ]);
+
+    const items = await screen.findAllByRole('listitem');
+
+    expect(items[0]).toHaveTextContent('15/03/2026');
+    expect(items[0]).not.toHaveTextContent('02/11/2026');
+    expect(items[1]).toHaveTextContent('02/11/2026');
+    expect(items[1]).not.toHaveTextContent('15/03/2026');
+  });
+
+  it('T3.2 keeps single-digit day/month zero-padded across the list', async () => {
+    renderWith([
+      makeCard('Janeiro', '2026-01-05' as CalendarDay),
+      makeCard('Setembro', '2026-09-08' as CalendarDay),
+    ]);
+
+    const items = await screen.findAllByRole('listitem');
+
+    expect(items[0]).toHaveTextContent('05/01/2026');
+    expect(items[1]).toHaveTextContent('08/09/2026');
   });
 });
