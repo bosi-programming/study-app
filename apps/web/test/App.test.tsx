@@ -144,7 +144,7 @@ describe('overdue (AC6)', () => {
 
     const item = await screen.findByRole('listitem');
 
-    expect(item).toHaveClass('border-error');
+    expect(item.querySelector('.border-error')).not.toBeNull();
     expect(item.querySelector('.text-error')).not.toBeNull();
   });
 
@@ -154,7 +154,7 @@ describe('overdue (AC6)', () => {
 
     const item = await screen.findByRole('listitem');
 
-    expect(item).not.toHaveClass('border-error');
+    expect(item.querySelector('.border-error')).toBeNull();
     expect(item.querySelector('.text-error')).toBeNull();
   });
 

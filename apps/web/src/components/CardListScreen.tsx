@@ -19,6 +19,7 @@ import { CardListItem } from './CardListItem'
 import { ConfirmationDialog } from './ConfirmationDialog'
 import { EmptyState } from './EmptyState'
 import { FilterBar } from './FilterBar'
+import { LogoMark } from './icons'
 import { NewCardForm } from './NewCardForm'
 
 type LoadStatus = 'loading' | 'ready' | 'error'
@@ -192,9 +193,12 @@ export function CardListScreen(): JSX.Element {
     >
       <div className="flex flex-col gap-10">
         <div className="flex items-center justify-between">
-          <Typography as="h1" size="h1">
-            Estudo
-          </Typography>
+          <div className="flex items-center gap-2">
+            <LogoMark />
+            <Typography as="h1" size="h1">
+              Estudo
+            </Typography>
+          </div>
           <Button onClick={openCreate}>Novo conteúdo</Button>
         </div>
         {formState ? (

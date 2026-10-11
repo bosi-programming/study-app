@@ -23,3 +23,7 @@ Filtrar a lista por categoria, a partir das categorias existentes.
 ## Referências
 
 - CDUs: CDU-08 · HUs: HU-09 · RN: RB-02, RB-05, RB-08 · RNFs: RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/21 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14 ← #15 ← #16 ← #17 ← #18 ← #19 ← #20 ← #21).

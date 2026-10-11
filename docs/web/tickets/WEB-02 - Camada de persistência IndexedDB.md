@@ -21,3 +21,7 @@ Nenhuma mudança visual — infraestrutura.
 ## Referências
 
 - CDUs: CDU-01 a CDU-08 · HUs: HU-10 · RN: — · RNFs: RNF-01, RNF-02, RNF-11, RNF-13
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/10 — em revisão (stack `core-03` ← #9 ← #10).

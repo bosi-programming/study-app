@@ -22,3 +22,7 @@ Nenhuma mudança visual — infraestrutura (habilita os componentes do design sy
 ## Referências
 
 - CDUs: — · HUs: — · RN: — · RNFs: RNF-07, RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/9 — em revisão (stack `core-03` ← #9).

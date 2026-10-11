@@ -20,3 +20,7 @@ Exibir em cada cartão a próxima data de revisão calculada.
 ## Referências
 
 - CDUs: CDU-02 · HUs: HU-03 · RN: RB-01, RB-07 · RNFs: RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/14 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14).

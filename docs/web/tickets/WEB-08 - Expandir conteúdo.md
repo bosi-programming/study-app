@@ -20,3 +20,7 @@ Expandir & recolher um cartão para ler o conteúdo completo.
 ## Referências
 
 - CDUs: CDU-04 · HUs: HU-05 · RN: — · RNFs: RNF-06, RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/19 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14 ← #15 ← #16 ← #17 ← #18 ← #19).

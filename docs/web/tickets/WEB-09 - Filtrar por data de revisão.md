@@ -22,3 +22,7 @@ Filtrar a lista por intervalo da próxima data de revisão.
 ## Referências
 
 - CDUs: CDU-07 · HUs: HU-08 · RN: RB-05, RB-09 · RNFs: RNF-08
+
+## Pull request
+
+- https://github.com/bosi-programming/study-app/pull/20 — em revisão (stack `core-03` ← #9 ← #10 ← #13 ← #14 ← #15 ← #16 ← #17 ← #18 ← #19 ← #20).
