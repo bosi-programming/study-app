@@ -81,6 +81,12 @@ describe('design system usage (AC9)', () => {
     expect(itemSource).toContain("from 'bosi-design-system/react'");
     expect(filterBarSource).toContain("from 'bosi-design-system/react'");
   });
+
+  it('T7.1 · NewCardForm source imports bosi-design-system/react', () => {
+    const formSource = readFile('../src/components/NewCardForm.tsx');
+
+    expect(formSource).toContain("from 'bosi-design-system/react'");
+  });
 });
 
 describe('no UI recomputation (WEB-11)', () => {
