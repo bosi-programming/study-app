@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck && tsc --noEmit -p tsconfig.json",
     "bench": "node scripts/bench.ts",
-    "bench:web": "node scripts/bench-web.ts",
+    "bench:web": "node apps/web/scripts/bench-web.ts",
     "sqlite:probe": "node scripts/sqlite-probe.ts"
   },
   "devDependencies": {
