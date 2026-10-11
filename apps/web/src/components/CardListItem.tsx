@@ -7,9 +7,14 @@ import { DeleteIcon, EditIcon, ExpandIcon, ReviewIcon } from './icons'
 export interface CardListItemProps {
   readonly card: Card
   readonly today: CalendarDay
+  readonly onEdit?: (card: Card) => void
 }
 
-export function CardListItem({ card, today }: CardListItemProps): JSX.Element {
+export function CardListItem({
+  card,
+  today,
+  onEdit,
+}: CardListItemProps): JSX.Element {
   const overdue = isOverdue(card, today)
   return (
     <li className={overdue ? 'border-error border-[#741427]' : ''}>
@@ -31,7 +36,7 @@ export function CardListItem({ card, today }: CardListItemProps): JSX.Element {
           <Button aria-label="Revisar">
             <ReviewIcon />
           </Button>
-          <Button aria-label="Editar">
+          <Button aria-label="Editar" onClick={() => onEdit?.(card)}>
             <EditIcon />
           </Button>
           <Button aria-label="Excluir">
