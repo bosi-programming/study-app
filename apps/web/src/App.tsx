@@ -1,10 +1,6 @@
-import { Typography } from 'bosi-design-system/react'
 import { type JSX } from 'react'
+import { CardListScreen } from './components/CardListScreen'
 
 export function App(): JSX.Element {
-  return (
-    <Typography as="h1" size="h1">
-      Estudo
-    </Typography>
-  )
+  return <CardListScreen />
 }
