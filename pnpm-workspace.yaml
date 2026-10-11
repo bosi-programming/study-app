@@ -3,4 +3,5 @@ packages:
   - 'apps/*'
 
 allowBuilds:
+  bosi-design-system: true
   esbuild: true
